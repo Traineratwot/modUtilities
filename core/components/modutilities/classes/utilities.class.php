@@ -312,7 +312,11 @@
 		{
 			$userGroup = [];
 			if (!$id) {
-				$user = $this->modx->user;
+				if($this->modx->user->isAuthenticated()) {
+					$user = $this->modx->user;
+				}else{
+					return false;
+				}
 			} else {
 				$user = $this->modx->getObject('modUser', $id);
 			}
