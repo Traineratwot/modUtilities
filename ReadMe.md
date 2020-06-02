@@ -1,4 +1,4 @@
-## modUtilities
+# modUtilities
  это компонент добавляющий разные полезные, часто используемые, и просто интересные функции, для облегчения и стандартизации програмирования на modx
  поддерживает fenom
   
@@ -22,15 +22,15 @@ public $util;
   
 ##### константы и переменные
  ```
-$modx->util->constant::kb       //килобайт  в байтах
-$modx->util->constant::mb       //мегобайт  в байтах    
-$modx->util->constant::gb       //гигобайт  в байтах
-$modx->util->constant::tb       //теробайт  в байтах
-$modx->util->constant::min      //минут     в секундах
-$modx->util->constant::hour     //час       в секундах
-$modx->util->constant::day      //день      в секундах
-$modx->util->constant::week     //неделя    в секундах
-$modx->util->data['function']   //сюда попадает побочный вывод некоторых функций 
+$modx->util->constant->kb       //килобайт  в байтах
+$modx->util->constant->mb       //мегобайт  в байтах    
+$modx->util->constant->gb       //гигобайт  в байтах
+$modx->util->constant->tb       //теробайт  в байтах
+$modx->util->constant->min      //минут     в секундах
+$modx->util->constant->hour     //час       в секундах
+$modx->util->constant->day      //день      в секундах
+$modx->util->constant->week     //неделя    в секундах
+$modx->util->output['имя функции']   //сюда попадает побочный вывод некоторых функций 
  ```
 ##### функции
 
