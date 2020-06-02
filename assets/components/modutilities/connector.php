@@ -13,6 +13,6 @@
 // Указываем путь к папке с процессорами и заставляем MODX работать
 	$modx->addPackage('utilities', MODX_CORE_PATH . 'components/utilities/model/');
 	$modx->request->handleRequest([
-		'processors_path' => MODX_CORE_PATH . 'components/utilities/processors/',
+		'processors_path' => MODX_CORE_PATH . 'components/modutilities/processors/',
 		'location' => '',
 	]);

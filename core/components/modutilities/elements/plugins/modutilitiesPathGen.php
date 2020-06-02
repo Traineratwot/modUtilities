@@ -1,5 +1,5 @@
 <?php
-	switch ($modx->event->name) {
+switch ($modx->event->name) {
 		case 'OnSnipFormPrerender':
 			$folder = 'core/elements/snippets';
 			$class = 'snippet';
@@ -54,7 +54,7 @@
 	$jqueryScript .= "\n";
 
 	$modx->regClientStartupScript($jqueryScript, TRUE);
-	$connector = '/assets/components/utilities/connector.php';
+	$connector = '/assets/components/modutilities/connector.php';
 	$modx->regClientStartupScript("<script>
 var I_change_it = false
 Ext.onReady(function(){
