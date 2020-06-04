@@ -41,7 +41,7 @@
 			'Ш' => 'Sh', 'Щ' => 'Sch', 'Ь' => '', 'Ы' => 'Y', 'Ъ' => '',
 			'Э' => 'E', 'Ю' => 'Yu', 'Я' => 'Ya',
 		];
-		
+
 		/**
 		 * utilities constructor.
 		 * @param modX $modx
