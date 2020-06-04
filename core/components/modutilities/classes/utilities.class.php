@@ -7,11 +7,10 @@
 	 */
 	class utilities
 	{
-
 		/**
 		 * @var modX
 		 */
-		public $modx;
+		protected $modx;
 		/**
 		 * @var constant
 		 */
@@ -25,7 +24,7 @@
 		 * array translit
 		 * @const array
 		 */
-		const converter = [
+		const translitRule = [
 			'а' => 'a', 'б' => 'b', 'в' => 'v', 'г' => 'g', 'д' => 'd',
 			'е' => 'e', 'ё' => 'e', 'ж' => 'zh', 'з' => 'z', 'и' => 'i',
 			'й' => 'y', 'к' => 'k', 'л' => 'l', 'м' => 'm', 'н' => 'n',
@@ -42,7 +41,7 @@
 			'Ш' => 'Sh', 'Щ' => 'Sch', 'Ь' => '', 'Ы' => 'Y', 'Ъ' => '',
 			'Э' => 'E', 'Ю' => 'Yu', 'Я' => 'Ya',
 		];
-
+		
 		/**
 		 * utilities constructor.
 		 * @param modX $modx
@@ -64,35 +63,35 @@
 			if (!empty($arr)) {
 				$echo = '';
 				foreach ($arr as $v) {
-					if (is_array($v) || is_object($v)) {
-						if (!$echo) {
-							$echo .= '(' . gettype($v) . '): ' . json_encode($v, 256);
-						} else {
-							$echo .= ', (' . gettype($v) . '): ' . json_encode($v, 256);
-						}
-						continue;
-					} else {
-						switch (gettype($v)) {
-							case 'boolean':
-								$v_ = $v ? 'TRUE' : 'FALSE';
-								break;
-							case 'resource':
-								$v_ = '[' . get_resource_type($v) . '] ' . $v;
-								break;
-							case 'NULL':
-								$v_ = 'NULL';
-								break;
-							default:
-								$v_ = $v;
-						}
-
-						if (!$echo) {
-							$echo .= '(' . gettype($v) . '): ' . $v_;
-						} else {
-							$echo .= ', (' . gettype($v) . '): ' . $v_;
-						}
-						continue;
+					switch (gettype($v)) {
+						case 'boolean':
+							$v_ = $v ? 'TRUE' : 'FALSE';
+							break;
+						case 'resource':
+							$v_ = '[' . get_resource_type($v) . '] ' . $v;
+							break;
+						case 'object':
+							$obj = [];
+							$obj['methods'] = get_class_methods($v);
+							$obj['vars'] = array_keys(get_object_vars($v)) ?: get_class_vars($v);
+							$v_ = '[' . get_class($v) . '] ' . json_encode($obj, 256);
+							break;
+						case 'array':
+							$v_ = json_encode($v, 256);
+							break;
+						case 'NULL':
+							$v_ = 'NULL';
+							break;
+						default:
+							$v_ = $v;
 					}
+
+					if (!$echo) {
+						$echo .= '(' . gettype($v) . '): ' . $v_;
+					} else {
+						$echo .= ', (' . gettype($v) . '): ' . $v_;
+					}
+					continue;
 				}
 				return $echo . '<br>' . PHP_EOL;
 			}
@@ -175,7 +174,7 @@
 		 */
 		public function basicTranslit($value = '')
 		{
-			$value = strtr($value, $this::converter);
+			$value = strtr($value, $this::translitRule);
 			return $value;
 		}
 
@@ -221,7 +220,7 @@
 		 */
 		public function rawText($a = '')
 		{
-			return mb_strtolower(preg_replace('@[^A-zА-я0-9]|[\/_\\\.\,]@', '', (string)$a));
+			return mb_strtolower(preg_replace('@[^A-zА-я0-9]|[\/_\\\.\,]@u', '', (string)$a));
 		}
 
 		/**
@@ -312,10 +311,10 @@
 		{
 			$userGroup = [];
 			if (!$id) {
-				if($this->modx->user->isAuthenticated()) {
+				if ($this->modx->user->isAuthenticated()) {
 					$user = $this->modx->user;
-				}else{
-					return false;
+				} else {
+					return FALSE;
 				}
 			} else {
 				$user = $this->modx->getObject('modUser', $id);
@@ -363,6 +362,209 @@
 			return FALSE;
 		}
 
+		/**
+		 * @param int   $n
+		 * @param array $forms 'арбуз', 'арбуза', 'арбузов'
+		 * @return mixed
+		 */
+		public function plural($n = 0, $forms = [])
+		{
+			return $n % 10 == 1 && $n % 100 != 11 ? $forms[0] : ($n % 10 >= 2 && $n % 10 <= 4 && ($n % 100 < 10 || $n % 100 >= 20) ? $forms[1] : $forms[2]);
+		}
+
+		/**
+		 * array for converter
+		 * 'type'=>[
+		 *      0(меньше CИ)[
+		 *          'ед'=> [сколько, чего]
+		 *      ]
+		 *      1(больше CИ)[
+		 *          'ед'=> [сколько, чего]
+		 *      ]
+		 *      CИ => [1, ед]
+		 * ]
+		 * @var array[]
+		 */
+		public $converterRule = [
+			'byte' => [
+				0=>[
+					'bit' => [0.125, 'b'],
+				],
+				1 => [
+					'kb' => [1024, 'b'],
+					'mb' => [1024, 'kb'],
+					'gb' => [1024, 'mb'],
+					'tb' => [1024, 'gb'],
+				],
+				'SI' => [1, 'b'],
+			],
+			'mass' => [
+				0 => [
+					'g' => [0.001, 'kg'],
+					'mg' => [0.001, 'g'],
+				],
+				1 => [
+					'T' => [1000, 'kg'],
+				],
+				'SI' => [1, 'kg'],
+			],
+			'length' => [
+				0 => [
+					'mm' => [0.001, 'm'],
+					'cm' => [10, 'mm'],
+					'dm' => [10, 'dm'],
+				],
+				1 => [
+					'km' => [1000, 'm'],
+				],
+				'SI' => [1, 'm'],
+			],
+			'time' => [
+				0 => [
+					'ms' => [0.001, 's'],
+				],
+				1 => [
+					'min' => [60, 's'],
+					'h' => [60, 'min'],
+					'day' => [24, 'h'],
+				],
+				'SI' => [1, 's'],
+			],
+		];
+
+		/**
+		 * converter any units
+		 * @param int|float $n
+		 * @param string    $type byte,mass,length,time
+		 * @param string    $from unit|'SI'
+		 * @param string    $to   unit|'best'
+		 * @return array|false
+		 */
+		public function converter($n = 0, $type = 'byte', $from = 'SI', $to = 'best')
+		{
+			try {
+				//validate input start
+				$out = FALSE;
+				$size = [];
+				$i = 0;
+				$n = (float)$n;
+				if (!$n) {
+					throw new Exception('invalid number',0);
+				}
+				if (isset($this->converterRule[$type])) {
+					$converterRule = $this->converterRule[$type];
+					$SI = $converterRule['SI'][1];
+
+				} else {
+					throw new Exception('invalid type',0);
+				}
+				if ($to != 'best' AND $to != 'SI') {
+					if (!in_array($to, array_keys($converterRule[0])) and !in_array($to, array_keys($converterRule[1]))
+						and $to != $SI) {
+						$to = 'best';
+					}
+				}
+				//validate input end
+				if ($to == $from and $to != 'SI') {
+					throw new Exception('easy )',1);
+				}
+				$n = $this->ToSi($n, $type, $from);
+				if(!$n){
+					throw new Exception('invalid "from" unit',2);
+				}
+				if ($to == 'SI' OR $to == $SI) {
+					throw new Exception('easy )',2);
+				}
+
+				if ($to != 'best') {
+					if (in_array($to, array_keys($converterRule[0]))) {
+						$g = 0;
+					} elseif (in_array($to, array_keys($converterRule[1]))) {
+						$g = 1;
+					} else {
+						throw new Exception('invalid "to" unit',2);
+					}
+				} else {
+					if ($n >= $converterRule['SI'][0]) {
+						$g = 1;
+					} else {
+						$g = 0;
+					}
+				}
+				foreach ($converterRule[$g] as $key => $rule) {
+					if ($n >= $rule[0]) {
+						$n /= $rule[0];
+						$size = [round($n, $i), $key];
+					} else {
+						if ($to == 'best') {
+							break;
+						}
+					}
+					if ($to != 'best' and $to == $key) {
+						break;
+					}
+					$i++;
+				}
+				if (!$out and !empty($size)) {
+					$out = $size;
+				} else {
+					$out = [$n, $SI];
+				}
+
+			} catch (Exception $e) {
+				echo $this->console('log', $e->getMessage());
+				switch ($e->getCode()){
+					case 1:
+						return [round($n, $i), $from];
+					case 2:
+						return [round($n, $i), $SI];
+					default:
+						return $e->getMessage();
+				}
+			}
+			return $out;
+		}
+
+		/**
+		 * converter any units to SI
+		 * @param        $n
+		 * @param string $type
+		 * @param string $from
+		 * @return bool|mixed
+		 */
+		public function ToSi($n, $type = 'byte', $from = 'SI')
+		{
+			if (isset($this->converterRule[$type])) {
+				$converterRule = $this->converterRule[$type];
+				$SI = $converterRule['SI'][1];
+			} else {
+				return FALSE;
+			}
+			if ($from == 'SI' OR $from == $SI) {
+				return $n;
+			}
+			if (in_array($from, array_keys($converterRule[0]))) {
+				$g = 0;
+			} elseif (in_array($from, array_keys($converterRule[1]))) {
+				$g = 1;
+			} else {
+				return FALSE;
+			}
+			while ($from != $SI and isset($converterRule[$g][$from])) {
+				$f_ = $converterRule[$g][$from];
+				$n *= $f_[0];
+				$from = $f_[1];
+			}
+			return $n;
+		}
+
+		/**
+		 * @return string
+		 */
+		public function __toString()
+		{
+			return (string)json_encode($this, 256);
+		}
 	}
 
 	/**
@@ -397,11 +599,13 @@
 			$this->hour = $this->min * 60;
 			$this->day = $this->hour * 24;
 			$this->week = $this->day * 7;
-
 		}
 
+		/**
+		 * @return string
+		 */
 		public function __toString()
 		{
-			return json_encode($this);
+			return (string)json_encode($this, 256);
 		}
 	}
