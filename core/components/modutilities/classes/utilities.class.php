@@ -71,9 +71,7 @@
 							$v_ = '[' . get_resource_type($v) . '] ' . $v;
 							break;
 						case 'object':
-							$obj = [];
-							$obj['methods'] = get_class_methods($v);
-							$obj['vars'] = array_keys(get_object_vars($v)) ?: get_class_vars($v);
+							$obj = $this->objectInfo($v);
 							$v_ = '[' . get_class($v) . '] ' . json_encode($obj, 256);
 							break;
 						case 'array':
@@ -96,6 +94,24 @@
 				return $echo . '<br>' . PHP_EOL;
 			}
 			return FALSE;
+		}
+
+		/**
+		 * @param object $v
+		 * @return array|false
+		 */
+		public function objectInfo(&$v)
+		{
+			if (is_object($v)) {
+				$obj = [];
+				$obj['name'] = get_class($v);
+				$obj['methods'] = get_class_methods($v);
+				$class_vars = array_keys(get_class_vars($v)) ?: [];
+				$object_vars = array_keys(get_object_vars($v)) ?: [];
+				$obj['vars'] = array_unique(array_merge($class_vars, $object_vars));
+				return $obj;
+			}
+			return gettype($v);
 		}
 
 		/**
@@ -190,9 +206,8 @@
 			if (array_search($do, ['log', 'info', 'debug', 'warn', 'error', 'table', 'object']) === FALSE) {
 				$do = 'log';
 			}
-			if (is_array($data) || is_object($data)) {
+			if (is_array($data)) {
 				$echo = "<script type='text/javascript'>console.{$do}(" . json_encode($data, 256) . ");</script>";
-
 			} else {
 				$data_ = str_replace('<br>', '', $this->print($data));
 				$echo = "<script type='text/javascript'>console.{$do}(`$data_`);</script>";
@@ -260,6 +275,7 @@
 		}
 
 		/**
+		 * smart makeUrl
 		 * @param int    $id
 		 * @param string $alt
 		 * @param string $context
@@ -363,12 +379,16 @@
 		}
 
 		/**
+		 * simple plural
 		 * @param int   $n
 		 * @param array $forms 'арбуз', 'арбуза', 'арбузов'
 		 * @return mixed
 		 */
 		public function plural($n = 0, $forms = [])
 		{
+			$n = explode(',', (string)$n);
+			$n[1] = str_replace('0', '', $n[1]);
+			$n = abs((float)implode('', $n));
 			return $n % 10 == 1 && $n % 100 != 11 ? $forms[0] : ($n % 10 >= 2 && $n % 10 <= 4 && ($n % 100 < 10 || $n % 100 >= 20) ? $forms[1] : $forms[2]);
 		}
 
@@ -387,7 +407,7 @@
 		 */
 		public $converterRule = [
 			'byte' => [
-				0=>[
+				0 => [
 					'bit' => [0.125, 'b'],
 				],
 				1 => [
@@ -440,7 +460,7 @@
 		 * @param string    $to   unit|'best'
 		 * @return array|false
 		 */
-		public function converter($n = 0, $type = 'byte', $from = 'SI', $to = 'best')
+		public function convert($n = 0, $type = 'byte', $from = 'SI', $to = 'best')
 		{
 			try {
 				//validate input start
@@ -449,16 +469,16 @@
 				$i = 0;
 				$n = (float)$n;
 				if (!$n) {
-					throw new Exception('invalid number',0);
+					throw new Exception('invalid number', 0);
 				}
 				if (isset($this->converterRule[$type])) {
 					$converterRule = $this->converterRule[$type];
 					$SI = $converterRule['SI'][1];
 
 				} else {
-					throw new Exception('invalid type',0);
+					throw new Exception('invalid type', 0);
 				}
-				if ($to != 'best' AND $to != 'SI') {
+				if ($to != 'best' and $to != 'SI') {
 					if (!in_array($to, array_keys($converterRule[0])) and !in_array($to, array_keys($converterRule[1]))
 						and $to != $SI) {
 						$to = 'best';
@@ -466,14 +486,14 @@
 				}
 				//validate input end
 				if ($to == $from and $to != 'SI') {
-					throw new Exception('easy )',1);
+					throw new Exception('easy )', 1);
 				}
 				$n = $this->ToSi($n, $type, $from);
-				if(!$n){
-					throw new Exception('invalid "from" unit',2);
+				if (!$n) {
+					throw new Exception('invalid "from" unit', 2);
 				}
-				if ($to == 'SI' OR $to == $SI) {
-					throw new Exception('easy )',2);
+				if ($to == 'SI' or $to == $SI) {
+					throw new Exception('easy )', 2);
 				}
 
 				if ($to != 'best') {
@@ -482,7 +502,7 @@
 					} elseif (in_array($to, array_keys($converterRule[1]))) {
 						$g = 1;
 					} else {
-						throw new Exception('invalid "to" unit',2);
+						throw new Exception('invalid "to" unit', 2);
 					}
 				} else {
 					if ($n >= $converterRule['SI'][0]) {
@@ -513,7 +533,7 @@
 
 			} catch (Exception $e) {
 				echo $this->console('log', $e->getMessage());
-				switch ($e->getCode()){
+				switch ($e->getCode()) {
 					case 1:
 						return [round($n, $i), $from];
 					case 2:
@@ -540,7 +560,7 @@
 			} else {
 				return FALSE;
 			}
-			if ($from == 'SI' OR $from == $SI) {
+			if ($from == 'SI' or $from == $SI) {
 				return $n;
 			}
 			if (in_array($from, array_keys($converterRule[0]))) {
