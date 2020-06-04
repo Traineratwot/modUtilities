@@ -106,8 +106,8 @@
 				$obj = [];
 				$obj['name'] = get_class($v);
 				$obj['methods'] = get_class_methods($v);
-				$class_vars = array_keys(get_class_vars($v)) ?: [];
-				$object_vars = array_keys(get_object_vars($v)) ?: [];
+				$class_vars = array_keys(get_class_vars($v) ?: []);
+				$object_vars = array_keys(get_object_vars($v) ?: []);
 				$obj['vars'] = array_unique(array_merge($class_vars, $object_vars));
 				return $obj;
 			}
@@ -318,6 +318,7 @@
 		}
 
 		/**
+		 * member
 		 * @param integer|null        $id
 		 * @param integer|string|null $group
 		 * @param integer|string|null $role
@@ -581,9 +582,82 @@
 		/**
 		 * @return string
 		 */
-		public function __toString()
+		final public function __toString()
 		{
 			return (string)json_encode($this, 256);
+		}
+
+		/**
+		 * header("Content-type: application/json; charset=utf-8");
+		 */
+		final public function headerJson()
+		{
+			header("Content-type: application/json; charset=utf-8");
+		}
+
+		final public function csv($Params = [])
+		{
+			return $this->loadClass('UtilitiesCsv', $Params);
+		}
+
+		final protected function loadClass($name, $Params = [])
+		{
+			$path = MODX_CORE_PATH . 'components/modutilities/classes/' . $name . '.class.php';
+			if (file_exists($path)) {
+				include_once $path;
+				return new $name($this->modx, $this, $Params);
+			}
+			return FALSE;
+		}
+
+		/**
+		 * notEmpty
+		 * @param $var
+		 * @return bool
+		 */
+		public function notEmpty($var): bool
+		{
+			switch (gettype($var)) {
+				case "array":
+					if (count($var) == 0) {
+						return 0;
+					}
+					break;
+				case "string":
+					return (trim($var) == '') ? 0 : 1;
+				case "NULL":
+				case "resource (closed)":
+					return 0;
+				case "boolean":
+				case "integer":
+				case "resource":
+					return 1;
+				default:
+					return (int)!empty($var);
+			}
+			$score = 0;
+			foreach ($var as $k => $v) {
+				$score += $this->notEmpty($v);
+			}
+			return !(bool)$score;
+		}
+
+		/**
+		 * isAssoc
+		 * @param array $arr
+		 * @return bool
+		 */
+		public function isAssoc(&$arr = []): bool
+		{
+			if(is_array($arr)) {
+				$c = count($arr);
+				if ($c > 10) {
+					return !(array_key_exists(0, $arr) and array_key_exists(random_int(0, $c - 1), $arr) and array_key_exists($c - 1, $arr));
+				} elseif ($c > 0) {
+					return !(range(0, count($arr) - 1) === array_keys($arr));
+				}
+			}
+			return FALSE;
 		}
 	}
 

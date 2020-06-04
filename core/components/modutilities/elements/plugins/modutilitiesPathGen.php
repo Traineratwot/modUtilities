@@ -111,7 +111,7 @@ function pathGenStart() {
 	if (!pathGen.category) {
 		pathGen.category = document.getElementById('$category').value;
 	}
-	if (/[а-яА-Я]/.test(pathGen.category) && pathGen.category != 'Не_указано') {
+	if (/[а-яА-Я]/.test(pathGen.category) && ['не_указано','ne-ukazano'].indexOf(pathGen.category.toLowerCase()) == -1 ) {
 		translate('category', pathGen.category)
 		return false;
 	}
