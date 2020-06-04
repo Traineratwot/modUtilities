@@ -594,12 +594,18 @@
 		{
 			header("Content-type: application/json; charset=utf-8");
 		}
-
+		/**
+		 * @return UtilitiesCsv
+		 */
 		final public function csv($Params = [])
 		{
 			return $this->loadClass('UtilitiesCsv', $Params);
 		}
-
+		/**
+		 * @param       $name
+		 * @param array $Params
+		 * @return bool|Class
+		 */
 		final protected function loadClass($name, $Params = [])
 		{
 			$path = MODX_CORE_PATH . 'components/modutilities/classes/' . $name . '.class.php';

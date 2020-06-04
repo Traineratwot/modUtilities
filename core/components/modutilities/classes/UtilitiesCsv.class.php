@@ -152,9 +152,9 @@
 				$isAssoc = $this->util->isAssoc($row);
 				for ($i = 0; $i < $len; $i++) {
 					if ($isAssoc) {
-						$_row[$i] = (isset($row[$head[$i]])) ? $this->modx->quote($row[$head[$i]]) : '';
+						$_row[$i] = (isset($row[$head[$i]])) ? $row[$head[$i]] : '';
 					} else {
-						$_row[$i] = (isset($row[$i])) ? $this->modx->quote($row[$i]) : '';
+						$_row[$i] = (isset($row[$i])) ? $row[$i]: '';
 					}
 				}
 				$this->csv .= $this->line_delimiter;
