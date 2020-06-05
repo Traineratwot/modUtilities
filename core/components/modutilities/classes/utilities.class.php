@@ -467,7 +467,7 @@
 				//validate input start
 				$out = FALSE;
 				$size = [];
-				$i = 0;
+				$i = 1;
 				$n = (float)$n;
 				if (!$n) {
 					throw new Exception('invalid number', 0);
@@ -590,7 +590,7 @@
 		/**
 		 * header("Content-type: application/json; charset=utf-8");
 		 */
-		final public function headerJson()
+		public function headerJson()
 		{
 			header("Content-type: application/json; charset=utf-8");
 		}

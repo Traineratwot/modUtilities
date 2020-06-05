@@ -223,7 +223,7 @@
 		/**
 		 * @return csvString|string
 		 */
-		public function __toString()
+		final public function __toString()
 		{
 			return $this->toCsv();
 		}
