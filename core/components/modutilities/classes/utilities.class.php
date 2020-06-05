@@ -594,13 +594,15 @@
 		{
 			header("Content-type: application/json; charset=utf-8");
 		}
+
 		/**
 		 * @return UtilitiesCsv
 		 */
 		final public function csv($Params = [])
 		{
-			return $this->loadClass('UtilitiesCsv', $Params);
+			return $this->loadClass('utilitiesCsv', $Params);
 		}
+
 		/**
 		 * @param       $name
 		 * @param array $Params

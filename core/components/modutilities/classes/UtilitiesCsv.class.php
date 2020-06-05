@@ -1,12 +1,11 @@
 <?php
 	/**
-	 * Created by Andrey Stepanenko.
-	 * User: webnitros
+	 * Created by Kirill Nefediev..
 	 * Date: 04.06.2020
 	 * Time: 18:04
 	 */
 
-	class UtilitiesCsv
+	class utilitiesCsv
 	{
 		/* @var modX $modX */
 		public $modx;
@@ -21,7 +20,7 @@
 		/* @var array */
 		public $matrix;
 		/* @var array */
-		protected $head;
+		protected $head = [];
 		protected $appendType = FALSE;
 		protected $delimiter;
 		protected $line_delimiter;
@@ -30,15 +29,15 @@
 		 * UtilitiesCsv constructor
 		 * param [
 		 *  inputCharset | 'utf8'
-		 *	woBom - without BOM | false
-		 *	delimiter |';'
-		 *	line_delimiter | PHP_EOL
+		 *    woBom - without BOM | false
+		 *    delimiter |';'
+		 *    line_delimiter | PHP_EOL
 		 * ]
-		 * @param modX $modx
+		 * @param modX      $modx
 		 * @param utilities $util
-		 * @param array $param
+		 * @param array     $param
 		 */
-		public function __construct(modX &$modx,utilities &$util, $param)
+		public function __construct(modX &$modx, utilities &$util, $param)
 		{
 			$this->inputCharset = isset($param['inputCharset']) ? $param['inputCharset'] : 'utf8';
 			$this->modx = $modx;
@@ -65,16 +64,28 @@
 			if (count($args) == 1 and is_array($args[0])) {
 				$args = $args[0];
 			}
+			$head = array_flip($this->head);
+			$isAssoc = $this->util->isAssoc($args);
+			$args_ = [];
 			foreach ($args as $k => $art) {
-				if (!is_string($art) and !is_numeric($art)) {
-					$args[$k] = NULL;
+				if ($isAssoc) {
+					if (!is_string($art) and !is_numeric($art)) {
+						$args_[$head[$k]] = NULL;
+					} else {
+						$args_[$head[$k]] = (string)$art;
+					}
 				} else {
-					$args[$k] = (string)$art;
+					if (!is_string($art) and !is_numeric($art)) {
+						$args_[$k] = NULL;
+					} else {
+						$args_[$k] = (string)$art;
+					}
 				}
 			}
-			$this->matrix[] = $args;
+			$this->matrix[] = $args_;
 			return $this;
 		}
+
 		/**
 		 * add column to csv
 		 * @return $this|bool
@@ -128,6 +139,49 @@
 		}
 
 		/**
+		 * @param string|integer $x column
+		 * @param string|integer $y row
+		 * @param string|integer $value
+		 */
+		public function setCell($x = 0, $y = 0, $value = '')
+		{
+			if (!empty($this->head)) {
+				switch ($this->appendType) {
+					case 'row':
+						if (in_array($x, $this->head)) {
+							$head = array_flip($this->head);
+							$x = $head[$x];
+						}
+						break;
+					case 'column':
+						if (in_array($y, $this->head)) {
+							$head = array_flip($this->head);
+							$y = $head[$y];
+						}
+						break;
+					default:
+						return FALSE;
+				}
+			}
+			$x = (int)$x;
+			$y = (int)$y;
+			for ($i = 0; $i <= $y; $i++) {
+				if (!array_key_exists($i, $this->matrix)) {
+					$this->matrix[$i] = [];
+				}
+			}
+			for ($i = 0; $i <= $x; $i++) {
+				if ($i == $x) {
+					$this->matrix[$y][$i] = $value;
+				}
+				if (!array_key_exists($i, $this->matrix[$y])) {
+					$this->matrix[$y][$i] = '';
+				}
+			}
+			return $this;
+		}
+
+		/**
 		 *generate csv string
 		 */
 		public function _buildCsv()
@@ -142,20 +196,15 @@
 			$len = max($len);
 			if ($this->appendType == 'row') {
 				$this->csv .= implode($this->delimiter, $head);
-			}else{
+			} else {
 				foreach ($this->head as $k => $h) {
-					array_unshift($this->matrix[$k],$h);
+					array_unshift($this->matrix[$k], $h);
 				}
 			}
 			foreach ($this->matrix as $key => $row) {
 				$_row = [];
-				$isAssoc = $this->util->isAssoc($row);
 				for ($i = 0; $i < $len; $i++) {
-					if ($isAssoc) {
-						$_row[$i] = (isset($row[$head[$i]])) ? $row[$head[$i]] : '';
-					} else {
-						$_row[$i] = (isset($row[$i])) ? $row[$i]: '';
-					}
+					$_row[$i] = (isset($row[$i])) ? $row[$i] : '';
 				}
 				$this->csv .= $this->line_delimiter;
 				$this->csv .= implode($this->delimiter, $_row);
@@ -171,6 +220,9 @@
 			return (string)$this->csv;
 		}
 
+		/**
+		 * @return csvString|string
+		 */
 		public function __toString()
 		{
 			return $this->toCsv();
