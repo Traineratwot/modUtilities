@@ -14,7 +14,7 @@
 это точно никак не навредит вашему проекту
 ```
 /**
-* @var utilities utilities package.
+* @var utilities
 */
 public $util;
 ```
