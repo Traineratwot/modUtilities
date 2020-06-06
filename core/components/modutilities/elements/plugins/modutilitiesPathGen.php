@@ -1,5 +1,5 @@
 <?php
-switch ($modx->event->name) {
+	switch ($modx->event->name) {
 		case 'OnSnipFormPrerender':
 			$folder = 'core/elements/snippets';
 			$class = 'snippet';
@@ -117,7 +117,7 @@ function pathGenStart() {
 	}
 	new_path = pathGen.folder + '/' + pathGen.category + '/' + pathGen.name + '$ext';
 	I_change_it = true;
-	new_path = new_path.replace(/\s/g, '_').replace('_—_', '/').replace('not-specified/', '')
+	new_path = new_path.replace(/\s/g, '_').replace(/_—_/g, '/').replace('not-specified/', '')
 	document.getElementById('$path').value = new_path;
 }})
 	</script>");

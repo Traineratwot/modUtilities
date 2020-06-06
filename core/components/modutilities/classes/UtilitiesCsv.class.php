@@ -22,7 +22,7 @@
 		/* @var array */
 		protected $head = [];
 		protected $appendType = FALSE;
-		protected $delimiter;
+		protected $str_delimiter;
 		protected $line_delimiter;
 
 		/**
@@ -44,8 +44,8 @@
 			$this->util = $util;
 
 			$this->utf8bom = (isset($param['woBom']) and $param['woBom'] = TRUE) ? NULL : chr(239) . chr(187) . chr(191);
-			$this->delimiter = isset($param['delimiter']) ? $param['delimiter'] : ';';
-			$this->line_delimiter = isset($param['line_delimiter']) ? $param['line_delimiter'] : PHP_EOL;
+			$this->str_delimiter = isset($param['delimiter']) ? $param['delimiter'] : ';';
+			$this->line_delimiter = isset($param['line_delimiter']) ? $param['line_delimiter'] : "\n";
 		}
 
 		/**
@@ -54,7 +54,7 @@
 		 */
 		public function addRow()
 		{
-			if (!$this->appendType or !$this->util->notEmpty(($this->matrix))) {
+			if (!$this->appendType or !$this->util->empty(($this->matrix))) {
 				$this->appendType = 'row';
 			}
 			if ($this->appendType != 'row') {
@@ -92,7 +92,7 @@
 		 */
 		public function addCol()
 		{
-			if (!$this->appendType or !$this->util->notEmpty(($this->matrix))) {
+			if (!$this->appendType or !$this->util->empty(($this->matrix))) {
 				$this->appendType = 'column';
 			}
 			if ($this->appendType != 'column') {
@@ -127,6 +127,9 @@
 		public function setHead()
 		{
 			$args = func_get_args();
+			if (count($args) == 1 and is_array($args[0])) {
+				$args = $args[0];
+			}
 			foreach ($args as $k => $art) {
 				if (!is_string($art) and !is_numeric($art)) {
 					$args[$k] = NULL;
@@ -139,9 +142,9 @@
 		}
 
 		/**
-		 * @param string|integer $x column
-		 * @param string|integer $y row
-		 * @param string|integer $value
+		 * @param string|int $x column
+		 * @param string|int $y row
+		 * @param string|int $value
 		 */
 		public function setCell($x = 0, $y = 0, $value = '')
 		{
@@ -182,6 +185,39 @@
 		}
 
 		/**
+		 * @param string|int $x
+		 * @param string|int $y
+		 * @return bool|mixed
+		 */
+		public function getCell($x = 0, $y = 0)
+		{
+			if (!empty($this->head)) {
+				switch ($this->appendType) {
+					case 'row':
+						if (in_array($x, $this->head)) {
+							$head = array_flip($this->head);
+							$x = $head[$x];
+						}
+						break;
+					case 'column':
+						if (in_array($y, $this->head)) {
+							$head = array_flip($this->head);
+							$y = $head[$y];
+						}
+						break;
+					default:
+						return FALSE;
+				}
+			}
+			$x = (int)$x;
+			$y = (int)$y;
+			if(isset($this->matrix[$y]) AND isset($this->matrix[$y][$x])){
+				return $this->matrix[$y][$x];
+			}
+			return FALSE;
+		}
+
+		/**
 		 *generate csv string
 		 */
 		public function _buildCsv()
@@ -195,7 +231,7 @@
 			}
 			$len = max($len);
 			if ($this->appendType == 'row') {
-				$this->csv .= implode($this->delimiter, $head);
+				$this->csv .= implode($this->str_delimiter, $head);
 			} else {
 				foreach ($this->head as $k => $h) {
 					array_unshift($this->matrix[$k], $h);
@@ -206,8 +242,10 @@
 				for ($i = 0; $i < $len; $i++) {
 					$_row[$i] = (isset($row[$i])) ? $row[$i] : '';
 				}
-				$this->csv .= $this->line_delimiter;
-				$this->csv .= implode($this->delimiter, $_row);
+				if(!$this->util->empty($_row)) {
+					$this->csv .= $this->line_delimiter;
+					$this->csv .= implode($this->str_delimiter, $_row);
+				}
 			}
 		}
 
@@ -221,10 +259,97 @@
 		}
 
 		/**
+		 * @param resource|string $source
+		 * @return $this|false
+		 */
+		public function readCsv($source): string
+		{
+			switch(gettype($source)) {
+				case 'string':
+				if (!$this->util->strTest($source,"\n",[$this->line_delimiter,$this->str_delimiter]) and file_exists($source)) {
+					$source = file_get_contents($source);
+					return $this->_readCsvString($source);
+				}else{
+					return $this->_readCsvString($source);
+				}
+				case'resource':
+					return $this->_readCsvResource($source);
+				default:
+					return false;
+			}
+		}
+
+		/**
+		 * @param resource $source
+		 * @return $this
+		 */
+		final private function _readCsvResource($source){
+			$i = 0;
+			while (($row = fgetcsv($source, 10240, $this->str_delimiter)) !== FALSE) {
+				$i++;
+				if($i === 1){
+					$this->setHead($row);
+					continue;
+				}
+				$this->addRow($row);
+			}
+			return $this;
+		}
+
+		/**
+		 * @param string $source
+		 * @return $this
+		 */
+		final private function _readCsvString($source){
+			$i = 0;
+			$rows = explode($this->line_delimiter,$source);
+			foreach ($rows as $row){
+				$i++;
+				$row = explode($this->str_delimiter,$row);
+				if($i === 1){
+					$this->setHead($row);
+					continue;
+				}
+				$this->addRow($row);
+			}
+			return $this;
+		}
+
+		/**
 		 * @return csvString|string
 		 */
 		final public function __toString()
 		{
 			return $this->toCsv();
+		}
+
+		/**
+		 * @param $name
+		 * @return bool
+		 */
+		final public function __isset($name)
+		{
+			return true;
+		}
+
+		/**
+		 * @param $name
+		 * @return bool
+		 */
+		final public function __get($name)
+		{
+			return false;
+		}
+
+		/**
+		 * @param $name
+		 * @param $value
+		 * @return $this|false|string
+		 */
+		final public function __set($name, $value)
+		{
+			if($name == 'csv'){
+				return $this->readCsv($value);
+			}
 		}
 	}

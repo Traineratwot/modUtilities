@@ -613,7 +613,10 @@
 			$path = MODX_CORE_PATH . 'components/modutilities/classes/' . $name . '.class.php';
 			if (file_exists($path)) {
 				include_once $path;
-				return new $name($this->modx, $this, $Params);
+				if(class_exists($name)) {
+					return new $name($this->modx, $this, $Params);
+				}
+				return FALSE;
 			}
 			return FALSE;
 		}
@@ -623,7 +626,7 @@
 		 * @param $var
 		 * @return bool
 		 */
-		public function notEmpty($var): bool
+		public function empty($var): bool
 		{
 			switch (gettype($var)) {
 				case "array":
@@ -645,7 +648,7 @@
 			}
 			$score = 0;
 			foreach ($var as $k => $v) {
-				$score += $this->notEmpty($v);
+				$score += $this->empty($v);
 			}
 			return !(bool)$score;
 		}
@@ -666,6 +669,35 @@
 				}
 			}
 			return FALSE;
+		}
+
+		/**
+		 * test srt
+		 * @param $str
+		 * @return bool
+		 */
+		public function strTest(): bool
+		{
+			$score = 0;
+			$args = func_get_args();
+			$str = (string) array_shift($args);
+			foreach ($args as $arg){
+				switch (gettype($arg)){
+					case 'string':
+					case 'integer':
+						$score += (int)(strpos($str,(string)$arg) !== FALSE);
+						break;
+					case 'array':
+						$sc_ = 0;
+						foreach ($arg as $a){
+							$sc_ += (int)(strpos($str, (string)$a) !== FALSE);
+						}
+						$score += (int)($sc_ === count($arg));
+						break;
+				}
+			}
+			$this->output[__FUNCTION__] = $score;
+			return $score;
 		}
 	}
 
