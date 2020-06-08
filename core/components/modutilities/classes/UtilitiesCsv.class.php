@@ -17,6 +17,8 @@
 		public $inputCharset;
 		/* @var string output csv string */
 		protected $csv;
+		/* @var string output html string */
+		protected $html;
 		/* @var array */
 		public $matrix;
 		/* @var array */
@@ -211,7 +213,7 @@
 			}
 			$x = (int)$x;
 			$y = (int)$y;
-			if(isset($this->matrix[$y]) AND isset($this->matrix[$y][$x])){
+			if (isset($this->matrix[$y]) and isset($this->matrix[$y][$x])) {
 				return $this->matrix[$y][$x];
 			}
 			return FALSE;
@@ -242,7 +244,7 @@
 				for ($i = 0; $i < $len; $i++) {
 					$_row[$i] = (isset($row[$i])) ? $row[$i] : '';
 				}
-				if(!$this->util->empty($_row)) {
+				if (!$this->util->empty($_row)) {
 					$this->csv .= $this->line_delimiter;
 					$this->csv .= implode($this->str_delimiter, $_row);
 				}
@@ -250,12 +252,68 @@
 		}
 
 		/**
+		 *generate html string
+		 */
+		public function _buildHtml($cls = '')
+		{
+			$this->html = "<table class=\"$cls\">";
+			$len = [];
+			$head = $this->head;
+			$len[] = count($head);
+			foreach ($this->matrix as $row) {
+				$len[] = count($row);
+			}
+			$len = max($len);
+			if ($this->appendType == 'row') {
+				$this->html .= "<tr>";
+				foreach ($head as $h) {
+					$this->html .= "<th>$h</th>";
+				}
+				$this->html .= "</tr>";
+			} else {
+				foreach ($this->head as $k => $h) {
+					array_unshift($this->matrix[$k], $h);
+				}
+			}
+			foreach ($this->matrix as $key => $row) {
+				$_row = [];
+				for ($i = 0; $i < $len; $i++) {
+					$_row[$i] = (isset($row[$i])) ? $row[$i] : '';
+				}
+				if (!$this->util->empty($_row)) {
+					$this->html .= "<tr>";
+					$i = 0;
+					foreach ($row as $r) {
+						$i++;
+						if ($this->head and $this->appendType == 'column' and $i == 1) {
+							$this->html .= "<th>$r</th>";
+						} else {
+							$this->html .= "<td>$r</td>";
+						}
+					}
+					$this->html .= "</tr>";
+				}
+			}
+			$this->html .= '</table>';
+		}
+
+		/**
 		 * @return csvString
 		 */
-		public function toCsv()
+		public function toCsv(): string
 		{
 			$this->_buildCsv();
-			return (string)$this->csv;
+			return $this->csv;
+		}
+
+		/**
+		 * @param string $cls
+		 * @return string
+		 */
+		public function toHtml($cls = ''): string
+		{
+			$this->_buildHtml($cls);
+			return $this->html;
 		}
 
 		/**
@@ -264,18 +322,18 @@
 		 */
 		public function readCsv($source): string
 		{
-			switch(gettype($source)) {
+			switch (gettype($source)) {
 				case 'string':
-				if (!$this->util->strTest($source,"\n",[$this->line_delimiter,$this->str_delimiter]) and file_exists($source)) {
-					$source = file_get_contents($source);
-					return $this->_readCsvString($source);
-				}else{
-					return $this->_readCsvString($source);
-				}
+					if (!$this->util->strTest($source, "\n", [$this->line_delimiter, $this->str_delimiter]) and file_exists($source)) {
+						$source = file_get_contents($source);
+						return $this->_readCsvString($source);
+					} else {
+						return $this->_readCsvString($source);
+					}
 				case'resource':
 					return $this->_readCsvResource($source);
 				default:
-					return false;
+					return FALSE;
 			}
 		}
 
@@ -283,11 +341,12 @@
 		 * @param resource $source
 		 * @return $this
 		 */
-		final private function _readCsvResource($source){
+		final private function _readCsvResource($source)
+		{
 			$i = 0;
 			while (($row = fgetcsv($source, 10240, $this->str_delimiter)) !== FALSE) {
 				$i++;
-				if($i === 1){
+				if ($i === 1) {
 					$this->setHead($row);
 					continue;
 				}
@@ -300,13 +359,14 @@
 		 * @param string $source
 		 * @return $this
 		 */
-		final private function _readCsvString($source){
+		final private function _readCsvString($source)
+		{
 			$i = 0;
-			$rows = explode($this->line_delimiter,$source);
-			foreach ($rows as $row){
+			$rows = explode($this->line_delimiter, $source);
+			foreach ($rows as $row) {
 				$i++;
-				$row = explode($this->str_delimiter,$row);
-				if($i === 1){
+				$row = explode($this->str_delimiter, $row);
+				if ($i === 1) {
 					$this->setHead($row);
 					continue;
 				}
@@ -329,7 +389,7 @@
 		 */
 		final public function __isset($name)
 		{
-			return true;
+			return TRUE;
 		}
 
 		/**
@@ -338,7 +398,7 @@
 		 */
 		final public function __get($name)
 		{
-			return false;
+			return FALSE;
 		}
 
 		/**
@@ -348,7 +408,7 @@
 		 */
 		final public function __set($name, $value)
 		{
-			if($name == 'csv'){
+			if ($name == 'csv') {
 				return $this->readCsv($value);
 			}
 		}

@@ -604,7 +604,7 @@
 		}
 
 		/**
-		 * @param       $name
+		 * @param string $name
 		 * @param array $Params
 		 * @return bool|Class
 		 */
@@ -699,6 +699,7 @@
 			$this->output[__FUNCTION__] = $score;
 			return $score;
 		}
+
 	}
 
 	/**
