@@ -39,7 +39,7 @@
 		 * @param utilities $util
 		 * @param array     $param
 		 */
-		public function __construct(modX &$modx, utilities &$util, $param)
+		public function __construct(modX &$modx, modUtilities &$util, $param)
 		{
 			$this->inputCharset = isset($param['inputCharset']) ? $param['inputCharset'] : 'utf8';
 			$this->modx = $modx;
@@ -48,6 +48,24 @@
 			$this->utf8bom = (isset($param['woBom']) and $param['woBom'] = TRUE) ? NULL : chr(239) . chr(187) . chr(191);
 			$this->str_delimiter = isset($param['delimiter']) ? $param['delimiter'] : ';';
 			$this->line_delimiter = isset($param['line_delimiter']) ? $param['line_delimiter'] : "\n";
+		}
+
+		/**
+		 * @param $param
+		 * @return $this
+		 */
+		public function reset($param)
+		{
+			$this->inputCharset = isset($param['inputCharset']) ? $param['inputCharset'] : $this->inputCharset;
+			$this->utf8bom = (isset($param['woBom']) and $param['woBom'] = TRUE) ? NULL : $this->utf8bom;
+			$this->str_delimiter = isset($param['delimiter']) ? $param['delimiter'] : $this->str_delimiter;
+			$this->line_delimiter = isset($param['line_delimiter']) ? $param['line_delimiter'] : $this->line_delimiter;
+			$this->csv = NULL;
+			$this->html = NULL;
+			$this->matrix = NULL;
+			$this->head = [];
+			$this->appendType = FALSE;
+			return $this;
 		}
 
 		/**

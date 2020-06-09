@@ -67,10 +67,10 @@
 	});
 	}
 	var pathGen = {
-		name: null,
-		category: null,
+		name: NULL,
+		category: NULL,
 		folder: '$folder',
-		new_path: null,
+		new_path: NULL,
 	}
 	
 	function path_change() {

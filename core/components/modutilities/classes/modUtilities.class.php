@@ -49,7 +49,7 @@
 		public function __construct(modX &$modx)
 		{
 			$this->modx = $modx;
-			$this->constant = new constant;
+			$this->constant = new modUtilitiesConstant;
 		}
 
 		/**
@@ -602,11 +602,11 @@
 
 		/**
 		 * get csv class
-		 * @return UtilitiesCsv
+		 * @return modUtilitiesCsv
 		 */
 		final public function csv($Params = [])
 		{
-			return $this->loadClass('utilitiesCsv', $Params);
+			return $this->loadClass('modUtilitiesCsv', $Params);
 		}
 
 		/**
@@ -617,14 +617,19 @@
 		 */
 		final protected function loadClass($name, $Params = [])
 		{
-			$path = MODX_CORE_PATH . 'components/modutilities/classes/' . $name . '.class.php';
+			$path = MODX_CORE_PATH . 'components/modutilities/classes/' . mb_strtolower($name) . '.class.php';
 			if (file_exists($path)) {
-				include_once $path;
+				if (!class_exists($name)) {
+					include_once $path;
+				}
 				if (class_exists($name)) {
 					return new $name($this->modx, $this, $Params);
+				} else {
+					$this->modx->log(MODX::LOG_LEVEL_ERROR, 'can`t load class "' . $name . '" class not found');
+					return FALSE;
 				}
-				return FALSE;
 			}
+			$this->modx->log(MODX::LOG_LEVEL_ERROR, 'can`t load class "' . $name . '" file not found');
 			return FALSE;
 		}
 
@@ -768,7 +773,7 @@
 	 * @property int day
 	 * @property int week
 	 */
-	class constant
+	class modUtilitiesConstant
 	{
 		/**
 		 * @var int
