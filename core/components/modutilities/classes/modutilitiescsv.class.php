@@ -39,7 +39,7 @@
 		 * @param utilities $util
 		 * @param array     $param
 		 */
-		public function __construct(modX &$modx, modUtilities &$util, $param)
+		public function __construct(modX &$modx, modUtilities &$util, $param=[])
 		{
 			$this->inputCharset = isset($param['inputCharset']) ? $param['inputCharset'] : 'utf8';
 			$this->modx = $modx;
@@ -51,10 +51,10 @@
 		}
 
 		/**
-		 * @param $param
+		 * @param array $param
 		 * @return $this
 		 */
-		public function reset($param)
+		public function reset($param=[])
 		{
 			$this->inputCharset = isset($param['inputCharset']) ? $param['inputCharset'] : $this->inputCharset;
 			$this->utf8bom = (isset($param['woBom']) and $param['woBom'] = TRUE) ? NULL : $this->utf8bom;

@@ -49,7 +49,7 @@
 		public function __construct(modX &$modx)
 		{
 			$this->modx = $modx;
-			$this->constant = new modUtilitiesConstant;
+			$this->constant = $this->loadClass('modUtilitiesConstant');
 		}
 
 		/**
@@ -715,37 +715,41 @@
 		/**
 		 * get user avatar
 		 * @param modUser|int $id
-		 * @param string      $alt
+		 * @param bool        $alt
 		 * @param int         $width
 		 * @param int         $height
+		 * @param string      $r
+		 * @param string      $default
 		 * @return string
 		 */
 		public function getUserPhoto($id = 0, $alt = FALSE, $width = 128, $height = 128, $r = 'g', $default = '404'): string
 		{
 			$alt = $alt ?: 'https://placehold.it/' . $width . 'x' . $height . '?text=avatar';
 			if ($id) {
-				if (is_object($id) and get_class($id) == 'modUser') {
+				if (is_object($id) and get_class($id) == 'modUser_mysql') {
 					$user = $id;
 				} else {
 					/** @var modUser $user */
 					$user = $this->modx->getObject('modUser', $id);
 				}
-
-			} elseif ($this->modx->user->isAuthenticated()) {
+			} elseif ((int)($this->modx->user->get('id')) > 0) {
 				$user = $this->modx->user;
 			} else {
 				return $alt;
 			}
-			$img = $user->getProfilePhoto($width, $height);
-			if ($this->modx->getOption('enable_gravatar') and empty($img)) {
-				$Profile = $user->getOne('Profile');
-				$img = $this->getGravatar($Profile->get('email'), $width, $r, $default);
-				if (strpos(get_headers($img, 1)[0], '200') === FALSE) {
-					$img = $alt;
+			if($user) {
+				$img = $user->getProfilePhoto($width, $height);
+				if ($this->modx->getOption('enable_gravatar') and empty($img)) {
+					$Profile = $user->getOne('Profile');
+					$img = $this->getGravatar($Profile->get('email'), $width, $r, $default);
+					if (strpos(get_headers($img, 1)[0], '200') === FALSE) {
+						$img = $alt;
+					}
 				}
 			}
 			return $img ?: $alt;
 		}
+
 		/**
 		 * copy modx function modUser::getGravatar
 		 * @param string $email The email address
@@ -755,52 +759,9 @@
 		 * @return String containing either just a URL or a complete image tag
 		 * @source https://gravatar.com/site/implement/images/php/
 		 */
-		public function getGravatar($size = 128, $r = 'g', $default = '404')
+		public function getGravatar($email,$size = 128, $r = 'g', $default = '404'): string
 		{
-			$gravatarEmail = md5(strtolower(trim($this->Profile->email)));
+			$gravatarEmail = md5(strtolower(trim($email)));
 			return 'https://www.gravatar.com/avatar/' . $gravatarEmail . "?s={$size}&r={$r}&d={$default}";
-		}
-	}
-
-	/**
-	 * @property int kb
-	 * @property int mb
-	 * @property int gb
-	 * @property int tb
-	 * @property int min
-	 * @property int hour
-	 * @property int day
-	 * @property int week
-	 */
-	class modUtilitiesConstant
-	{
-		/**
-		 * @var int
-		 */
-		public $kb = 1024;
-		/**
-		 * @var int
-		 */
-		public $min = 60;
-
-		/**
-		 * constant constructor.
-		 */
-		public function __construct()
-		{
-			$this->mb = $this->kb * 1024;
-			$this->gb = $this->mb * 1024;
-			$this->tb = $this->gb * 1024;
-			$this->hour = $this->min * 60;
-			$this->day = $this->hour * 24;
-			$this->week = $this->day * 7;
-		}
-
-		/**
-		 * @return string
-		 */
-		public function __toString()
-		{
-			return (string)json_encode($this, 256);
 		}
 	}
