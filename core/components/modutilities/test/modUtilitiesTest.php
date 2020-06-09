@@ -34,7 +34,7 @@
 		 */
 		public $modx;
 
-		public function testExistUtil()
+		public function test_ExistUtil()
 		{
 			global $modx;
 			$this->modx = &$modx;
@@ -44,7 +44,7 @@
 				$this->fail();
 			}
 		}
-		public function testCsv(){
+		public function test_Csv(){
 			global $modx;
 			$this->modx = &$modx;
 			/** @var modUtilitiesCsv $csv */
@@ -67,5 +67,11 @@
 			;55;33';
 			$this->assertEquals($this->modx->util->rawText($result), $this->modx->util->rawText($csv->toCsv()),'addRow don`t work');
 			echo $csv->toCsv();
+		}
+
+		function test_getUserPhoto(){
+			global $modx;
+			$this->modx = &$modx;
+			$this->assertTrue(!empty($this->modx->util->getUserPhoto()));
 		}
 	}
