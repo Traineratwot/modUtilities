@@ -736,17 +736,16 @@
 			} else {
 				return $alt;
 			}
-			if ($user->Profile->photo) {
-				$img = $user->getProfilePhoto($width, $height);
-			} elseif ($this->xpdo->getOption('enable_gravatar')) {
-				$img = $this->getGravatar($width, $r, $default);
+			$img = $user->getProfilePhoto($width, $height);
+			if ($this->modx->getOption('enable_gravatar') and empty($img)) {
+				$Profile = $user->getOne('Profile');
+				$img = $this->getGravatar($Profile->get('email'), $width, $r, $default);
 				if (strpos(get_headers($img, 1)[0], '200') === FALSE) {
 					$img = $alt;
 				}
 			}
-			return $img;
+			return $img ?: $alt;
 		}
-
 		/**
 		 * copy modx function modUser::getGravatar
 		 * @param string $email The email address
