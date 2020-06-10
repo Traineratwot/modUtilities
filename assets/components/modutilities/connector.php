@@ -11,7 +11,7 @@
 	require_once MODX_CONNECTORS_PATH . 'index.php';
 
 	// Указываем путь к папке с процессорами и заставляем MODX работать
-	$modx->addPackage('utilities', MODX_CORE_PATH . 'components/utilities/model/');
+	$modx->addPackage('modUtilities', MODX_CORE_PATH . 'components/modutilities/model/');
 	$modx->request->handleRequest([
 		'processors_path' => MODX_CORE_PATH . 'components/modutilities/processors/',
 		'location' => '',
