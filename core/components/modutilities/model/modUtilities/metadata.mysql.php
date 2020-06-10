@@ -3,10 +3,11 @@
 $xpdo_meta_map = array (
   'xPDOSimpleObject' => 
   array (
-    0 => 'Rest',
+    0 => 'Utilrest',
+    1 => 'Utilrestcategory',
   ),
   'xPDOObject' => 
   array (
-    0 => 'Reststats',
+    0 => 'Utilreststats',
   ),
 );
