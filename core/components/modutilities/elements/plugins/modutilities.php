@@ -2,7 +2,7 @@
 	if (!class_exists('modUtilities')) {
 		include_once MODX_CORE_PATH . 'components/modutilities/classes/modUtilities.class.php';
 	} else {
-		$modx->log(MODX::LOG_LEVEL_ERROR, 'can`t load class "modUtilities" already declared');
+		$modx->log(MODX::LOG_LEVEL_ERROR, 'can`t load class "modUtilities" already declared!');
 	}
 	switch ($modx->event->name) {
 		case 'OnMODXInit':

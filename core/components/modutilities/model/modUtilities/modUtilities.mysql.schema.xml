@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<model package="modUtilities" baseClass="xPDOObject" platform="mysql" defaultEngine="MyISAM" version="1.1">
+	<object class="Rest" table="rest" extends="xPDOSimpleObject">
+		<field key="permision" dbtype="json" phptype="string" null="true" />
+		<field key="url" dbtype="varchar" precision="50" phptype="string" null="false" index="unique" />
+		<field key="snippet" dbtype="longtext" phptype="string" null="false" />
+		<field key="param" dbtype="json" phptype="string" null="true" />
+
+		<index alias="url" name="url" primary="false" unique="true" type="BTREE" >
+			<column key="url" length="" collation="A" null="false" />
+		</index>
+	</object>
+	<object class="Reststats" table="reststats" extends="xPDOObject">
+		<field key="id" dbtype="int" phptype="integer" null="true" index="index" />
+		<field key="stats" dbtype="json" phptype="string" null="true" />
+		<field key="log" dbtype="json" phptype="string" null="true" />
+
+		<index alias="FK__modutilitiesrest" name="FK__modutilitiesrest" primary="false" unique="false" type="BTREE" >
+			<column key="id" length="" collation="A" null="true" />
+		</index>
+	</object>
+</model>
