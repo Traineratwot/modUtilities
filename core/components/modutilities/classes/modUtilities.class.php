@@ -42,6 +42,10 @@
 			'Э' => 'E', 'Ю' => 'Yu', 'Я' => 'Ya',
 		];
 
+		const FirstLetter = 1;
+		const EveryWord = 2;
+		const AfterDot = 3;
+
 		/**
 		 * utilities constructor.
 		 * @param modX $modx
@@ -140,10 +144,28 @@
 		 * @param string $enc = 'UTF-8'
 		 * @return string
 		 */
-		public function mb_ucfirst($string = '', $enc = 'UTF-8')
+		public function mb_ucfirst($string = '', $mode = modUtilities::FirstLetter, $enc = 'UTF-8'): ?string
 		{
-			return mb_strtoupper(mb_substr($string, 0, 1, $enc), $enc) .
-				mb_substr($string, 1, mb_strlen($string, $enc), $enc);
+			switch ($mode) {
+				case 3:
+					$words = preg_split('#[\.\?\!]#', $string, 0, PREG_SPLIT_NO_EMPTY);
+					foreach ($words as $word) {
+						$wd = $this->mb_ucfirst($word, 1, $enc);
+						$string = str_ireplace($word, $wd, $string);
+					}
+					return $string;
+				case 2:
+					$words = preg_split('#[\s]#', $string, 0, PREG_SPLIT_NO_EMPTY);
+					foreach ($words as $word) {
+						$string = str_ireplace($word, $this->mb_ucfirst($word, 1, $enc), $string);
+					}
+					return $string;
+				case 1:
+				default:
+					$count = (mb_strlen($string,$enc) - mb_strlen(ltrim($string,$enc))) + 1;
+					return mb_strtoupper(mb_substr($string, 0, $count, $enc), $enc) .
+						mb_substr($string, $count, mb_strlen($string, $enc), $enc);
+			}
 		}
 
 		/**
@@ -737,7 +759,7 @@
 			} else {
 				return $alt;
 			}
-			if($user) {
+			if ($user) {
 				$img = $user->getProfilePhoto($width, $height);
 				if ($this->modx->getOption('enable_gravatar') and empty($img)) {
 					$Profile = $user->getOne('Profile');
@@ -759,7 +781,7 @@
 		 * @return String containing either just a URL or a complete image tag
 		 * @source https://gravatar.com/site/implement/images/php/
 		 */
-		public function getGravatar($email,$size = 128, $r = 'g', $default = '404'): string
+		public function getGravatar($email, $size = 128, $r = 'g', $default = '404'): string
 		{
 			$gravatarEmail = md5(strtolower(trim($email)));
 			return 'https://www.gravatar.com/avatar/' . $gravatarEmail . "?s={$size}&r={$r}&d={$default}";

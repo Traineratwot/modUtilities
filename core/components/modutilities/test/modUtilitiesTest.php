@@ -76,4 +76,11 @@
 			$t = $modx->util->likeString($user->getPhoto(),$modx->util->getUserPhoto($user));
 			$this->assertTrue($t['score'] > 80 );
 		}
+
+		public function  test__mb_ucfirst(){
+			global $modx;
+			$this->assertEquals('Привет',$modx->util->mb_ucfirst('привет'));
+			$this->assertEquals('Я Есть, Грут',$modx->util->mb_ucfirst('я есть, грут',modUtilities::EveryWord));
+			$this->assertEquals('Привет. Я есть, грут? Да! Да!',$modx->util->mb_ucfirst('привет. я есть, грут? да! да!',modUtilities::AfterDot));
+		}
 	}

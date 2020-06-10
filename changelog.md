@@ -1,5 +1,18 @@
 # Changelog
 
+
+## [2.0.4] - 2020-06-10
+
+### Added
+
+- Add phpUnit test mb_ucfirst
+
+### Changed
+
+- mb_ucfirst 
+	add mode FirstLetter,EveryWord,AfterDot
+
+
 ## [2.0.3] - 2020-06-09
 
 ### Added
