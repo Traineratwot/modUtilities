@@ -30,7 +30,10 @@
 						$result = FALSE;
 					}
 					if ($result === FALSE) {
-						$this->modx->query($create);
+						$create = explode(';',$create);
+						foreach ($create as $q){
+							$this->modx->query($q);
+						}
 					}
 				}
 				rename($path . 'db.php', $path . 'db_.php');
