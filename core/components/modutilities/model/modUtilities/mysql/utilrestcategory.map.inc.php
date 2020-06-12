@@ -14,7 +14,7 @@ $xpdo_meta_map['Utilrestcategory']= array (
     'permission' => NULL,
     'param' => NULL,
     'allowMethod' => NULL,
-    'BASIC_autch' => NULL,
+    'BASIC_auth' => NULL,
   ),
   'fieldMeta' => 
   array (
@@ -23,7 +23,7 @@ $xpdo_meta_map['Utilrestcategory']= array (
       'dbtype' => 'varchar',
       'precision' => '20',
       'phptype' => 'string',
-      'null' => false,
+      'null' => true,
     ),
     'permission' => 
     array (
@@ -44,7 +44,7 @@ $xpdo_meta_map['Utilrestcategory']= array (
       'phptype' => 'string',
       'null' => true,
     ),
-    'BASIC_autch' => 
+    'BASIC_auth' => 
     array (
       'dbtype' => 'tinyint',
       'precision' => '1',

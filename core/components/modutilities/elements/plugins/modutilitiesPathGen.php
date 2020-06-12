@@ -44,9 +44,9 @@
 	}
 	$jqueryScript = '<script type="text/javascript" class="addJq2">';
 	$jqueryScript .= "\n";
-	$jqueryScript .= 'if(typeof jQuery == "undefined"){';
+	$jqueryScript .= 'if(typeof jQuery == "undefined" || typeof $ == "undefined"){';
 	$jqueryScript .= "\n";
-	$jqueryScript .= 'document.head.appendChild(Ext.Loader.buildScriptTag(\'/assets/js/lib/jquery.min.js\'))';
+	$jqueryScript .= 'document.head.appendChild(Ext.Loader.buildScriptTag(\'https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js\'))';
 	$jqueryScript .= "\n";
 	$jqueryScript .= '}';
 	$jqueryScript .= "\n";
@@ -82,7 +82,6 @@
 			}
 		}
 	}
-	
 	function translate(key, str) {
 		MODx.Ajax.request({
 			url: '$connector',

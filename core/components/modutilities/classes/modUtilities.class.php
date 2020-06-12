@@ -110,7 +110,7 @@
 				$obj = [];
 				$obj['name'] = get_class($v);
 				$obj['methods'] = get_class_methods($v);
-				$class_vars = array_keys(get_class_vars($v) ?: []);
+				$class_vars = array_keys(get_class_vars($obj['name']) ?: []);
 				$object_vars = array_keys(get_object_vars($v) ?: []);
 				$obj['vars'] = array_unique(array_merge($class_vars, $object_vars));
 				return $obj;
@@ -162,7 +162,7 @@
 					return $string;
 				case 1:
 				default:
-					$count = (mb_strlen($string,$enc) - mb_strlen(ltrim($string,$enc))) + 1;
+					$count = (mb_strlen($string, $enc) - mb_strlen(ltrim($string, $enc))) + 1;
 					return mb_strtoupper(mb_substr($string, 0, $count, $enc), $enc) .
 						mb_substr($string, $count, mb_strlen($string, $enc), $enc);
 			}
@@ -341,7 +341,7 @@
 
 		/**
 		 * member
-		 * @param modUser|integer|NULL $id
+		 * @param modUser|integer|string|NULL $id
 		 * @param integer|string|NULL  $group
 		 * @param integer|string|NULL  $role
 		 * @return array|bool
@@ -350,7 +350,7 @@
 		{
 			$userGroup = [];
 			if (!$id) {
-				if ($this->modx->user->isAuthenticated()) {
+				if ((int)$this->modx->user->get('id') > 0) {
 					$user = $this->modx->user;
 				} else {
 					return FALSE;
@@ -360,7 +360,10 @@
 					$user = $id;
 				} else {
 					/** @var modUser $user */
-					$user = $this->modx->getObject('modUser', $id);
+					$user = $this->modx->getObject('modUser', [
+						'id:LIKE' => $id,
+						'OR:username:LIKE' => $id,
+					]);
 				}
 			}
 			if ($group) {
@@ -632,6 +635,15 @@
 		}
 
 		/**
+		 * @param array $Params
+		 * @return bool|modUtilitiesRest
+		 */
+		final public function REST($Params = [])
+		{
+			return $this->loadClass('modUtilitiesRest', $Params);
+		}
+
+		/**
 		 * load class
 		 * @param string $name
 		 * @param array  $Params
@@ -736,7 +748,7 @@
 
 		/**
 		 * get user avatar
-		 * @param modUser|int $id
+		 * @param modUser|string|int $id
 		 * @param bool        $alt
 		 * @param int         $width
 		 * @param int         $height
@@ -752,7 +764,10 @@
 					$user = $id;
 				} else {
 					/** @var modUser $user */
-					$user = $this->modx->getObject('modUser', $id);
+					$user = $this->modx->getObject('modUser', [
+						'id:LIKE' => $id,
+						'OR:username:LIKE' => $id,
+					]);
 				}
 			} elseif ((int)($this->modx->user->get('id')) > 0) {
 				$user = $this->modx->user;
@@ -785,5 +800,27 @@
 		{
 			$gravatarEmail = md5(strtolower(trim($email)));
 			return 'https://www.gravatar.com/avatar/' . $gravatarEmail . "?s={$size}&r={$r}&d={$default}";
+		}
+
+		/**
+		 * return database set column option
+		 * @param object|string $table
+		 * @param string $column
+		 * @return false|string[]
+		 */
+		public function getSetOption($table='', $column='')
+		{
+			if(is_object($table)){
+				$table = $table->_table;
+			}
+			if(empty($table) or empty($column)){
+				return false;
+			}
+			if (!($ret = $this->modx->query("SHOW COLUMNS FROM $table LIKE '$column'"))) {
+				return false;
+			}
+			$line = $ret->fetch(PDO::FETCH_ASSOC);
+			$set = rtrim(ltrim(preg_replace('@^[setnum]+@','',$line['Type']),"('"),"')");
+			return preg_split("/','/", $set);
 		}
 	}

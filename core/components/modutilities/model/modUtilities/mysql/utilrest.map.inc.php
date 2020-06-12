@@ -14,8 +14,8 @@ $xpdo_meta_map['Utilrest']= array (
     'url' => NULL,
     'snippet' => NULL,
     'param' => NULL,
-    'allowMethod' => 'POST',
-    'BASIC_autch' => 0,
+    'allowMethod' => NULL,
+    'BASIC_auth' => 0,
     'category' => 1,
   ),
   'fieldMeta' => 
@@ -31,14 +31,14 @@ $xpdo_meta_map['Utilrest']= array (
       'dbtype' => 'varchar',
       'precision' => '50',
       'phptype' => 'string',
-      'null' => false,
+      'null' => true,
       'index' => 'unique',
     ),
     'snippet' => 
     array (
       'dbtype' => 'longtext',
       'phptype' => 'string',
-      'null' => false,
+      'null' => true,
     ),
     'param' => 
     array (
@@ -51,22 +51,21 @@ $xpdo_meta_map['Utilrest']= array (
       'dbtype' => 'set',
       'precision' => '\'GET\',\'POST\',\'PUT\',\'DELETE\',\'PATH\',\'CONNECT\',\'HEAD\',\'OPTIONS\',\'TRACE\'',
       'phptype' => 'string',
-      'null' => false,
-      'default' => 'POST',
+      'null' => true,
     ),
-    'BASIC_autch' => 
+    'BASIC_auth' => 
     array (
       'dbtype' => 'tinyint',
       'precision' => '1',
       'phptype' => 'integer',
-      'null' => false,
+      'null' => true,
       'default' => 0,
     ),
     'category' => 
     array (
       'dbtype' => 'int',
       'phptype' => 'integer',
-      'null' => false,
+      'null' => true,
       'default' => 1,
       'index' => 'index',
     ),
@@ -85,7 +84,7 @@ $xpdo_meta_map['Utilrest']= array (
         array (
           'length' => '',
           'collation' => 'A',
-          'null' => false,
+          'null' => true,
         ),
       ),
     ),
@@ -101,7 +100,7 @@ $xpdo_meta_map['Utilrest']= array (
         array (
           'length' => '',
           'collation' => 'A',
-          'null' => false,
+          'null' => true,
         ),
       ),
     ),
