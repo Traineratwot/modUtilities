@@ -39,7 +39,7 @@
 		 * @param utilities $util
 		 * @param array     $param
 		 */
-		public function __construct(modX &$modx, modUtilities &$util, $param=[])
+		public function __construct(modX &$modx, modUtilities &$util, $param = [])
 		{
 			$this->inputCharset = isset($param['inputCharset']) ? $param['inputCharset'] : 'utf8';
 			$this->modx = $modx;
@@ -54,7 +54,7 @@
 		 * @param array $param
 		 * @return $this
 		 */
-		public function reset($param=[])
+		public function reset($param = [])
 		{
 			$this->inputCharset = isset($param['inputCharset']) ? $param['inputCharset'] : $this->inputCharset;
 			$this->utf8bom = (isset($param['woBom']) and $param['woBom'] = TRUE) ? NULL : $this->utf8bom;
@@ -250,11 +250,13 @@
 				$len[] = count($row);
 			}
 			$len = max($len);
-			if ($this->appendType == 'row') {
-				$this->csv .= implode($this->str_delimiter, $head);
-			} else {
-				foreach ($this->head as $k => $h) {
-					array_unshift($this->matrix[$k], $h);
+			if (!empty($head)) {
+				if ($this->appendType == 'row') {
+					$this->csv .= implode($this->str_delimiter, $head);
+				} else {
+					foreach ($this->head as $k => $h) {
+						array_unshift($this->matrix[$k], $h);
+					}
 				}
 			}
 			foreach ($this->matrix as $key => $row) {
@@ -282,15 +284,17 @@
 				$len[] = count($row);
 			}
 			$len = max($len);
-			if ($this->appendType == 'row') {
-				$this->html .= "<tr>";
-				foreach ($head as $h) {
-					$this->html .= "<th>$h</th>";
-				}
-				$this->html .= "</tr>";
-			} else {
-				foreach ($this->head as $k => $h) {
-					array_unshift($this->matrix[$k], $h);
+			if (!empty($head)) {
+				if ($this->appendType == 'row') {
+					$this->html .= "<tr>";
+					foreach ($head as $h) {
+						$this->html .= "<th>$h</th>";
+					}
+					$this->html .= "</tr>";
+				} else {
+					foreach ($this->head as $k => $h) {
+						array_unshift($this->matrix[$k], $h);
+					}
 				}
 			}
 			foreach ($this->matrix as $key => $row) {
@@ -320,7 +324,7 @@
 		 * @param string $delimiter
 		 * @param string $item li|ol
 		 */
-		public function _buildHtmlList($cls = '', $delimiter='', $item = 'li')
+		public function _buildHtmlList($cls = '', $delimiter = '', $item = 'li')
 		{
 			$this->html = "<ul class=\"$cls\">";
 			$len = [];
@@ -330,15 +334,17 @@
 				$len[] = count($row);
 			}
 			$len = max($len);
-			if ($this->appendType == 'row') {
-				$this->html .= "<$item>";
-				foreach ($head as $h) {
-					$this->html .= "<strong>$h</strong>".$delimiter;
-				}
-				$this->html .= "</$item>";
-			} else {
-				foreach ($this->head as $k => $h) {
-					array_unshift($this->matrix[$k], $h);
+			if (!empty($head)) {
+				if ($this->appendType == 'row') {
+					$this->html .= "<$item>";
+					foreach ($head as $h) {
+						$this->html .= "<strong>$h</strong>" . $delimiter;
+					}
+					$this->html .= "</$item>";
+				} else {
+					foreach ($this->head as $k => $h) {
+						array_unshift($this->matrix[$k], $h);
+					}
 				}
 			}
 			foreach ($this->matrix as $key => $row) {
@@ -352,9 +358,9 @@
 					foreach ($row as $r) {
 						$i++;
 						if ($this->head and $this->appendType == 'column' and $i == 1) {
-							$this->html .= "<strong>$r</strong>".$delimiter;
+							$this->html .= "<strong>$r</strong>" . $delimiter;
 						} else {
-							$this->html .= "<span>$r</span>".$delimiter;
+							$this->html .= "<span>$r</span>" . $delimiter;
 						}
 					}
 					$this->html .= "</$item>";
@@ -381,6 +387,7 @@
 			$this->_buildHtmlTable($cls);
 			return $this->html;
 		}
+
 		/**
 		 * @param string $cls
 		 * @return string
@@ -390,16 +397,18 @@
 			$this->_buildHtmlTable($cls);
 			return $this->html;
 		}
+
 		/**
 		 * @param string $cls
 		 * @param string $delimiter
 		 * @param string $item UL, OL, LI и DL
 		 */
-		public function toHtmlList($cls = '',$delimiter='',$item='li'): string
+		public function toHtmlList($cls = '', $delimiter = '', $item = 'li'): string
 		{
-			$this->_buildHtmlList($cls,$delimiter,$item);
+			$this->_buildHtmlList($cls, $delimiter, $item);
 			return $this->html;
 		}
+
 		/**
 		 * @param resource|string $source
 		 * @return $this|false
