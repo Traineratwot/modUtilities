@@ -361,9 +361,9 @@ $modx->util->output['function'];   //сюда попадает побочный 
         },
         "allow": {
             "userIds": [
-                "administrator":0
+                1
             ],
-            "usergroup": "1"
+            "usergroup": {"administrator":0}
         }
     }
     ```
