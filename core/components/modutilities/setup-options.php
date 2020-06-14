@@ -47,7 +47,8 @@
 	switch ($options[xPDOTransport::PACKAGE_ACTION]) {
 		case xPDOTransport::ACTION_UPGRADE:
 		case xPDOTransport::ACTION_INSTALL:
-			$modx->addPackage('modUtilities',MODX_CORE_PATH.'components/modutilities/model/','modutil_');
+		$modx->addPackage('modUtilities',MODX_CORE_PATH.'components/modutilities/model/','modutil_');
+			$manager = $modx->getManager();
 			$manager->createObjectContainer('utilrestcategory');
 			$manager->createObjectContainer('utilreststats');
 			$manager->createObjectContainer('Utilrest');
