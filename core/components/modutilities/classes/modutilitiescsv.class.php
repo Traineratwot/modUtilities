@@ -270,9 +270,9 @@
 		}
 
 		/**
-		 *generate html string
+		 *generate html table string
 		 */
-		public function _buildHtml($cls = '')
+		public function _buildHtmlTable($cls = '')
 		{
 			$this->html = "<table class=\"$cls\">";
 			$len = [];
@@ -316,6 +316,54 @@
 		}
 
 		/**
+		 * @param string $cls
+		 * @param string $delimiter
+		 * @param string $item li|ol
+		 */
+		public function _buildHtmlList($cls = '', $delimiter='', $item = 'li')
+		{
+			$this->html = "<ul class=\"$cls\">";
+			$len = [];
+			$head = $this->head;
+			$len[] = count($head);
+			foreach ($this->matrix as $row) {
+				$len[] = count($row);
+			}
+			$len = max($len);
+			if ($this->appendType == 'row') {
+				$this->html .= "<$item>";
+				foreach ($head as $h) {
+					$this->html .= "<strong>$h</strong>".$delimiter;
+				}
+				$this->html .= "</$item>";
+			} else {
+				foreach ($this->head as $k => $h) {
+					array_unshift($this->matrix[$k], $h);
+				}
+			}
+			foreach ($this->matrix as $key => $row) {
+				$_row = [];
+				for ($i = 0; $i < $len; $i++) {
+					$_row[$i] = (isset($row[$i])) ? $row[$i] : '';
+				}
+				if (!$this->util->empty($_row)) {
+					$this->html .= "<$item>";
+					$i = 0;
+					foreach ($row as $r) {
+						$i++;
+						if ($this->head and $this->appendType == 'column' and $i == 1) {
+							$this->html .= "<strong>$r</strong>".$delimiter;
+						} else {
+							$this->html .= "<span>$r</span>".$delimiter;
+						}
+					}
+					$this->html .= "</$item>";
+				}
+			}
+			$this->html .= '</ul>';
+		}
+
+		/**
 		 * @return csvString
 		 */
 		public function toCsv(): string
@@ -330,10 +378,28 @@
 		 */
 		public function toHtml($cls = ''): string
 		{
-			$this->_buildHtml($cls);
+			$this->_buildHtmlTable($cls);
 			return $this->html;
 		}
-
+		/**
+		 * @param string $cls
+		 * @return string
+		 */
+		public function toHtmlTable($cls = ''): string
+		{
+			$this->_buildHtmlTable($cls);
+			return $this->html;
+		}
+		/**
+		 * @param string $cls
+		 * @param string $delimiter
+		 * @param string $item UL, OL, LI и DL
+		 */
+		public function toHtmlList($cls = '',$delimiter='',$item='li'): string
+		{
+			$this->_buildHtmlList($cls,$delimiter,$item);
+			return $this->html;
+		}
 		/**
 		 * @param resource|string $source
 		 * @return $this|false
