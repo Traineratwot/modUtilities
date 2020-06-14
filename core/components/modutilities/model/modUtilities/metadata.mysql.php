@@ -5,9 +5,6 @@ $xpdo_meta_map = array (
   array (
     0 => 'Utilrest',
     1 => 'Utilrestcategory',
-  ),
-  'xPDOObject' => 
-  array (
-    0 => 'Utilreststats',
+    2 => 'Utilreststats',
   ),
 );

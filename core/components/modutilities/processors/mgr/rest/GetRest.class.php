@@ -8,7 +8,7 @@
 	{
 		public function process()
 		{
-			$this->dbTest();
+
 			$limit = (int)$this->getProperty('limit');
 			$start = (int)$this->getProperty('start');
 			$sort = (string)$this->getProperty('sort');
@@ -35,23 +35,6 @@
 			));
 		}
 
-		public function dbTest(): void
-		{
-			$path = dirname(__DIR__, 3) .DIRECTORY_SEPARATOR.'model'.DIRECTORY_SEPARATOR;
-			if (file_exists($path.'db.php')) {
-				$db = include $path.'db.php';
-				foreach ($db as $table => $create) {
-					try {
-						$result = $this->modx->query("SELECT 1 FROM $table LIMIT 1"); // формальный запрос
-					} catch (Exception $e) {
-						$result = FALSE;
-					}
-					if($result === FALSE) {
-						$this->modx->query($create);
-					}
-				}
-				rename($path.'db.php',$path.'db_.php');
-			}
-		}
+
 	}
 	return "modUtilitiesGetRestProcessor";

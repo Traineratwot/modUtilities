@@ -25,23 +25,8 @@
 			parent::__construct($modx, $properties);
 		}
 
-		final public function _getProps()
-		{
-			$this->input['GET'] = $_GET;
-			$this->input['POST'] = $_POST;
-			$put = file_put_contents('php://input');
-			try {
-				$put = json_decode($put, TRUE, 512, JSON_THROW_ON_ERROR);
-			} catch (JsonException $e) {
-			} finally {
-				$this->input['PUT'] = $put;
-			}
-		}
-
-
 		final public function run()
 		{
-			$this->_getProps();
 			$initialized = $this->initialize();
 			foreach ($this->headers as $key => $value) {
 				header("$key: $value");

@@ -1,5 +1,14 @@
 # Changelog
 
+## [2.1.5] - 2020-06-14
+
+### Added
+
+- REST api controller
+
+### Fixed
+
+- bug Fixes
 
 ## [2.0.4] - 2020-06-10
 

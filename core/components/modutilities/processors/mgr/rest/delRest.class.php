@@ -12,10 +12,7 @@
 		public $primaryKeyField = 'id';
 		public function beforeSet()
 		{
-			$this->dbTest();
-
 			return !$this->hasErrors();
-
 		}
 
 

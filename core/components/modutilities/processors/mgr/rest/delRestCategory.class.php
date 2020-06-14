@@ -13,7 +13,7 @@
 
 		public function beforeSet()
 		{
-			$this->dbTest();
+
 			if ($this->modx->getCount('Utilrest', ['category' => $this->getProperty('id')])) {
 				$this->addFieldError('id', 'this category not empty');
 			}

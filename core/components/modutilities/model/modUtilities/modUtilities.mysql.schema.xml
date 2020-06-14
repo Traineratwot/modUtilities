@@ -23,17 +23,15 @@
 		<field key="allowMethod" dbtype="set" precision="'GET','POST','PUT','DELETE','PATH','CONNECT','HEAD','OPTIONS','TRACE'" phptype="string" null="true" />
 		<field key="BASIC_auth" dbtype="tinyint" precision="1" phptype="integer" null="true" />
 	</object>
-	<object class="Utilreststats" table="utilreststats" extends="xPDOObject">
-		<field key="in" dbtype="int" phptype="integer" null="false" index="pk"  generated="native" />
+	<object class="Utilreststats" table="utilreststats" extends="xPDOSimpleObject">
 		<field key="rest_id" dbtype="int" phptype="integer" null="false" default="0" index="index" />
-		<field key="input" dbtype="json" phptype="string" null="true" />
+		<field key="input" dbtype="longtext" phptype="string" null="true" />
 		<field key="output" dbtype="longtext" phptype="string" null="true" />
-		<field key="user" dbtype="json" phptype="string" null="true" />
+		<field key="user" dbtype="longtext" phptype="string" null="true" />
+		<field key="time" dbtype="float" precision="12,6" attributes="unsigned" phptype="float" null="true" />
+		<field key="datetime" dbtype="datetime" phptype="datetime" null="true" default="CURRENT_TIMESTAMP"  extra="default_generated" />
 
-		<index alias="PRIMARY" name="PRIMARY" primary="true" unique="true" type="BTREE" >
-			<column key="in" length="" collation="A" null="false" />
-		</index>
-		<index alias="FK__modutilitiesrest" name="FK__modutilitiesrest" primary="false" unique="false" type="BTREE" >
+		<index alias="FK_modutil_utilreststats_modutil_utilrest" name="FK_modutil_utilreststats_modutil_utilrest" primary="false" unique="false" type="BTREE" >
 			<column key="rest_id" length="" collation="A" null="false" />
 		</index>
 	</object>

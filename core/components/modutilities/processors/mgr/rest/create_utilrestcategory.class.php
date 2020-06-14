@@ -10,7 +10,7 @@
 
 		public function beforeSet()
 		{
-			$this->dbTest();
+
 			$required = ['name'];
 			$unique = ['name'];
 			foreach ($required as $tmp) {

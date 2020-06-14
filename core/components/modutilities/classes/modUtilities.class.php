@@ -369,6 +369,7 @@
 			if ($group) {
 				$isMember = FALSE;
 				$groups = $this->member($id);
+				$this->output[__FUNCTION__] = $groups;
 				if ($groups) {
 					if ($role) {
 						foreach ($groups as $g) {
@@ -393,14 +394,16 @@
 				}
 				return $isMember;
 			}
+			$prefix = $this->modx->getOption('table_prefix');
 			$q = $this->modx->prepare("
-					SELECT `group`.`id` 	as `groupId`, 
-					       `group`.`name` 	as `groupName`, 
-					       `role`.`id` 		as `roleId`, 
-					       `role`.`name` 	as `roleName` FROM 
-					                 `{$this->modx->getOption('table_prefix')}member_groups` 		as `member` 
-					      INNER JOIN `{$this->modx->getOption('table_prefix')}user_group_roles` 	as `role` 	on `role`.`id`  = `member`.`role` 
-					      INNER JOIN `{$this->modx->getOption('table_prefix')}membergroup_names` 	as `group` 	on `group`.`id` = `member`.`user_group` 
+					SELECT `group`.`id` 		as `groupId`, 
+					       `group`.`name` 		as `groupName`, 
+					       `role`.`id` 			as `roleId`, 
+					       `role`.`name` 		as `roleName` , 
+					       `role`.`authority` 	as `roleAuthority` FROM 
+					                 `{$prefix}member_groups` 		as `member` 
+					      INNER JOIN `{$prefix}user_group_roles` 	as `role` 	on `role`.`id`  = `member`.`role` 
+					      INNER JOIN `{$prefix}membergroup_names` 	as `group` 	on `group`.`id` = `member`.`user_group` 
 						  WHERE `member`.`member` = :userId
 					");
 			if ($q->execute(['userId' => $user->get('id')]) and $q->rowCount() > 0) {

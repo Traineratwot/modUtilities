@@ -11,7 +11,7 @@
 
 		public function beforeSet()
 		{
-			$this->dbTest();
+
 			$unique = ['url'];
 
 			foreach ($unique as $tmp) {
@@ -27,7 +27,18 @@
 			return !$this->hasErrors();
 
 		}
+		public function beforeSave()
+		{
 
+			foreach ($this->object->_fields as $k => $v) {
+				if ($this->object->isDirty($k)) {
+					return TRUE;
+				}
+			}
+			$this->addFieldError($k,'changes not found )');
+
+			return FALSE;
+		}
 
 	}
 	return 'modUtilitiesUpdateRestProcessor';

@@ -8,7 +8,7 @@
 	{
 		public function process()
 		{
-			$this->dbTest();
+
 			$array = [];
 			$array_ = $this->modx->util->getSetOption('modutil_utilrest', 'allowMethod');
 			foreach ($array_ as $m){

@@ -83,4 +83,11 @@
 			$this->assertEquals('Я Есть, Грут',$modx->util->mb_ucfirst('я есть, грут',modUtilities::EveryWord));
 			$this->assertEquals('Привет. Я есть, грут? Да! Да!',$modx->util->mb_ucfirst('привет. я есть, грут? да! да!',modUtilities::AfterDot));
 		}
+
+		public function test__member(){
+			global $modx;
+			$answer = "[{\"groupId\":\"1\",\"groupName\":\"Administrator\",\"roleId\":\"2\",\"roleName\":\"Super User\",\"roleAuthority\":\"0\"}]";
+			$r = json_encode($modx->util->member(1));
+			$this->assertEquals($answer,json_encode($modx->util->member(1)));
+		}
 	}

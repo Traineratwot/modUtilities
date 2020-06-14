@@ -43,6 +43,12 @@ modUtil = new modUtil()
 var defaultRenderer = function(val) {
 	return val || _('ext_emptygroup')
 }
+var JSONRenderer = function(val) {
+	if(val){
+		return cope.Highlighter.highlight(JSON.parse(val), {indent: 2, useTabs: true})
+	}
+	return defaultRenderer(val);
+}
 //основной блок
 modUtil.panel.Home = function(config) {
 	config = config || {}
@@ -53,6 +59,8 @@ modUtil.panel.Home = function(config) {
 		},
 			{
 				xtype: 'modx-tabs',
+				deferredRender: false,
+				border: true,
 				items: [
 					{
 						title: 'Rest',
@@ -106,13 +114,14 @@ modUtil.panel.Home = function(config) {
 									width: 670,
 									editor: {xtype: 'textarea'},
 									header: _('parameters'),
-									renderer: defaultRenderer
+									renderer: JSONRenderer,
+									editor: {xtype: 'textarea'}
 								},
 								{
 									dataIndex: 'permission',
 									width: 670,
 									header: _('permissions'),
-									renderer: defaultRenderer
+									renderer: JSONRenderer
 									,
 									editor: {xtype: 'textarea'},
 								},
@@ -268,12 +277,12 @@ modUtil.panel.Home = function(config) {
 									dataIndex: 'permission',
 									width: 670,
 									header: _('permissions'),
-									renderer: defaultRenderer,
-									editor: {xtype: 'textfield'},
+									renderer: JSONRenderer,
+									editor: {xtype: 'textarea'},
 								},
 								{
 									dataIndex: 'param', width: 670, header: _('parameters'),
-									renderer: defaultRenderer,
+									renderer: JSONRenderer,
 									editor: {xtype: 'textarea'},
 								},
 								{
@@ -364,13 +373,72 @@ modUtil.panel.Home = function(config) {
 						]
 					},
 					{
-						id: 'log-main-table',
 						title: 'log',
 						items: [{ // Внутри таба ещё один HTML-блок с классом panel-desc
-							html: 'Things 2 description',
+							html: 'connection log',
 							cls: 'panel-desc',
 						}, {
 							id: 'log-main-table',
+							xtype: 'modUtil-grid',
+							columns: [ // Добавляем ширину и заголовок столбца
+								{
+									dataIndex: 'id',
+									width: 330,
+									sortable: true,
+									header: 'id',
+									renderer: defaultRenderer,
+									editor: {xtype: 'textarea'},
+
+								},
+								{
+									dataIndex: 'rest_id',
+									width: 330,
+									sortable: true,
+									header: 'REST id',
+									renderer: defaultRenderer,
+									editor: {xtype: 'textfield'}
+								},
+								{
+									dataIndex: 'input',
+									width: 670,
+									header: 'input',
+									renderer: JSONRenderer,
+									editor: {xtype: 'textarea'},
+								},
+								{
+									dataIndex: 'output', width: 670, header: 'output',
+									renderer: defaultRenderer,
+									editor: {xtype: 'textarea'},
+								},
+								{
+									dataIndex: 'user',
+									sortable: true,
+									width: 670,
+									header: 'user',
+									renderer: JSONRenderer,
+									editor: {xtype: 'textarea'},
+								},
+								{
+									dataIndex: 'time', sortable: true, width: 670, header: 'time',
+									renderer: defaultRenderer,
+									editor: {xtype: 'textarea'},
+								},
+								{
+									dataIndex: 'datetime', sortable: true, width: 670, header: 'datetime',
+									renderer: defaultRenderer,
+									editor: {xtype: 'textarea'},
+								},
+							],
+							fields: [
+								'id',
+								'rest_id',
+								'input',
+								'output',
+								'user',
+								'time',
+								'datetime',
+							],
+							action: 'mgr/rest/getListLog',
 						}]
 					}
 				]
@@ -425,7 +493,7 @@ modUtil.window.modWindow = function(config) {
 }
 Ext.extend(modUtil.window.modWindow, MODx.Window) // Расширяем MODX.Window
 Ext.reg('modUtil-window-modWindow', modUtil.window.modWindow) // Регистрируем новый xtype
-	//добавление rest
+//добавление rest
 modUtil.window.addRest = function(config) {
 	config = config || {}
 	this.ident = config.ident || 'mecnewsletter' + Ext.id()
