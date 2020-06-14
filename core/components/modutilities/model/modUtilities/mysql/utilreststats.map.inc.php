@@ -10,26 +10,43 @@ $xpdo_meta_map['Utilreststats']= array (
   ),
   'fields' => 
   array (
-    'id' => NULL,
-    'stats' => NULL,
-    'log' => NULL,
+    'in' => NULL,
+    'rest_id' => 0,
+    'input' => NULL,
+    'output' => NULL,
+    'user' => NULL,
   ),
   'fieldMeta' => 
   array (
-    'id' => 
+    'in' => 
     array (
       'dbtype' => 'int',
       'phptype' => 'integer',
-      'null' => true,
+      'null' => false,
+      'index' => 'pk',
+      'generated' => 'native',
+    ),
+    'rest_id' => 
+    array (
+      'dbtype' => 'int',
+      'phptype' => 'integer',
+      'null' => false,
+      'default' => 0,
       'index' => 'index',
     ),
-    'stats' => 
+    'input' => 
     array (
       'dbtype' => 'json',
       'phptype' => 'string',
       'null' => true,
     ),
-    'log' => 
+    'output' => 
+    array (
+      'dbtype' => 'longtext',
+      'phptype' => 'string',
+      'null' => true,
+    ),
+    'user' => 
     array (
       'dbtype' => 'json',
       'phptype' => 'string',
@@ -38,6 +55,22 @@ $xpdo_meta_map['Utilreststats']= array (
   ),
   'indexes' => 
   array (
+    'PRIMARY' => 
+    array (
+      'alias' => 'PRIMARY',
+      'primary' => true,
+      'unique' => true,
+      'type' => 'BTREE',
+      'columns' => 
+      array (
+        'in' => 
+        array (
+          'length' => '',
+          'collation' => 'A',
+          'null' => false,
+        ),
+      ),
+    ),
     'FK__modutilitiesrest' => 
     array (
       'alias' => 'FK__modutilitiesrest',
@@ -46,11 +79,11 @@ $xpdo_meta_map['Utilreststats']= array (
       'type' => 'BTREE',
       'columns' => 
       array (
-        'id' => 
+        'rest_id' => 
         array (
           'length' => '',
           'collation' => 'A',
-          'null' => true,
+          'null' => false,
         ),
       ),
     ),
