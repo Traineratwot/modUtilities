@@ -27,8 +27,13 @@
 			}
 			if ($this->init()) {
 				$response = $this->run();
+				$this->writeLog();
 				exit($response);
 			}
+
+		}
+
+		final protected function writeLog(){
 
 		}
 
@@ -69,7 +74,7 @@
 		{
 			try {
 				$userId = (int)$this->modx->user->get('id');
-				if ((bool)$this->rest->get('BASIC_auth') !== FALSE) {
+				if ((bool)$this->restCategory->getProperty('BASIC_auth') or (bool)$this->rest->getProperty('BASIC_auth')) {
 					if (!isset($_SERVER['PHP_AUTH_USER'])) {
 						header('WWW-Authenticate: Basic realm="' . $this->modx->config['site_name'] . '_REST"');
 						header('HTTP/1.0 401 Unauthorized');
@@ -177,27 +182,27 @@
 				if ($sp) {
 					return $sp->process($scriptProperties);
 				}
-				if(!class_exists('modUtilRestProcessor')){
-					include __DIR__.DIRECTORY_SEPARATOR.'modutilrestprocessor.php';
+				if (!class_exists('modUtilRestProcessor')) {
+					include __DIR__ . DIRECTORY_SEPARATOR . 'modutilrestprocessor.php';
 				}
-				$snippet = strtr($snippet,[
-					'{core_path}'=>MODX_CORE_PATH,
-					'{base_path}'=>MODX_BASE_PATH,
-					'{assets_path}'=>MODX_ASSETS_PATH,
-					'{manager_path}'=>MODX_MANAGER_PATH,
-					'{processors_path}'=>MODX_PROCESSORS_PATH,
-					'{connectors_path}'=>MODX_CONNECTORS_PATH,
+				$snippet = strtr($snippet, [
+					'{core_path}' => MODX_CORE_PATH,
+					'{base_path}' => MODX_BASE_PATH,
+					'{assets_path}' => MODX_ASSETS_PATH,
+					'{manager_path}' => MODX_MANAGER_PATH,
+					'{processors_path}' => MODX_PROCESSORS_PATH,
+					'{connectors_path}' => MODX_CONNECTORS_PATH,
 				]);
-				if(!file_exists($snippet)){
-					throw new Exception('file '.$snippet.' not FOUND' );
+				if (!file_exists($snippet)) {
+					throw new Exception('file ' . $snippet . ' not FOUND');
 				}
 				/** @var modUtilRestProcessor $process */
 				$className = include $snippet;
-				if(!$className or gettype($className) != 'string'){
-					throw new Exception('undefended class. add `return "classname" to end of file `'.$snippet );
+				if (!$className or gettype($className) != 'string') {
+					throw new Exception('undefended class. add `return "classname" to end of file `' . $snippet);
 				}
-				$process = new $className($this->modx,$scriptProperties,$this);
-				if(!$process instanceof modUtilRestProcessor AND !$process instanceof modProcessor){
+				$process = new $className($this->modx, $scriptProperties, $this);
+				if (!$process instanceof modUtilRestProcessor and !$process instanceof modProcessor) {
 					throw new Exception('invalid class');
 				}
 				return $process->process();

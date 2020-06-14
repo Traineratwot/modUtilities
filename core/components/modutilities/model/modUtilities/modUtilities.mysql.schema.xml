@@ -24,12 +24,17 @@
 		<field key="BASIC_auth" dbtype="tinyint" precision="1" phptype="integer" null="true" />
 	</object>
 	<object class="Utilreststats" table="utilreststats" extends="xPDOObject">
-		<field key="id" dbtype="int" phptype="integer" null="true" index="index" />
-		<field key="stats" dbtype="json" phptype="string" null="true" />
-		<field key="log" dbtype="json" phptype="string" null="true" />
+		<field key="in" dbtype="int" phptype="integer" null="false" index="pk"  generated="native" />
+		<field key="rest_id" dbtype="int" phptype="integer" null="false" default="0" index="index" />
+		<field key="input" dbtype="json" phptype="string" null="true" />
+		<field key="output" dbtype="longtext" phptype="string" null="true" />
+		<field key="user" dbtype="json" phptype="string" null="true" />
 
+		<index alias="PRIMARY" name="PRIMARY" primary="true" unique="true" type="BTREE" >
+			<column key="in" length="" collation="A" null="false" />
+		</index>
 		<index alias="FK__modutilitiesrest" name="FK__modutilitiesrest" primary="false" unique="false" type="BTREE" >
-			<column key="id" length="" collation="A" null="true" />
+			<column key="rest_id" length="" collation="A" null="false" />
 		</index>
 	</object>
 </model>

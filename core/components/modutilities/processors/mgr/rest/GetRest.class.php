@@ -15,7 +15,7 @@
 			$dir = (string)$this->getProperty('dir');
 			$array = array();
 			/** @var Utilrest $rest */
-			$q = $this->modx->newQuery('Utilrest',);
+			$q = $this->modx->newQuery('Utilrest');
 			$q->select('Utilrest.*,Utilrestcategory.name as catName');
 			$q->innerJoin('Utilrestcategory','Utilrestcategory','Utilrestcategory.id=Utilrest.category');
 			$q->limit($limit,$start);

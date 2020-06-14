@@ -33,12 +33,5 @@ if (!class_exists('modUtilities')) {
 			$REST = $modx->util->REST([
 				'url'=>$_REQUEST[$alias],
 			]);
-
-			echo $modx->util->print($REST);
-			echo $modx->util->print($REST->getProperty('url'));
-			echo $modx->util->print($REST->rest);
-			if ($REST->rest !== false) {
-				die;
-			}
 			break;
 	}

@@ -43,9 +43,7 @@ modUtil = new modUtil()
 var defaultRenderer = function(val) {
 	return val || _('ext_emptygroup')
 }
-// Создаём внутри компонента главную панель
-// (через точку в JS обозначается вложенность массива, то есть мы создаём
-// объект Home внутри panel, который, в свою очередь, находится в modUtil)
+//основной блок
 modUtil.panel.Home = function(config) {
 	config = config || {}
 	Ext.apply(config, {
@@ -382,8 +380,8 @@ modUtil.panel.Home = function(config) {
 	modUtil.panel.Home.superclass.constructor.call(this, config) // Чёртова магия =)
 }
 
-Ext.extend(modUtil.panel.Home, MODx.Panel) // Наша панель расширяет объект MODX.Panel
-Ext.reg('modUtil-panel-home', modUtil.panel.Home) // Регистрируем новый xtype для панели
+Ext.extend(modUtil.panel.Home, MODx.Panel)
+Ext.reg('modUtil-panel-home', modUtil.panel.Home)
 
 modUtil.grid.ModGrid = function(config) { // Придумываем название, например, «Names»
 	config = config || {}
@@ -427,7 +425,7 @@ modUtil.window.modWindow = function(config) {
 }
 Ext.extend(modUtil.window.modWindow, MODx.Window) // Расширяем MODX.Window
 Ext.reg('modUtil-window-modWindow', modUtil.window.modWindow) // Регистрируем новый xtype
-
+	//добавление rest
 modUtil.window.addRest = function(config) {
 	config = config || {}
 	this.ident = config.ident || 'mecnewsletter' + Ext.id()
@@ -516,8 +514,8 @@ modUtil.window.addRest = function(config) {
 				name: 'category',
 				id: 'addRest-' + this.ident + '-category',
 				fields: ['id', 'name', 'allowMethod'],
-				value: 1,
 				defaultValue: '1',
+				allowBlank: false,
 				baseParams: {
 					action: 'mgr/rest/getListCategory',
 					combo: 1,
@@ -563,7 +561,7 @@ modUtil.window.addRest = function(config) {
 }
 Ext.extend(modUtil.window.addRest, modUtil.window.modWindow) // Расширяем MODX.Window
 Ext.reg('modUtil-window-addRest', modUtil.window.addRest) // Регистрируем новый xtype
-
+//добавление категории
 modUtil.window.addCat = function(config) {
 	config = config || {}
 	this.ident = config.ident || 'mecnewsletter' + Ext.id()
