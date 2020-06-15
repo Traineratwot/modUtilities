@@ -1,4 +1,5 @@
 <?php
+
 	/**
 	 * @property int kb
 	 * @property int mb
@@ -11,14 +12,15 @@
 	 */
 	class modUtilitiesConstant
 	{
-		/**
-		 * @var int
-		 */
-		public $kb = 1024;
-		/**
-		 * @var int
-		 */
-		public $min = 60;
+
+		private $kb = 1024;
+		private $min = 60;
+		private $mb;
+		private $gb;
+		private $tb;
+		private $hour;
+		private $day;
+		private $week;
 
 		/**
 		 * constant constructor.
@@ -33,11 +35,30 @@
 			$this->week = $this->day * 7;
 		}
 
+		public function __isset($name): bool
+		{
+			return isset($this->$name);
+		}
+
+		public function __set($name, $value)
+		{
+			return FALSE;
+		}
+
+		public function __get($name)
+		{
+			return $this->$name;
+		}
+
 		/**
 		 * @return string
 		 */
 		public function __toString()
 		{
-			return (string)json_encode($this, 256);
+			$res = [];
+			foreach ($this as $k => $v) {
+				$res[$k] = $v;
+			}
+			return (string)json_encode($res, 256);
 		}
 	}

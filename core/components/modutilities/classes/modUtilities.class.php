@@ -12,9 +12,10 @@
 		 */
 		protected $modx;
 		/**
-		 * @var constant
+		 * @var constant $constant_
 		 */
-		public $constant;
+		private $constant;
+		public $constant_;
 		/**
 		 * function other output
 		 * @var array
@@ -53,7 +54,32 @@
 		public function __construct(modX &$modx)
 		{
 			$this->modx = $modx;
-			$this->constant = $this->loadClass('modUtilitiesConstant');
+
+		}
+
+		public function __isset($name):bool
+		{
+			return isset($this->$name);
+		}
+
+		public function __set($name, $value)
+		{
+			if(isset($this->$name) === false){
+				$this->$name = $value;
+			}
+		}
+
+		public function __get($name)
+		{
+			switch ($name) {
+				case 'constant':
+					if (!isset($this->constant_)) {
+						$this->constant_ = $this->loadClass('modUtilitiesConstant');
+					}
+					return $this->constant_;
+				default :
+					return FALSE;
+			}
 		}
 
 		/**
@@ -342,8 +368,8 @@
 		/**
 		 * member
 		 * @param modUser|integer|string|NULL $id
-		 * @param integer|string|NULL  $group
-		 * @param integer|string|NULL  $role
+		 * @param integer|string|NULL         $group
+		 * @param integer|string|NULL         $role
 		 * @return array|bool
 		 */
 		public function member($id = NULL, $group = NULL, $role = NULL)
@@ -752,11 +778,11 @@
 		/**
 		 * get user avatar
 		 * @param modUser|string|int $id
-		 * @param bool        $alt
-		 * @param int         $width
-		 * @param int         $height
-		 * @param string      $r
-		 * @param string      $default
+		 * @param bool               $alt
+		 * @param int                $width
+		 * @param int                $height
+		 * @param string             $r
+		 * @param string             $default
 		 * @return string
 		 */
 		public function getUserPhoto($id = 0, $alt = FALSE, $width = 128, $height = 128, $r = 'g', $default = '404'): string
@@ -808,22 +834,22 @@
 		/**
 		 * return database set column option
 		 * @param object|string $table
-		 * @param string $column
+		 * @param string        $column
 		 * @return false|string[]
 		 */
-		public function getSetOption($table='', $column='')
+		public function getSetOption($table = '', $column = '')
 		{
-			if(is_object($table)){
+			if (is_object($table)) {
 				$table = $table->_table;
 			}
-			if(empty($table) or empty($column)){
-				return false;
+			if (empty($table) or empty($column)) {
+				return FALSE;
 			}
 			if (!($ret = $this->modx->query("SHOW COLUMNS FROM $table LIKE '$column'"))) {
-				return false;
+				return FALSE;
 			}
 			$line = $ret->fetch(PDO::FETCH_ASSOC);
-			$set = rtrim(ltrim(preg_replace('@^[setnum]+@','',$line['Type']),"('"),"')");
+			$set = rtrim(ltrim(preg_replace('@^[setnum]+@', '', $line['Type']), "('"), "')");
 			return preg_split("/','/", $set);
 		}
 	}
