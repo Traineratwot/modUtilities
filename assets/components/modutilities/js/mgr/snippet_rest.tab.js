@@ -216,6 +216,7 @@ modUtil.panel.Home = function(config) {
 							},
 							del: function() {
 								var cs = this.getSelectedAsList()
+								var self = this
 								MODx.msg.confirm({
 									title: _('delete'),
 									text: _('confirm_remove'),
@@ -240,7 +241,7 @@ modUtil.panel.Home = function(config) {
 														delay: 3
 													})
 												}
-												this.refresh()
+												self.refresh()
 											}, scope: true
 										}
 									}
@@ -339,6 +340,7 @@ modUtil.panel.Home = function(config) {
 							},
 							del: function() {
 								var cs = this.getSelectedAsList()
+								var self = this
 								MODx.msg.confirm({
 									title: _('delete'),
 									text: _('confirm_remove'),
@@ -363,7 +365,7 @@ modUtil.panel.Home = function(config) {
 														delay: 3
 													})
 												}
-												this.refresh()
+												self.refresh()
 											}, scope: true
 										}
 									}
@@ -606,8 +608,13 @@ modUtil.window.addRest = function(config) {
 		action: 'mgr/rest/create_utilrest',
 		listeners: {
 			beforeSubmit: function(a) {
-				if(typeof a.allowMethod == 'string') {
-					$('input[name=allowMethod]').val(a.allowMethod.join(','))
+				var allowMethod = a.allowMethod.join()
+				if(typeof allowMethod == 'string') {
+					$(`input[name="allowMethod"]`).each(function() {
+						$(this).val(allowMethod)
+						$(this).attr('value',allowMethod)
+						this.value = allowMethod
+					})
 				}
 				return true
 			},
@@ -656,7 +663,7 @@ modUtil.window.addCat = function(config) {
 				xtype: 'modUtil-combo-modComboSuper',
 				fieldLabel: 'разрешенные методы',
 				name: 'allowMethod',
-				id: 'addRest-' + this.ident + '-allowMethod',
+				id: 'addCat-' + this.ident + '-allowMethod',
 				anchor: '99%',
 				value: null,
 				fields: ['name'],
@@ -665,7 +672,6 @@ modUtil.window.addCat = function(config) {
 				hiddenName: 'allowMethod',
 				multiple: true,
 				action: 'mgr/rest/getlistallowmethod',
-
 			},
 			{
 				xtype: 'textarea',
@@ -688,8 +694,13 @@ modUtil.window.addCat = function(config) {
 		action: 'mgr/rest/create_utilrestcategory',
 		listeners: {
 			beforeSubmit: function(a) {
-				if(typeof a.allowMethod == 'string') {
-					$('input[name=allowMethod]').val(a.allowMethod.join(','))
+				var allowMethod = a.allowMethod.join()
+				if(typeof allowMethod == 'string') {
+					$(`input[name="allowMethod"]`).each(function() {
+						$(this).val(allowMethod)
+						$(this).attr('value',allowMethod)
+						this.value = allowMethod
+					})
 				}
 				return true
 			},
