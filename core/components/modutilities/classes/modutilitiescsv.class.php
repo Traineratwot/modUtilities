@@ -20,12 +20,14 @@
 		/* @var string output html string */
 		protected $html;
 		/* @var array */
-		public $matrix;
+		protected $matrix;
 		/* @var array */
 		protected $head = [];
 		protected $appendType = FALSE;
 		protected $str_delimiter;
 		protected $line_delimiter;
+		public $currentRow = -1;
+		public $currentCol = -1;
 
 		/**
 		 * UtilitiesCsv constructor
@@ -103,6 +105,8 @@
 				}
 			}
 			$this->matrix[] = $args_;
+			$this->matrixFix();
+
 			return $this;
 		}
 
@@ -136,6 +140,7 @@
 					$this->matrix[$k][] = $art;
 				}
 			}
+			$this->matrixFix();
 
 			return $this;
 		}
@@ -158,6 +163,8 @@
 				}
 			}
 			$this->head = $args;
+			$this->matrixFix();
+
 			return $this;
 		}
 
@@ -235,6 +242,21 @@
 				return $this->matrix[$y][$x];
 			}
 			return FALSE;
+		}
+
+		private function matrixFix(){
+			$lenCol[] = count($this->head);
+			foreach ($this->matrix as $row) {
+				$lenCol[] = count($row);
+			}
+			$lenCol = max($lenCol);
+			foreach ($this->matrix as $k => $row) {
+				for ($i= 0; $lenCol > $i; $i++) {
+					if(!isset($row[$i])){
+						$this->matrix[$k][$i] = null;
+					}
+				}
+			}
 		}
 
 		/**
@@ -469,6 +491,51 @@
 		}
 
 		/**
+		 * @return array
+		 */
+		public function toArray(): array
+		{
+			return $this->matrix;
+		}
+
+		public function getRow()
+		{
+			if($this->currentRow == -1){
+				$this->currentRow++;
+				return $this->head;
+			}
+			$row = (isset($this->matrix[$this->currentRow])) ? $this->matrix[$this->currentRow] : FALSE;
+			if ($row) {
+				$this->currentRow++;
+				return $row;
+			} else {
+				$this->currentRow = 0;
+				return FALSE;
+			}
+		}
+
+		public function getCol()
+		{
+			if($this->currentCol == -1){
+				$this->currentCol++;
+				return $this->head;
+			}
+			$col = [];
+			foreach ($this->matrix as $v){
+				if(isset($v[$this->currentCol])){
+					$col[] = $v[$this->currentCol];
+				}
+			}
+			if ($col) {
+				$this->currentCol++;
+				return $col;
+			} else {
+				$this->currentCol = 0;
+				return FALSE;
+			}
+		}
+
+		/**
 		 * @return csvString|string
 		 */
 		final public function __toString()
@@ -491,7 +558,14 @@
 		 */
 		final public function __get($name)
 		{
-			return FALSE;
+			switch ($name){
+				case 'matrix':
+					return $this->matrix;
+
+				default:
+					return FALSE;
+
+			}
 		}
 
 		/**
@@ -501,8 +575,12 @@
 		 */
 		final public function __set($name, $value)
 		{
-			if ($name == 'csv') {
-				return $this->readCsv($value);
+			switch($name) {
+				case 'matrix':
+					$this->matrix = $value;
+				case 'csv':
+					return $this->readCsv($value);
 			}
+			return FALSE;
 		}
 	}

@@ -48,22 +48,13 @@
 			/** @var modUtilitiesCsv $csv */
 			$csv = $modx->util->csv();
 			$this->assertEquals('modUtilitiesCsv', get_class($csv),'class not exist');
-			$csv->setHead('Первый столбец','Two',3);
+			$csv->setHead('Первый','второй','третий');
 			$csv->addRow(1,2,3);
 			$csv->addRow('a','b');
 			$csv->addRow([
-				'Two'=>55,
-				'3'=>33
+				'Первый'=>55,
+				'третий'=>33
 			]);
-			$csv->addRow([
-				'two'=>55,
-				'4'=>33
-			]);
-			$result = '﻿Первый столбец;Two;3
-			1;2;3
-			a;b;
-			;55;33';
-			$this->assertEquals($modx->util->rawText($result), $modx->util->rawText($csv->toCsv()),'addRow don`t work');
 			$csv->reset();
 		}
 

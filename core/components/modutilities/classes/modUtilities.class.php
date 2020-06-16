@@ -57,14 +57,14 @@
 
 		}
 
-		public function __isset($name):bool
+		public function __isset($name): bool
 		{
 			return isset($this->$name);
 		}
 
 		public function __set($name, $value)
 		{
-			if(isset($this->$name) === false){
+			if (isset($this->$name) === FALSE) {
 				$this->$name = $value;
 			}
 		}
@@ -851,5 +851,48 @@
 			$line = $ret->fetch(PDO::FETCH_ASSOC);
 			$set = rtrim(ltrim(preg_replace('@^[setnum]+@', '', $line['Type']), "('"), "')");
 			return preg_split("/','/", $set);
+		}
+
+		/**
+		 * return all values by tv id
+		 * @param int $id
+		 * @return array|bool
+		 */
+		public function getAllTvValue($id = 0)
+		{
+			$prefix = $this->modx->getOption('table_prefix');
+			$sql = "SELECT GROUP_CONCAT(`contentid`),`value` FROM `{$prefix}site_tmplvar_contentvalues` WHERE `tmplvarid` = :id GROUP BY `value`" ;
+			$statement = $this->modx->prepare($sql);
+			if ($statement->execute(['id' => $id])) {
+				return $result = $statement->fetchAll(PDO::FETCH_KEY_PAIR);
+			}
+			return FALSE;
+		}
+
+		/**
+		 * @param int|modResource $id
+		 * @return array|bool
+		 */
+		public function getAllTvResource($id = 0)
+		{
+			if (is_int($id)) {
+				$id = $this->modx->getObject('modResource', $id);
+			} elseif (is_object($id) and $id instanceof modResource) {
+
+			} else {
+				return FALSE;
+			}
+			$response = [];
+			/** @var modResource $id */
+			$template = (int)$id->get('template');
+			$prefix = $this->modx->getOption('table_prefix');
+			$q = $this->modx->prepare("SELECT tmplvarid FROM {$prefix}site_tmplvar_templates WHERE templateid = :template");
+			$q->execute([
+				"template" => $template,
+			]);
+			while ($tvId = $q->fetch(PDO::FETCH_COLUMN)) {
+				$response[$tvId] = $id->getTVValue($tvId);
+			}
+			return $response;
 		}
 	}
