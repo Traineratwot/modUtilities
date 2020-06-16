@@ -673,6 +673,15 @@
 		}
 
 		/**
+		 * @param array $Params
+		 * @return bool|modUtilitiesFtp
+		 */
+		final public function FTP($Params = [])
+		{
+			return $this->loadClass('modUtilitiesFtp', $Params);
+		}
+
+		/**
 		 * load class
 		 * @param string $name
 		 * @param array  $Params

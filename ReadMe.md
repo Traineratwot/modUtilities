@@ -48,7 +48,7 @@ $modx->util->output['function'];   //сюда попадает побочный 
         'фрукт'=>'апельсин',
         'ягода'=>'арбуз',
         ];
-    echo $modx->util->print_n('у меня есть',$arr,8);
+    echo $modx->util->print('у меня есть',$arr,8);
     //(string): у меня есть, (array): {"фрукт":"апельсин","ягода":"арбуз"}, (integer): 8
     ```
 
@@ -350,7 +350,8 @@ $modx->util->output['function'];   //сюда попадает побочный 
     $csv = $modx->util->csv();
 	$csv->csv = $csv_string;
 	echo $csv->toHtmlList('class');
-    ```
+
+ ```
 
  - **Rest** 
     позволяет быстро и безопасно настроить rest для вашего сайта

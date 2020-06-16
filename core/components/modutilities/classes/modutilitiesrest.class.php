@@ -273,7 +273,7 @@
 				if (!$process instanceof modUtilRestProcessor and !$process instanceof modProcessor) {
 					throw new Exception('invalid class');
 				}
-				return $process->process();
+				return $process->run();
 			} catch (Exception $e) {
 				$this->errors = $e->getMessage();
 				$this->modx->log(MODX_LOG_LEVEL_ERROR, $e->getMessage(), $e->getCode(), __FUNCTION__, $e->getFile(), $e->getLine());

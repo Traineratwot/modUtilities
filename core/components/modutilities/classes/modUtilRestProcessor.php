@@ -11,6 +11,10 @@
 		/* @var modUtilitiesRest REST */
 		public $REST;
 		/**
+		 * @var modUtilities
+		 */
+		public $util;
+		/**
 		 * @var array
 		 */
 		public $headers = [];
@@ -22,6 +26,7 @@
 		final public function __construct(modX &$modx, array $properties = [], modUtilitiesRest &$REST)
 		{
 			$this->REST = $REST;
+			$this->util = $REST->util;
 			parent::__construct($modx, $properties);
 		}
 
@@ -40,6 +45,10 @@
 				$o = $this->failure($initialized);
 			} else {
 				$o = $this->process();
+			}
+			if(is_array($o)){
+				$this->util->headerJson();
+				$o = json_encode($o,256);
 			}
 			return $o;
 		}
