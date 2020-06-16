@@ -350,8 +350,7 @@ $modx->util->output['function'];   //сюда попадает побочный 
     $csv = $modx->util->csv();
 	$csv->csv = $csv_string;
 	echo $csv->toHtmlList('class');
-
- ```
+    ```
 
  - **Rest** 
     позволяет быстро и безопасно настроить rest для вашего сайта
