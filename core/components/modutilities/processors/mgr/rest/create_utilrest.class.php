@@ -10,7 +10,6 @@
 
 		public function beforeSet()
 		{
-
 			$required = ['url', 'snippet'];
 			$unique = ['url'];
 			foreach ($required as $tmp) {
@@ -36,8 +35,8 @@
 						case 'category':
 							$this->setProperty($key, 1);
 							break;
-						default	:
-							$this->setProperty($key, null);
+						default    :
+							$this->setProperty($key, NULL);
 							break;
 					}
 				}

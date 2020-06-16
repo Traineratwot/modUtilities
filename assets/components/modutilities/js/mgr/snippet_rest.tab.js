@@ -10,7 +10,7 @@ Ext.onReady(function() {
 		, fields: ['id', 'name']
 		, url: modUtilConnector_url
 		, baseParams: {
-			action: 'mgr/rest/getListCategory',
+			action: 'mgr/rest/getlistcategory',
 			combo: 1,
 		},
 		listeners: {
@@ -92,7 +92,7 @@ modUtil.panel.Home = function(config) {
 										fields: ['id', 'name'],
 										url: MODx.config.connector_url,
 										baseParams: {
-											action: 'element/snippet/GetList',
+											action: 'element/snippet/getlist',
 											combo: 1,
 										},
 										valueField: 'id',
@@ -155,7 +155,7 @@ modUtil.panel.Home = function(config) {
 										forceSelection: false,
 										fields: ['id', 'name'],
 										baseParams: {
-											action: 'mgr/rest/getListCategory',
+											action: 'mgr/rest/getlistcategory',
 											combo: 1,
 										},
 										valueField: 'id',
@@ -201,8 +201,8 @@ modUtil.panel.Home = function(config) {
 									}).show()
 								},
 							}],
-							action: 'mgr/rest/GetRest',
-							save_action: 'mgr/rest/updateRest',
+							action: 'mgr/rest/getrest',
+							save_action: 'mgr/rest/updaterest',
 							autosave: true,
 							getMenu: function(grid, rowIndex) {
 								var m = []
@@ -221,7 +221,7 @@ modUtil.panel.Home = function(config) {
 									text: _('confirm_remove'),
 									url: modUtilConnector_url,
 									params: {
-										action: 'mgr/rest/delRest',
+										action: 'mgr/rest/delrest',
 										id: cs,
 									},
 									listeners: {
@@ -324,8 +324,8 @@ modUtil.panel.Home = function(config) {
 									}).show()
 								},
 							}],
-							action: 'mgr/rest/getListCategory',
-							save_action: 'mgr/rest/updateRestCategory',
+							action: 'mgr/rest/getlistcategory',
+							save_action: 'mgr/rest/updaterestcategory',
 							autosave: true,
 							getMenu: function(grid, rowIndex) {
 								var m = []
@@ -344,7 +344,7 @@ modUtil.panel.Home = function(config) {
 									text: _('confirm_remove'),
 									url: modUtilConnector_url,
 									params: {
-										action: 'mgr/rest/delRestCategory',
+										action: 'mgr/rest/delrestcategory',
 										id: cs,
 									},
 									listeners: {
@@ -438,7 +438,7 @@ modUtil.panel.Home = function(config) {
 								'time',
 								'datetime',
 							],
-							action: 'mgr/rest/getListLog',
+							action: 'mgr/rest/getlistlog',
 						}]
 					}
 				]
@@ -520,7 +520,7 @@ modUtil.window.addRest = function(config) {
 				fields: ['id', 'name'],
 				url: MODx.config.connector_url,
 				baseParams: {
-					action: 'element/snippet/GetList',
+					action: 'element/snippet/getlist',
 					combo: 1,
 				},
 				allowBlank: false,
@@ -585,7 +585,7 @@ modUtil.window.addRest = function(config) {
 				defaultValue: '1',
 				allowBlank: false,
 				baseParams: {
-					action: 'mgr/rest/getListCategory',
+					action: 'mgr/rest/getlistcategory',
 					combo: 1,
 				},
 				hiddenName: 'category',
