@@ -14,8 +14,7 @@ if (!class_exists('modUtilities')) {
 			break;
 		case 'pdoToolsOnFenomInit':
 			if (isset($fenom)) {
-				$fenom->addFunction("util", function ($params) {
-					global $modx;
+				$fenom->addFunction("util", function ($params) use ($modx) {
 					$method = array_shift($params);
 					if (method_exists($modx->util, $method)) {
 						return $modx->util->$method(...$params);

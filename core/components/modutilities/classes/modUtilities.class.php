@@ -42,7 +42,7 @@
 			'Ш' => 'Sh', 'Щ' => 'Sch', 'Ь' => '', 'Ы' => 'Y', 'Ъ' => '',
 			'Э' => 'E', 'Ю' => 'Yu', 'Я' => 'Ya',
 		];
-
+		
 		const FirstLetter = 1;
 		const EveryWord = 2;
 		const AfterDot = 3;
@@ -670,15 +670,6 @@
 		final public function REST($Params = [])
 		{
 			return $this->loadClass('modUtilitiesRest', $Params);
-		}
-
-		/**
-		 * @param array $Params
-		 * @return bool|modUtilitiesFtp
-		 */
-		final public function FTP($Params = [])
-		{
-			return $this->loadClass('modUtilitiesFtp', $Params);
 		}
 
 		/**

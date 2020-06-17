@@ -50,7 +50,7 @@
 				$this->util->headerJson();
 				$o = json_encode($o,256);
 			}
-			return $o;
+			return (string)$o;
 		}
 
 		public function process()
