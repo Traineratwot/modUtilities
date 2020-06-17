@@ -1,0 +1,16 @@
+{
+    "name": "kirill/modutilities",
+    "description": "ModUtilities",
+    "type": "project",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Kirill",
+            "email": "41589091+Traineratwot@users.noreply.github.com"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {
+        "php-curl-class/php-curl-class": "^8.8"
+    }
+}

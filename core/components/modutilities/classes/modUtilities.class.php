@@ -42,10 +42,10 @@
 			'Ш' => 'Sh', 'Щ' => 'Sch', 'Ь' => '', 'Ы' => 'Y', 'Ъ' => '',
 			'Э' => 'E', 'Ю' => 'Yu', 'Я' => 'Ya',
 		];
-		
+
 		const FirstLetter = 1;
-		const EveryWord = 2;
-		const AfterDot = 3;
+		const EveryWord   = 2;
+		const AfterDot    = 3;
 
 		/**
 		 * utilities constructor.
@@ -655,48 +655,6 @@
 		}
 
 		/**
-		 * get csv class
-		 * @return modUtilitiesCsv
-		 */
-		final public function csv($Params = [])
-		{
-			return $this->loadClass('modUtilitiesCsv', $Params);
-		}
-
-		/**
-		 * @param array $Params
-		 * @return bool|modUtilitiesRest
-		 */
-		final public function REST($Params = [])
-		{
-			return $this->loadClass('modUtilitiesRest', $Params);
-		}
-
-		/**
-		 * load class
-		 * @param string $name
-		 * @param array  $Params
-		 * @return bool|Class
-		 */
-		final protected function loadClass($name, $Params = [])
-		{
-			$path = MODX_CORE_PATH . 'components/modutilities/classes/' . mb_strtolower($name) . '.class.php';
-			if (file_exists($path)) {
-				if (!class_exists($name)) {
-					include_once $path;
-				}
-				if (class_exists($name)) {
-					return new $name($this->modx, $this, $Params);
-				} else {
-					$this->modx->log(MODX::LOG_LEVEL_ERROR, 'can`t load class "' . $name . '" class not found');
-					return FALSE;
-				}
-			}
-			$this->modx->log(MODX::LOG_LEVEL_ERROR, 'can`t load class "' . $name . '" file not found');
-			return FALSE;
-		}
-
-		/**
 		 * notEmpty
 		 * @param $var
 		 * @return bool
@@ -894,5 +852,58 @@
 				$response[$tvId] = $id->getTVValue($tvId);
 			}
 			return $response;
+		}
+
+		/**
+		 * get csv class
+		 * @return modUtilitiesCsv
+		 */
+		final public function csv($Params = [])
+		{
+			return $this->loadClass('modUtilitiesCsv', $Params);
+		}
+
+		/**
+		 * @param array $Params
+		 * @return bool|modUtilitiesRest
+		 */
+		final public function REST($Params = [])
+		{
+			return $this->loadClass('modUtilitiesRest', $Params);
+		}
+
+		/**
+		 * CURL CLASS git - https://github.com/php-curl-class/php-curl-class
+		 * @param array $Params
+		 * @return bool|modUtilitiesCurl
+		 * @throws ErrorException
+		 */
+		final public function CURL($Params = [])
+		{
+			return $this->loadClass('modUtilitiesCurl', $Params);
+		}
+
+		/**
+		 * load class
+		 * @param string $name
+		 * @param array  $Params
+		 * @return bool|Class
+		 */
+		final protected function loadClass($name, $Params = [])
+		{
+			$path = MODX_CORE_PATH . 'components/modutilities/classes/' . mb_strtolower($name) . '.class.php';
+			if (file_exists($path)) {
+				if (!class_exists($name)) {
+					include_once $path;
+				}
+				if (class_exists($name)) {
+					return new $name($this->modx, $this, $Params);
+				} else {
+					$this->modx->log(MODX::LOG_LEVEL_ERROR, 'can`t load class "' . $name . '" class not found');
+					return FALSE;
+				}
+			}
+			$this->modx->log(MODX::LOG_LEVEL_ERROR, 'can`t load class "' . $name . '" file not found');
+			return FALSE;
 		}
 	}
