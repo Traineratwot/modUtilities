@@ -164,11 +164,11 @@ class Url
         $digit = '0-9';
 
         // unreserved    = ALPHA / DIGIT / "-" / "." / "_" / "~"
-        $unreserved = $alpha . $digit . preg_quote('-._~');
+        $unreserved = $alpha . $digit . "\-\._~";
 
         // sub-delims    = "!" / "$" / "&" / "'" / "(" / ")"
         //               / "*" / "+" / "," / ";" / "=" / "#"
-        $sub_delims = preg_quote('!$&\'()*+,;=#');
+        $sub_delims = "\!\$&'\(\)\*\+,;\=#";
 
         // HEXDIG         =  DIGIT / "A" / "B" / "C" / "D" / "E" / "F"
         $hexdig = $digit . 'A-F';
