@@ -567,7 +567,6 @@ modUtil.window.addRest = function(config) {
 				name: 'permission',
 				id: 'addRest-' + this.ident + '-permission',
 				anchor: '99%',
-				value: '{"allow":"all"}'
 			},
 			{
 				xtype: 'xcheckbox',
@@ -681,7 +680,6 @@ modUtil.window.addCat = function(config) {
 				name: 'permission',
 				id: 'addRest-' + this.ident + '-permission',
 				anchor: '99%',
-				value: '{"allow":"all"}'
 			},
 			{
 				xtype: 'xcheckbox',
