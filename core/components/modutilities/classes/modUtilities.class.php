@@ -44,8 +44,8 @@
 		];
 
 		const FirstLetter = 1;
-		const EveryWord   = 2;
-		const AfterDot    = 3;
+		const EveryWord = 2;
+		const AfterDot = 3;
 
 		/**
 		 * utilities constructor.
@@ -819,7 +819,7 @@
 		public function getAllTvValue($id = 0)
 		{
 			$prefix = $this->modx->getOption('table_prefix');
-			$sql = "SELECT GROUP_CONCAT(`contentid`),`value` FROM `{$prefix}site_tmplvar_contentvalues` WHERE `tmplvarid` = :id GROUP BY `value`" ;
+			$sql = "SELECT GROUP_CONCAT(`contentid`),`value` FROM `{$prefix}site_tmplvar_contentvalues` WHERE `tmplvarid` = :id GROUP BY `value`";
 			$statement = $this->modx->prepare($sql);
 			if ($statement->execute(['id' => $id])) {
 				return $result = $statement->fetchAll(PDO::FETCH_KEY_PAIR);
@@ -873,17 +873,6 @@
 		}
 
 		/**
-		 * CURL CLASS git - https://github.com/php-curl-class/php-curl-class
-		 * @param array $Params
-		 * @return bool|modUtilitiesCurl
-		 * @throws ErrorException
-		 */
-		final public function CURL($Params = [])
-		{
-			return $this->loadClass('modUtilitiesCurl', $Params);
-		}
-
-		/**
 		 * load class
 		 * @param string $name
 		 * @param array  $Params
@@ -905,5 +894,23 @@
 			}
 			$this->modx->log(MODX::LOG_LEVEL_ERROR, 'can`t load class "' . $name . '" file not found');
 			return FALSE;
+		}
+
+
+		/**
+		 * return client IP
+		 * @return false|string IP
+		 */
+		public function getIP()
+		{
+			if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
+				$ip = $_SERVER['HTTP_CLIENT_IP'];
+			} elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+				$ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
+			} else {
+				$ip = $_SERVER['REMOTE_ADDR'];
+			}
+
+			return filter_var($ip, FILTER_VALIDATE_IP) ? (string)$ip : FALSE;
 		}
 	}

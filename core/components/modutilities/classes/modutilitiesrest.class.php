@@ -143,6 +143,25 @@
 								throw new Exception(TRUE, 1);
 							}
 							break;
+						case 'ip':
+							$ip = $this->util->getIP();
+							if($ip !== false){
+								if(is_array($value)){
+									if(in_array($ip,$value)){
+										throw new Exception(TRUE, 1);
+									}else{
+										throw new Exception(FALSE, 0);
+									}
+								}else{
+									if($value =='this'){
+										if($_SERVER['SERVER_ADDR'] == $ip){
+											throw new Exception(TRUE, 1);
+										}else{
+											throw new Exception(FALSE, 0);
+										}
+									}
+								}
+							}
 						default:
 							throw new Exception(TRUE, 1);
 							break;
@@ -165,6 +184,25 @@
 								throw new Exception(FALSE, 0);
 							}
 							break;
+						case 'ip':
+							$ip = $this->util->getIP();
+							if($ip !== false){
+								if(is_array($value)){
+									if(in_array($ip,$value)){
+										throw new Exception(FALSE, 0);
+									}else{
+										throw new Exception(TRUE, 1);
+									}
+								}else{
+									if($value =='this'){
+										if($_SERVER['SERVER_ADDR'] == $ip){
+											throw new Exception(FALSE, 0);
+										}else{
+											throw new Exception(TRUE, 1);
+										}
+									}
+								}
+							}
 						default:
 							throw new Exception(FALSE, 0);
 							break;
@@ -280,4 +318,5 @@
 				return FALSE;
 			}
 		}
+
 	}
