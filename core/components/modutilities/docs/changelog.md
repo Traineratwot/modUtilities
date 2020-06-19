@@ -1,6 +1,6 @@
 # Changelog
 
-## [2.1.5] - 2020-06-16
+## [2.1.9] - 2020-06-19
 ### Added
 - REST api ip filter
 ### Fixed

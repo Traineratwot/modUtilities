@@ -44,10 +44,10 @@ var defaultRenderer = function(val) {
 	return val || _('ext_emptygroup')
 }
 var JSONRenderer = function(val) {
-	if(val){
+	if(val) {
 		return cope.Highlighter.highlight(JSON.parse(val), {indent: 2, useTabs: true})
 	}
-	return defaultRenderer(val);
+	return defaultRenderer(val)
 }
 //основной блок
 modUtil.panel.Home = function(config) {
@@ -608,13 +608,15 @@ modUtil.window.addRest = function(config) {
 		action: 'mgr/rest/create_utilrest',
 		listeners: {
 			beforeSubmit: function(a) {
-				var allowMethod = a.allowMethod.join()
-				if(typeof allowMethod == 'string') {
-					$(`input[name="allowMethod"]`).each(function() {
-						$(this).val(allowMethod)
-						$(this).attr('value',allowMethod)
-						this.value = allowMethod
-					})
+				if(typeof a.allowMethod !== 'string') {
+					var allowMethod = a.allowMethod.join()
+					if(typeof allowMethod == 'string') {
+						$(`input[name="allowMethod"]`).each(function() {
+							$(this).val(allowMethod)
+							$(this).attr('value', allowMethod)
+							this.value = allowMethod
+						})
+					}
 				}
 				return true
 			},
@@ -694,13 +696,15 @@ modUtil.window.addCat = function(config) {
 		action: 'mgr/rest/create_utilrestcategory',
 		listeners: {
 			beforeSubmit: function(a) {
-				var allowMethod = a.allowMethod.join()
-				if(typeof allowMethod == 'string') {
-					$(`input[name="allowMethod"]`).each(function() {
-						$(this).val(allowMethod)
-						$(this).attr('value',allowMethod)
-						this.value = allowMethod
-					})
+				if(typeof a.allowMethod !== 'string')  {
+					var allowMethod = a.allowMethod.join()
+					if(typeof allowMethod == 'string') {
+						$(`input[name="allowMethod"]`).each(function() {
+							$(this).val(allowMethod)
+							$(this).attr('value', allowMethod)
+							this.value = allowMethod
+						})
+					}
 				}
 				return true
 			},
@@ -732,6 +736,7 @@ modUtil.combo.modCombo = function(config) {
 		width: '100%',
 		anchor: '99%',
 		editable: true,
+		pageSize: 20,
 		preventRender: true,
 		forceSelection: true,
 		enableKeyEvents: true,
