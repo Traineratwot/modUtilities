@@ -26,6 +26,26 @@
 				return FALSE;
 			}
 
+			foreach ($this->properties as $key => $prop) {
+				if (empty($prop)) {
+					switch ($key) {
+						case 'param':
+							$this->setProperty($key, NULL);
+						case 'permission':
+							$this->setProperty($key, NULL);
+							break;
+						case 'BASIC_auth':
+							$this->setProperty($key, NULL);
+							break;
+						case 'category':
+							$this->setProperty($key, NULL);
+							break;
+						default    :
+							$this->setProperty($key, NULL);
+							break;
+					}
+				}
+			}
 			return !$this->hasErrors();
 
 		}

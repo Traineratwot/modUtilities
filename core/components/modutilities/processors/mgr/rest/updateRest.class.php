@@ -1,11 +1,13 @@
 <?php
 
-	class modUtilitiesUpdateRestProcessor  extends modObjectUpdateProcessor
+	class modUtilitiesUpdateRestProcessor extends modObjectUpdateProcessor
 	{
 		public $classKey = 'Utilrest';
 		public $primaryKeyField = 'id';
-		public function initialize(){
-			$this->properties = array_merge($this->properties,json_decode($this->properties['data'],1));
+
+		public function initialize()
+		{
+			$this->properties = array_merge($this->properties, json_decode($this->properties['data'], 1));
 			return parent::initialize();
 		}
 
@@ -23,10 +25,30 @@
 			if ($this->hasErrors()) {
 				return FALSE;
 			}
-
+			foreach ($this->properties as $key => $prop) {
+				if (empty($prop)) {
+					switch ($key) {
+						case 'param':
+							$this->setProperty($key, NULL);
+						case 'permission':
+							$this->setProperty($key, NULL);
+							break;
+						case 'BASIC_auth':
+							$this->setProperty($key, NULL);
+							break;
+						case 'category':
+							$this->setProperty($key, NULL);
+							break;
+						default    :
+							$this->setProperty($key, NULL);
+							break;
+					}
+				}
+			}
 			return !$this->hasErrors();
 
 		}
+
 		public function beforeSave()
 		{
 
@@ -35,10 +57,11 @@
 					return TRUE;
 				}
 			}
-			$this->addFieldError($k,'changes not found )');
+			$this->addFieldError($k, 'changes not found )');
 
 			return FALSE;
 		}
 
 	}
+
 	return 'modUtilitiesUpdateRestProcessor';
