@@ -55,7 +55,7 @@ modUtil.panel.Home = function(config) {
 	Ext.apply(config, {
 		cls: 'container', // Добавляем отступы
 		items: [{
-			html: ' <h2>modUtil REST</h2>'
+			html: ' <h2>modUtil REST<small style="font-size: 10px"><a href="https://forms.gle/FJbfBSutMJwQCgmS8" target="_blank">Bug report</a></small></h2>',
 		},
 			{
 				xtype: 'modx-tabs',
@@ -607,7 +607,7 @@ modUtil.window.addRest = function(config) {
 		action: 'mgr/rest/create_utilrest',
 		listeners: {
 			beforeSubmit: function(a) {
-				if(typeof a.allowMethod !== 'string') {
+				if(typeof a.allowMethod !== 'string' && a.allowMethod)  {
 					var allowMethod = a.allowMethod.join()
 					if(typeof allowMethod == 'string') {
 						$(`input[name="allowMethod"]`).each(function() {
@@ -694,7 +694,7 @@ modUtil.window.addCat = function(config) {
 		action: 'mgr/rest/create_utilrestcategory',
 		listeners: {
 			beforeSubmit: function(a) {
-				if(typeof a.allowMethod !== 'string')  {
+				if(typeof a.allowMethod !== 'string' && a.allowMethod)  {
 					var allowMethod = a.allowMethod.join()
 					if(typeof allowMethod == 'string') {
 						$(`input[name="allowMethod"]`).each(function() {
