@@ -42,7 +42,7 @@
 			`datetime` DATETIME NULL DEFAULT CURRENT_TIMESTAMP,
 			PRIMARY KEY (`id`) USING BTREE,
 			INDEX `FK_modutil_utilreststats_modutil_utilrest` (`rest_id`) USING BTREE,
-			CONSTRAINT `FK_modutil_utilreststats_modutil_utilrest` FOREIGN KEY (`rest_id`) REFERENCES `ay`.`modutil_utilrest` (`id`) ON UPDATE CASCADE ON DELETE CASCADE
+			CONSTRAINT `FK_modutil_utilreststats_modutil_utilrest` FOREIGN KEY (`rest_id`) REFERENCES `modutil_utilrest` (`id`) ON UPDATE CASCADE ON DELETE CASCADE
 		)
 		COLLATE='utf8_general_ci'
 		ENGINE=InnoDB
