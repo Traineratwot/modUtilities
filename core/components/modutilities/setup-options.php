@@ -33,14 +33,19 @@
 			;
 		",
 		'modutil_utilreststats' => "CREATE TABLE `modutil_utilreststats` (
-			`id` INT(10) NULL DEFAULT NULL,
-			`stats` JSON NULL DEFAULT NULL,
-			`log` JSON NULL DEFAULT NULL,
-			INDEX `FK__modutilitiesrest` (`id`) USING BTREE,
-			CONSTRAINT `FK__modutilitiesrest` FOREIGN KEY (`id`) REFERENCES `modutil_utilrest` (`id`) ON UPDATE CASCADE ON DELETE CASCADE
+			`id` INT(10) NOT NULL AUTO_INCREMENT,
+			`rest_id` INT(10) NOT NULL DEFAULT '0',
+			`input` LONGTEXT NULL DEFAULT NULL COLLATE 'utf8_general_ci',
+			`output` LONGTEXT NULL DEFAULT NULL COLLATE 'utf8_general_ci',
+			`user` LONGTEXT NULL DEFAULT NULL COLLATE 'utf8_general_ci',
+			`time` FLOAT(12,6) UNSIGNED NULL DEFAULT NULL,
+			`datetime` DATETIME NULL DEFAULT CURRENT_TIMESTAMP,
+			PRIMARY KEY (`id`) USING BTREE,
+			INDEX `FK_modutil_utilreststats_modutil_utilrest` (`rest_id`) USING BTREE,
+			CONSTRAINT `FK_modutil_utilreststats_modutil_utilrest` FOREIGN KEY (`rest_id`) REFERENCES `ay`.`modutil_utilrest` (`id`) ON UPDATE CASCADE ON DELETE CASCADE
 		)
 		COLLATE='utf8_general_ci'
-		ENGINE=InnoDB;
+		ENGINE=InnoDB
 		",
 	];
 	/** @var array $options */
