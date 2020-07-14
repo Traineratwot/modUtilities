@@ -420,7 +420,7 @@
 				}
 				return $isMember;
 			}
-			$prefix = $this->modx->getOption('table_prefix');
+			$prefix = $this->modx->getOption('table_prefix',null,"modx_");
 			$q = $this->modx->prepare("
 					SELECT `group`.`id` 		as `groupId`, 
 					       `group`.`name` 		as `groupName`, 
@@ -818,7 +818,7 @@
 		 */
 		public function getAllTvValue($id = 0)
 		{
-			$prefix = $this->modx->getOption('table_prefix');
+			$prefix = $this->modx->getOption('table_prefix',null,"modx_");
 			$sql = "SELECT GROUP_CONCAT(`contentid`),`value` FROM `{$prefix}site_tmplvar_contentvalues` WHERE `tmplvarid` = :id GROUP BY `value`";
 			$statement = $this->modx->prepare($sql);
 			if ($statement->execute(['id' => $id])) {
@@ -843,7 +843,7 @@
 			$response = [];
 			/** @var modResource $id */
 			$template = (int)$id->get('template');
-			$prefix = $this->modx->getOption('table_prefix');
+			$prefix = $this->modx->getOption('table_prefix',null,"modx_");
 			$q = $this->modx->prepare("SELECT tmplvarid FROM {$prefix}site_tmplvar_templates WHERE templateid = :template");
 			$q->execute([
 				"template" => $template,
@@ -854,6 +854,24 @@
 			return $response;
 		}
 
+		public function getResourcesByTvValue($id, $values=[])
+		{
+			global $modx;
+			$tvValues = $this->getAllTvValue($id);
+			$values_ = [];
+			foreach ($values as $val) {
+				foreach ($tvValues as $tvVal) {
+					echo $modx->util->print([$val, $tvVal]);
+					if (strpos($tvVal,$val) !== FALSE) {
+						$values_[] = $tvVal;
+					}
+				}
+			}
+			$prefix = $modx->getOption('table_prefix',null,"modx_");
+			$values = $this->arrayToSqlIn($values_);
+			return $modx->query("SELECT contentid FROM {$prefix}site_tmplvar_contentvalues WHERE tmplvarid = {$id} AND VALUE IN ({$values})")->fetchAll(PDO::FETCH_COLUMN);
+		}
+		
 		/**
 		 * get csv class
 		 * @return modUtilitiesCsv
@@ -912,5 +930,16 @@
 			}
 
 			return filter_var($ip, FILTER_VALIDATE_IP) ? (string)$ip : FALSE;
+		}
+
+		/**
+		 * generate string from array for sql IN()
+		 * @param array $arr
+		 * @return string
+		 */
+		public function arrayToSqlIn(array $arr): string
+		{
+			$dop = array_fill(0,count($arr),256);
+			return implode(',',array_map('json_encode',$arr,$dop));
 		}
 	}
