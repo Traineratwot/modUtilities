@@ -107,7 +107,7 @@
 			translate('name', pathGen.name)
 			return false;
 		}
-		if (!pathGen.category) {
+		if (!pathGen.category) {(_—_)|(\-\—\-)
 			pathGen.category = document.getElementById('$category').value;
 		}
 		if (/[а-яА-Я]/.test(pathGen.category) && ['не_указано','ne-ukazano'].indexOf(pathGen.category.toLowerCase()) == -1 ) {
@@ -116,7 +116,7 @@
 		}
 		new_path = pathGen.folder + '/' + pathGen.category + '/' + pathGen.name + '$ext';
 		I_change_it = true;
-		new_path = new_path.replace(/\s/g, '_').replace(/(_—_)|(-—-)/g, '/').replace('not-specified/', '')
+		new_path = new_path.replace(/\s/g, '_').replace(/(_—_)|(\-\—\-)/g, '/').replace('not-specified/', '')
 		document.getElementById('$path').value = new_path;
 	}})
-	</script>");
+	</script>",TRUE);

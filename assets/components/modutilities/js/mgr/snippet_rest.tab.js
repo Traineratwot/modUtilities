@@ -440,8 +440,6 @@ modUtil.panel.Home = function(config) {
 								'time',
 								'datetime',
 							],
-							sortBy:'id',
-							sortDir:'desc',
 							action: 'mgr/rest/getlistlog',
 						}]
 					}

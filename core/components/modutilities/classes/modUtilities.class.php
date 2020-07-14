@@ -15,6 +15,7 @@
 		 * @var constant $constant_
 		 */
 		private $constant;
+		public $prefix;
 		public $constant_;
 		/**
 		 * function other output
@@ -54,7 +55,7 @@
 		public function __construct(modX &$modx)
 		{
 			$this->modx = $modx;
-
+			$this->prefix = $this->modx->getOption('table_prefix');
 		}
 
 		public function __isset($name): bool
@@ -166,18 +167,19 @@
 
 		/**
 		 * makes the first letter capital (in Russian)
-		 * @param        $string
-		 * @param string $enc = 'UTF-8'
+		 * @param string $string     input
+		 * @param int    $mode       = 1
+		 * @param bool   $otherLower = 1
+		 * @param string $enc        = 'UTF-8'
 		 * @return string
 		 */
-		public function mb_ucfirst($string = '', $mode = modUtilities::FirstLetter, $enc = 'UTF-8'): ?string
+		public function mb_ucfirst($string = '', $mode = modUtilities::FirstLetter, $otherLower = TRUE, $enc = 'UTF-8'): ?string
 		{
 			switch ($mode) {
 				case 3:
 					$words = preg_split('#[\.\?\!]#', $string, 0, PREG_SPLIT_NO_EMPTY);
 					foreach ($words as $word) {
-						$wd = $this->mb_ucfirst($word, 1, $enc);
-						$string = str_ireplace($word, $wd, $string);
+						$string = str_ireplace($word, $this->mb_ucfirst($word, 1, $enc), $string);
 					}
 					return $string;
 				case 2:
@@ -188,6 +190,9 @@
 					return $string;
 				case 1:
 				default:
+					if ($otherLower) {
+						$string = mb_strtolower($string);
+					}
 					$count = (mb_strlen($string, $enc) - mb_strlen(ltrim($string, $enc))) + 1;
 					return mb_strtoupper(mb_substr($string, 0, $count, $enc), $enc) .
 						mb_substr($string, $count, mb_strlen($string, $enc), $enc);
@@ -420,16 +425,15 @@
 				}
 				return $isMember;
 			}
-			$prefix = $this->modx->getOption('table_prefix',null,"modx_");
 			$q = $this->modx->prepare("
 					SELECT `group`.`id` 		as `groupId`, 
 					       `group`.`name` 		as `groupName`, 
 					       `role`.`id` 			as `roleId`, 
 					       `role`.`name` 		as `roleName` , 
 					       `role`.`authority` 	as `roleAuthority` FROM 
-					                 `{$prefix}member_groups` 		as `member` 
-					      INNER JOIN `{$prefix}user_group_roles` 	as `role` 	on `role`.`id`  = `member`.`role` 
-					      INNER JOIN `{$prefix}membergroup_names` 	as `group` 	on `group`.`id` = `member`.`user_group` 
+					                 `{$this->prefix}member_groups` 		as `member` 
+					      INNER JOIN `{$this->prefix}user_group_roles` 	as `role` 	on `role`.`id`  = `member`.`role` 
+					      INNER JOIN `{$this->prefix}membergroup_names` 	as `group` 	on `group`.`id` = `member`.`user_group` 
 						  WHERE `member`.`member` = :userId
 					");
 			if ($q->execute(['userId' => $user->get('id')]) and $q->rowCount() > 0) {
@@ -655,7 +659,7 @@
 		}
 
 		/**
-		 * notEmpty
+		 * Empty
 		 * @param $var
 		 * @return bool
 		 */
@@ -813,16 +817,33 @@
 
 		/**
 		 * return all values by tv id
-		 * @param int $id
+		 * @param int|string $id
 		 * @return array|bool
 		 */
-		public function getAllTvValue($id = 0)
+		public function getAllTvValue($tv = 0)
 		{
-			$prefix = $this->modx->getOption('table_prefix',null,"modx_");
-			$sql = "SELECT GROUP_CONCAT(`contentid`),`value` FROM `{$prefix}site_tmplvar_contentvalues` WHERE `tmplvarid` = :id GROUP BY `value`";
+			$id = 0;
+			if (is_numeric($tv)) {
+				$id = $tv;
+			} elseif (is_string($tv) and !is_numeric($tv)) {
+				/** @var modTemplateVar $tv */
+				$tv = $this->modx->getObject('modTemplateVar', ['name' => $tv]);
+				$id = $tv->get('id');
+			} elseif (is_object($id) and $id instanceof modTemplateVar) {
+				$id = $id->get('id');
+			} else {
+				return FALSE;
+			}
+			$prefix = $this->modx->getOption('table_prefix');
+			$sql = "SELECT GROUP_CONCAT(`contentid`) as `contentid`,`value` FROM `{$prefix}site_tmplvar_contentvalues` WHERE `tmplvarid` = :id GROUP BY `value`";
 			$statement = $this->modx->prepare($sql);
 			if ($statement->execute(['id' => $id])) {
-				return $result = $statement->fetchAll(PDO::FETCH_KEY_PAIR);
+				$result = $statement->fetchAll(PDO::FETCH_KEY_PAIR);
+				$responce = [];
+				foreach ($result as $k => $v) {
+					$responce[$v] = explode(',', $k);
+				}
+				return $responce;
 			}
 			return FALSE;
 		}
@@ -843,8 +864,7 @@
 			$response = [];
 			/** @var modResource $id */
 			$template = (int)$id->get('template');
-			$prefix = $this->modx->getOption('table_prefix',null,"modx_");
-			$q = $this->modx->prepare("SELECT tmplvarid FROM {$prefix}site_tmplvar_templates WHERE templateid = :template");
+			$q = $this->modx->prepare("SELECT tmplvarid FROM {$this->prefix}site_tmplvar_templates WHERE templateid = :template");
 			$q->execute([
 				"template" => $template,
 			]);
@@ -854,24 +874,6 @@
 			return $response;
 		}
 
-		public function getResourcesByTvValue($id, $values=[])
-		{
-			global $modx;
-			$tvValues = $this->getAllTvValue($id);
-			$values_ = [];
-			foreach ($values as $val) {
-				foreach ($tvValues as $tvVal) {
-					echo $modx->util->print([$val, $tvVal]);
-					if (strpos($tvVal,$val) !== FALSE) {
-						$values_[] = $tvVal;
-					}
-				}
-			}
-			$prefix = $modx->getOption('table_prefix',null,"modx_");
-			$values = $this->arrayToSqlIn($values_);
-			return $modx->query("SELECT contentid FROM {$prefix}site_tmplvar_contentvalues WHERE tmplvarid = {$id} AND VALUE IN ({$values})")->fetchAll(PDO::FETCH_COLUMN);
-		}
-		
 		/**
 		 * get csv class
 		 * @return modUtilitiesCsv
@@ -914,7 +916,6 @@
 			return FALSE;
 		}
 
-
 		/**
 		 * return client IP
 		 * @return false|string IP
@@ -933,13 +934,33 @@
 		}
 
 		/**
-		 * generate string from array for sql IN()
+		 * @param int|modResource $id
+		 * @return bool|array
+		 */
+		public function getResourceChildren($id)
+		{
+			if (is_int($id)) {
+				$id = $this->modx->getObject('modResource', $id);
+				if (!$id) return FALSE;
+			} elseif (is_object($id) and $id instanceof modResource) {
+
+			} else {
+				return FALSE;
+			}
+			$q = $this->modx->prepare("SELECT `id` FROM {$this->prefix}site_content WHERE `parent` = :id");
+			if ($q && $q->execute(['id' => $id->get('id')])) {
+				return $q->fetchAll(PDO::FETCH_COLUMN);
+			}
+		}
+
+		/**
+		 * convert array to sql IN()
 		 * @param array $arr
 		 * @return string
 		 */
 		public function arrayToSqlIn(array $arr): string
 		{
-			$dop = array_fill(0,count($arr),256);
-			return implode(',',array_map('json_encode',$arr,$dop));
+			$dop = array_fill(0, count($arr), 256);
+			return implode(',', array_map('json_encode', $arr, $dop));
 		}
 	}

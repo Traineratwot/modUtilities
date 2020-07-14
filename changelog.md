@@ -1,5 +1,16 @@
 # Changelog
 
+## [2.2.2] - 2020-07-14
+
+### Added
+
+- fenom modificator util
+- function getAllTvValue
+- function getAllTvResource
+- function getResourceChildren
+- function arrayToSqlIn
+
+
 ## [2.1.9] - 2020-06-19
 ### Added
 - REST api ip filter

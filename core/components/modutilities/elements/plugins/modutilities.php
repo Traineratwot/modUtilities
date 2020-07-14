@@ -33,4 +33,9 @@ if (!class_exists('modUtilities')) {
 				'url'=>$_REQUEST[$alias],
 			]);
 			break;
+		case 'OnWebPageInit':
+			$script = include MODX_CORE_PATH . 'components/modutilities/classes/modutilities.js.php';
+			$script = '<script type="text/javascript" class="modutilities">'.$script.'</script>';
+			$modx->regClientStartupScript($script);
+			break;
 	}

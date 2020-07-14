@@ -279,6 +279,16 @@ $modx->util->output['function'];   //сюда попадает побочный 
       $modx->util->getAllTvResource(1); // [1=>'v1',2=>v2 ]
    ```
 
+- **getResourceChildren** возвращает массив c id дочерних элементов
+   ```php
+      $modx->util->getResourceChildren(1); // [2,3,4]
+   ```
+
+- **arrayToSqlIn** превращает массив в строку подходящюю для sql запроса в IN()
+    ```php
+        $modx->util->arrayToSqlIn(['v1','v2']); // "v1", "v2"
+    ```
+
 #### Классы
  - **Csv** 
     удобный класс для создания csv 
