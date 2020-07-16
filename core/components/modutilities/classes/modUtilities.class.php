@@ -770,12 +770,43 @@
 				if ($this->modx->getOption('enable_gravatar') and empty($img)) {
 					$Profile = $user->getOne('Profile');
 					$img = $this->getGravatar($Profile->get('email'), $width, $r, $default);
-					if (strpos(get_headers($img, 1)[0], '200') === FALSE) {
+					if ($this->ping($img)) {
 						$img = $alt;
 					}
 				}
 			}
 			return $img ?: $alt;
+		}
+
+		/**
+		 * test connect to remote resource (not return real ping)
+		 * @param string $host
+		 * @param int    $port
+		 * @param int    $timeout
+		 * @return bool
+		 */
+		function ping($host = '', $port = 80, $timeout = 10): bool
+		{
+			if ($host) {
+				$sock = fsockopen($host, $port, $errno, $errstr, $timeout);
+				if (!$sock) {
+					$this->output[__FUNCTION__]['error'] = [$errno, $errstr];
+					if ($errstr == 'Unable to find the socket transport "https" - did you forget to enable it when you configured PHP?') {
+						$headers = get_headers($host, 1);
+
+						preg_match('@HTTP\/\d+.\d+\s([2-3]\d+)?\s@', $headers[0], $math);
+						if (isset($math[1]) and $math[1]) {
+							return TRUE;
+						} else {
+							return FALSE;
+						}
+					}
+					return FALSE;
+				} else {
+					return TRUE;
+				}
+			}
+			return FALSE;
 		}
 
 		/**

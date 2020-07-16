@@ -1,5 +1,5 @@
 <?php
-if (!class_exists('modUtilities')) {
+	if (!class_exists('modUtilities')) {
 		include MODX_CORE_PATH . 'components/modutilities/classes/modutilities.class.php';
 	} else {
 		$modx->log(MODX::LOG_LEVEL_WARN, 'can`t load class "modUtilities" already declared!');
@@ -18,6 +18,16 @@ if (!class_exists('modUtilities')) {
 					$method = array_shift($params);
 					if (method_exists($modx->util, $method)) {
 						return $modx->util->$method(...$params);
+					} else {
+						return eval('return $modx->util->' . $method . ';');
+					}
+					$modx->log(MODX::LOG_LEVEL_WARN, 'can`t run $modx->util->' . $method . ' ');
+					return FALSE;
+				});
+				$fenom->addModifier('util', function ($input,$option) use ($modx)  {
+					$method = $input;
+					if (method_exists($modx->util, $method)) {
+						return $modx->util->$method(...$option);
 					} else {
 						return eval('return $modx->util->' . $method . ';');
 					}
