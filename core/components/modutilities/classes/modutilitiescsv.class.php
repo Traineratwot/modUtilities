@@ -90,6 +90,8 @@
 			$isAssoc = $this->util->isAssoc($args);
 			$args_ = [];
 			foreach ($args as $k => $art) {
+				$art = str_replace($this->str_delimiter, urlencode($this->str_delimiter), $art);
+				$art = str_replace($this->line_delimiter, urlencode($this->line_delimiter), $art);
 				if ($isAssoc) {
 					if (!is_string($art) and !is_numeric($art)) {
 						$args_[$head[$k]] = NULL;
@@ -129,6 +131,8 @@
 			$head = array_flip($this->head);
 			$isAssoc = $this->util->isAssoc($args);
 			foreach ($args as $k => $art) {
+				$art = str_replace($this->str_delimiter, urlencode($this->str_delimiter), $art);
+				$art = str_replace($this->line_delimiter, urlencode($this->line_delimiter), $art);
 				if (!is_string($art) and !is_numeric($art)) {
 					$art = NULL;
 				} else {
@@ -156,6 +160,8 @@
 				$args = $args[0];
 			}
 			foreach ($args as $k => $art) {
+				$art = str_replace($this->str_delimiter, urlencode($this->str_delimiter), $art);
+				$art = str_replace($this->line_delimiter, urlencode($this->line_delimiter), $art);
 				if (!is_string($art) and !is_numeric($art)) {
 					$args[$k] = NULL;
 				} else {
@@ -244,16 +250,17 @@
 			return FALSE;
 		}
 
-		private function matrixFix(){
+		private function matrixFix()
+		{
 			$lenCol[] = count($this->head);
 			foreach ($this->matrix as $row) {
 				$lenCol[] = count($row);
 			}
 			$lenCol = max($lenCol);
 			foreach ($this->matrix as $k => $row) {
-				for ($i= 0; $lenCol > $i; $i++) {
-					if(!isset($row[$i])){
-						$this->matrix[$k][$i] = null;
+				for ($i = 0; $lenCol > $i; $i++) {
+					if (!isset($row[$i])) {
+						$this->matrix[$k][$i] = NULL;
 					}
 				}
 			}
@@ -264,6 +271,7 @@
 		 */
 		public function _buildCsv()
 		{
+			$this->sort();
 			$this->csv = $this->utf8bom;
 			$len = [];
 			$head = $this->head;
@@ -298,6 +306,7 @@
 		 */
 		public function _buildHtmlTable($cls = '')
 		{
+			$this->sort();
 			$this->html = "<table class=\"$cls\">";
 			$len = [];
 			$head = $this->head;
@@ -346,8 +355,9 @@
 		 * @param string $delimiter
 		 * @param string $item li|ol
 		 */
-		public function _buildHtmlList($cls = '', $delimiter = '', $item = 'li')
+		public function _buildHtmlList($cls = '', $delimiter = ' ', $item = 'li')
 		{
+			$this->sort();
 			$this->html = "<ul class=\"$cls\">";
 			$len = [];
 			$head = $this->head;
@@ -392,40 +402,41 @@
 		}
 
 		/**
-		 * @return csvString
+		 * @return String
 		 */
-		public function toCsv(): string
+		public function toCsv()
 		{
 			$this->_buildCsv();
-			return $this->csv;
+			return (string)$this->csv;
 		}
 
 		/**
 		 * @param string $cls
-		 * @return string
+		 * @return String
 		 */
-		public function toHtml($cls = ''): string
+		public function toHtml($cls = '')
 		{
 			$this->_buildHtmlTable($cls);
-			return $this->html;
+			return (string)$this->html;
 		}
 
 		/**
 		 * @param string $cls
-		 * @return string
+		 * @return String
 		 */
-		public function toHtmlTable($cls = ''): string
+		public function toHtmlTable($cls = '')
 		{
 			$this->_buildHtmlTable($cls);
-			return $this->html;
+			return (string)$this->html;
 		}
 
 		/**
 		 * @param string $cls
 		 * @param string $delimiter
 		 * @param string $item UL, OL, LI и DL
+		 * @return String
 		 */
-		public function toHtmlList($cls = '', $delimiter = '', $item = 'li'): string
+		public function toHtmlList($cls = '', $delimiter = '', $item = 'li')
 		{
 			$this->_buildHtmlList($cls, $delimiter, $item);
 			return $this->html;
@@ -435,7 +446,7 @@
 		 * @param resource|string $source
 		 * @return $this|false
 		 */
-		public function readCsv($source): string
+		public function readCsv($source)
 		{
 			switch (gettype($source)) {
 				case 'string':
@@ -500,7 +511,7 @@
 
 		public function getRow()
 		{
-			if($this->currentRow == -1){
+			if ($this->currentRow == -1) {
 				$this->currentRow++;
 				return $this->head;
 			}
@@ -516,13 +527,13 @@
 
 		public function getCol()
 		{
-			if($this->currentCol == -1){
+			if ($this->currentCol == -1) {
 				$this->currentCol++;
 				return $this->head;
 			}
 			$col = [];
-			foreach ($this->matrix as $v){
-				if(isset($v[$this->currentCol])){
+			foreach ($this->matrix as $v) {
+				if (isset($v[$this->currentCol])) {
 					$col[] = $v[$this->currentCol];
 				}
 			}
@@ -540,7 +551,7 @@
 		 */
 		final public function __toString()
 		{
-			return $this->toCsv();
+			return (string)$this->toCsv();
 		}
 
 		/**
@@ -558,13 +569,20 @@
 		 */
 		final public function __get($name)
 		{
-			switch ($name){
+			switch ($name) {
 				case 'matrix':
 					return $this->matrix;
 
 				default:
 					return FALSE;
 
+			}
+		}
+
+		private function sort(){
+			ksort($this->head);
+			foreach ($this->matrix as $k=>$v){
+				ksort($this->matrix[$k]);
 			}
 		}
 
@@ -575,7 +593,7 @@
 		 */
 		final public function __set($name, $value)
 		{
-			switch($name) {
+			switch ($name) {
 				case 'matrix':
 					$this->matrix = $value;
 				case 'csv':
