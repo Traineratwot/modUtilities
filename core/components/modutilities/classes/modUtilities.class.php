@@ -797,7 +797,7 @@
 		 * @param int    $timeout
 		 * @return bool
 		 */
-		function ping($host = '', $timeout = 10, $port = 80)
+		public function ping($host = '', $timeout = 10, $port = 80)
 		{
 			if ($host) {
 				$sock = fsockopen($host, $port, $errno, $errstr, $timeout);
