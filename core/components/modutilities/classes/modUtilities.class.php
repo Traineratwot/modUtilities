@@ -58,7 +58,7 @@
 			$this->prefix = $this->modx->getOption('table_prefix');
 		}
 
-		public function __isset($name): bool
+		public function __isset($name)
 		{
 			return isset($this->$name);
 		}
@@ -675,7 +675,7 @@
 		 * @param $var
 		 * @return bool
 		 */
-		public function empty($var): bool
+		public function empty($var)
 		{
 			switch (gettype($var)) {
 				case "array":
@@ -707,7 +707,7 @@
 		 * @param array $arr
 		 * @return bool
 		 */
-		public function isAssoc(&$arr = []): bool
+		public function isAssoc(&$arr = [])
 		{
 			if (is_array($arr)) {
 				$c = count($arr);
@@ -725,7 +725,7 @@
 		 * @param $str
 		 * @return bool
 		 */
-		public function strTest(): bool
+		public function strTest()
 		{
 			$score = 0;
 			$args = func_get_args();
@@ -759,7 +759,7 @@
 		 * @param string             $default
 		 * @return string
 		 */
-		public function getUserPhoto($id = 0, $alt = FALSE, $width = 128, $height = 128, $r = 'g', $default = '404'): string
+		public function getUserPhoto($id = 0, $alt = FALSE, $width = 128, $height = 128, $r = 'g', $default = '404')
 		{
 			$alt = $alt ?: 'https://placehold.it/' . $width . 'x' . $height . '?text=avatar';
 			if ($id) {
@@ -797,7 +797,7 @@
 		 * @param int    $timeout
 		 * @return bool
 		 */
-		function ping($host = '', $port = 80, $timeout = 10): bool
+		function ping($host = '', $timeout = 10, $port = 80)
 		{
 			if ($host) {
 				$sock = fsockopen($host, $port, $errno, $errstr, $timeout);
@@ -805,7 +805,6 @@
 					$this->output[__FUNCTION__]['error'] = [$errno, $errstr];
 					if ($errstr == 'Unable to find the socket transport "https" - did you forget to enable it when you configured PHP?') {
 						$headers = get_headers($host, 1);
-
 						preg_match('@HTTP\/\d+.\d+\s([2-3]\d+)?\s@', $headers[0], $math);
 						if (isset($math[1]) and $math[1]) {
 							return TRUE;
@@ -830,7 +829,7 @@
 		 * @return String containing either just a URL or a complete image tag
 		 * @source https://gravatar.com/site/implement/images/php/
 		 */
-		public function getGravatar($email, $size = 128, $r = 'g', $default = '404'): string
+		public function getGravatar($email, $size = 128, $r = 'g', $default = '404')
 		{
 			$gravatarEmail = md5(strtolower(trim($email)));
 			$url = 'https://www.gravatar.com/avatar/' . $gravatarEmail . "?s={$size}&r={$r}&d={$default}";
@@ -1002,7 +1001,7 @@
 		 * @param array $arr
 		 * @return string
 		 */
-		public function arrayToSqlIn(array $arr): string
+		public function arrayToSqlIn(array $arr)
 		{
 			$dop = array_fill(0, count($arr), 256);
 			return implode(',', array_map('json_encode', $arr, $dop));
