@@ -344,6 +344,17 @@
 			} else {
 				$current_id = 0;
 			}
+			if (is_numeric($id)) {
+			} elseif (is_string($id) and !is_numeric($id)) {
+				/** @var modResource $res */
+				$res = $this->modx->getObject('modResource', ['pagetitle' => $id]);
+				$id = $res->get('id');
+			} elseif (is_object($id) and $id instanceof modResource) {
+				$id = $id->get('id');
+			} else {
+				return FALSE;
+			}
+
 			if ($id == $current_id) {
 				return $alt;
 			} else {
@@ -368,6 +379,7 @@
 					return $a;
 				}
 			}
+			return FALSE;
 		}
 
 		/**
@@ -821,7 +833,8 @@
 		public function getGravatar($email, $size = 128, $r = 'g', $default = '404'): string
 		{
 			$gravatarEmail = md5(strtolower(trim($email)));
-			return 'https://www.gravatar.com/avatar/' . $gravatarEmail . "?s={$size}&r={$r}&d={$default}";
+			$url = 'https://www.gravatar.com/avatar/' . $gravatarEmail . "?s={$size}&r={$r}&d={$default}";
+			return $this->ping($url) ? $url : FALSE;
 		}
 
 		/**
