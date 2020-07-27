@@ -21,6 +21,7 @@ class modX {
 class modUtilities {
 	constructor(modx) {
 		this.modx = modx
+		this.device = '';
 		this.constant = {};
 		this.constant.kb = 1024;
 		this.constant.min = 60;
@@ -35,6 +36,8 @@ class modUtilities {
 		this.FirstLetter = 1;
 		this.EveryWord = 2;
 		this.AfterDot = 3;
+		//
+		this.Device();
 	}
 
 
