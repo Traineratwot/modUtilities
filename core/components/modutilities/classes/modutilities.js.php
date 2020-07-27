@@ -91,6 +91,9 @@ class modUtilities {
 	}
 }
 modx = new modX();
+window.addEventListener('resize', function(event) {
+	modx.util.Device()
+}, true);
 <?php
 $output = ob_get_contents();
 ob_end_flush();
