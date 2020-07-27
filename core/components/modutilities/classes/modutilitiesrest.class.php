@@ -145,18 +145,18 @@
 							break;
 						case 'ip':
 							$ip = $this->util->getIP();
-							if($ip !== false){
-								if(is_array($value)){
-									if(in_array($ip,$value)){
+							if ($ip !== FALSE) {
+								if (is_array($value)) {
+									if (in_array($ip, $value)) {
 										throw new Exception(TRUE, 1);
-									}else{
+									} else {
 										throw new Exception(FALSE, 0);
 									}
-								}else{
-									if($value =='this'){
-										if($_SERVER['SERVER_ADDR'] == $ip){
+								} else {
+									if ($value == 'this') {
+										if ($_SERVER['SERVER_ADDR'] == $ip) {
 											throw new Exception(TRUE, 1);
-										}else{
+										} else {
 											throw new Exception(FALSE, 0);
 										}
 									}
@@ -186,18 +186,18 @@
 							break;
 						case 'ip':
 							$ip = $this->util->getIP();
-							if($ip !== false){
-								if(is_array($value)){
-									if(in_array($ip,$value)){
+							if ($ip !== FALSE) {
+								if (is_array($value)) {
+									if (in_array($ip, $value)) {
 										throw new Exception(FALSE, 0);
-									}else{
+									} else {
 										throw new Exception(TRUE, 1);
 									}
-								}else{
-									if($value =='this'){
-										if($_SERVER['SERVER_ADDR'] == $ip){
+								} else {
+									if ($value == 'this') {
+										if ($_SERVER['SERVER_ADDR'] == $ip) {
 											throw new Exception(FALSE, 0);
-										}else{
+										} else {
 											throw new Exception(TRUE, 1);
 										}
 									}
@@ -287,6 +287,12 @@
 				]);
 				if ($sp) {
 					return $sp->process($scriptProperties);
+				}
+				if (!class_exists('modX')) {
+					return 'ERROR MODX not FOUND';
+				}
+				if (!class_exists('modProcessor')) {
+					include MODX_CORE_PATH . DIRECTORY_SEPARATOR . 'model' . DIRECTORY_SEPARATOR . 'modx' . DIRECTORY_SEPARATOR . 'modprocessor.class.php';
 				}
 				if (!class_exists('modUtilRestProcessor')) {
 					include __DIR__ . DIRECTORY_SEPARATOR . 'modutilrestprocessor.php';
