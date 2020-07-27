@@ -782,7 +782,7 @@
 				if ($this->modx->getOption('enable_gravatar') and empty($img)) {
 					$Profile = $user->getOne('Profile');
 					$img = $this->getGravatar($Profile->get('email'), $width, $r, $default);
-					if ($this->ping($img)) {
+					if (!$this->ping($img)) {
 						$img = $alt;
 					}
 				}
