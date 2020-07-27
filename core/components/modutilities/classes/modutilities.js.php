@@ -75,6 +75,17 @@ class modUtilities {
 		}
 		return false
 	}
+	Device() {
+		var d = 'mobile'
+		if(window.innerWidth > 560) {
+			d = 'tabled'
+		}
+		if(window.innerWidth > 1200) {
+			d = 'pc'
+		}
+		this.device = d
+		return d
+	}
 }
 modx = new modX();
 <?php
