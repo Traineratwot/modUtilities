@@ -107,7 +107,7 @@
 			translate('name', pathGen.name)
 			return false;
 		}
-		if (!pathGen.category) {(_—_)|(\-\—\-)
+		if (!pathGen.category) {
 			pathGen.category = document.getElementById('$category').value;
 		}
 		if (/[а-яА-Я]/.test(pathGen.category) && ['не_указано','ne-ukazano'].indexOf(pathGen.category.toLowerCase()) == -1 ) {
