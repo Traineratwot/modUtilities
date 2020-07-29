@@ -797,11 +797,14 @@
 		 * @param int    $timeout
 		 * @return bool
 		 */
-		public function ping($host = '', $timeout = 10, $port = 80)
+		public function ping($host = '',$useSoket = false, $timeout = 10, $port = 80)
 		{
 			if ($host) {
-				$sock = fsockopen($host, $port, $errno, $errstr, $timeout);
-				if (!$sock) {
+				$sock = false;
+				if($useSoket)
+					$sock = fsockopen($host, $port, $errno, $errstr, $timeout);
+			}
+				if (!$sock or !$useSoket) {
 					$this->output[__FUNCTION__]['error'] = [$errno, $errstr];
 					if ($errstr == 'Unable to find the socket transport "https" - did you forget to enable it when you configured PHP?') {
 						$headers = get_headers($host, 1);
