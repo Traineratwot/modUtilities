@@ -793,20 +793,21 @@
 		/**
 		 * test connect to remote resource (not return real ping)
 		 * @param string $host
-		 * @param int    $port
+		 * @param bool   $useSocket
 		 * @param int    $timeout
+		 * @param int    $port
 		 * @return bool
 		 */
-		public function ping($host = '',$useSoket = false, $timeout = 10, $port = 80)
+		public function ping($host = '', $useSocket = FALSE, $timeout = 10, $port = 80)
 		{
 			if ($host) {
-				$sock = false;
-				if($useSoket){
+				$sock = FALSE;
+				if ($useSocket) {
 					$sock = fsockopen($host, $port, $errno, $errstr, $timeout);
-			}
-				if (!$sock or !$useSoket) {
+				}
+				if (!$sock) {
 					$this->output[__FUNCTION__]['error'] = [$errno, $errstr];
-					if ($errstr == 'Unable to find the socket transport "https" - did you forget to enable it when you configured PHP?') {
+					if (!$useSocket or $errstr == 'Unable to find the socket transport "https" - did you forget to enable it when you configured PHP?') {
 						$headers = get_headers($host, 1);
 						preg_match('@HTTP\/\d+.\d+\s([2-3]\d+)?\s@', $headers[0], $math);
 						if (isset($math[1]) and $math[1]) {
