@@ -801,7 +801,7 @@
 		{
 			if ($host) {
 				$sock = false;
-				if($useSoket)
+				if($useSoket){
 					$sock = fsockopen($host, $port, $errno, $errstr, $timeout);
 			}
 				if (!$sock or !$useSoket) {
