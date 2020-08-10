@@ -13,8 +13,13 @@ ob_start("callback");
 class modX {
 
 	constructor() {
+		var self = this;
 		this.resource = <?=json_encode($res, 256)?>;
-
+		$(document).mousemove(function(e){
+			// положение курсора внутри элемента
+			self.pageX = e.pageX
+			self.pageY = e.pageY
+		});
 		this.util = new modUtilities(this)
 	}
 }
