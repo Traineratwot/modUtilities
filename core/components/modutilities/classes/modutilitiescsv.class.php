@@ -5,11 +5,11 @@
 	 * Time: 18:04
 	 */
 
-	class modUtilitiesCsv
+	class modutilitiesCsv
 	{
 		/* @var modX $modX */
 		public $modx;
-		/* @var modUtilities $util */
+		/* @var modutilities $util */
 		public $util;
 		/* @var string chr(239) . chr(187) . chr(191) */
 		public $utf8bom;
@@ -26,6 +26,7 @@
 		protected $appendType = FALSE;
 		protected $str_delimiter;
 		protected $line_delimiter;
+		protected $escape;
 		public $currentRow = -1;
 		public $currentCol = -1;
 
@@ -41,7 +42,7 @@
 		 * @param utilities $util
 		 * @param array     $param
 		 */
-		public function __construct(modX &$modx, modUtilities &$util, $param = [])
+		public function __construct(modX &$modx, modutilities &$util, $param = [])
 		{
 			$this->inputCharset = isset($param['inputCharset']) ? $param['inputCharset'] : 'utf8';
 			$this->modx = $modx;
@@ -50,6 +51,7 @@
 			$this->utf8bom = (isset($param['woBom']) and $param['woBom'] = TRUE) ? NULL : chr(239) . chr(187) . chr(191);
 			$this->str_delimiter = isset($param['delimiter']) ? $param['delimiter'] : ';';
 			$this->line_delimiter = isset($param['line_delimiter']) ? $param['line_delimiter'] : "\n";
+			$this->escape = isset($param['escape']) ? $param['escape'] : '"';
 		}
 
 		/**
@@ -90,8 +92,7 @@
 			$isAssoc = $this->util->isAssoc($args);
 			$args_ = [];
 			foreach ($args as $k => $art) {
-				$art = str_replace($this->str_delimiter, urlencode($this->str_delimiter), $art);
-				$art = str_replace($this->line_delimiter, urlencode($this->line_delimiter), $art);
+				$art = $this->escape.$art.$this->escape;
 				if ($isAssoc) {
 					if (!is_string($art) and !is_numeric($art)) {
 						$args_[$head[$k]] = NULL;
@@ -131,8 +132,7 @@
 			$head = array_flip($this->head);
 			$isAssoc = $this->util->isAssoc($args);
 			foreach ($args as $k => $art) {
-				$art = str_replace($this->str_delimiter, urlencode($this->str_delimiter), $art);
-				$art = str_replace($this->line_delimiter, urlencode($this->line_delimiter), $art);
+				$art = $this->escape.$art.$this->escape;
 				if (!is_string($art) and !is_numeric($art)) {
 					$art = NULL;
 				} else {
@@ -160,8 +160,7 @@
 				$args = $args[0];
 			}
 			foreach ($args as $k => $art) {
-				$art = str_replace($this->str_delimiter, urlencode($this->str_delimiter), $art);
-				$art = str_replace($this->line_delimiter, urlencode($this->line_delimiter), $art);
+				$art = $this->escape.$art.$this->escape;
 				if (!is_string($art) and !is_numeric($art)) {
 					$args[$k] = NULL;
 				} else {
@@ -253,14 +252,16 @@
 		private function matrixFix()
 		{
 			$lenCol[] = count($this->head);
-			foreach ($this->matrix as $row) {
-				$lenCol[] = count($row);
-			}
-			$lenCol = max($lenCol);
-			foreach ($this->matrix as $k => $row) {
-				for ($i = 0; $lenCol > $i; $i++) {
-					if (!isset($row[$i])) {
-						$this->matrix[$k][$i] = NULL;
+			if (is_array($this->matrix)) {
+				foreach ($this->matrix as $row) {
+					$lenCol[] = count($row);
+				}
+				$lenCol = max($lenCol);
+				foreach ($this->matrix as $k => $row) {
+					for ($i = 0; $lenCol > $i; $i++) {
+						if (!isset($row[$i])) {
+							$this->matrix[$k][$i] = NULL;
+						}
 					}
 				}
 			}
@@ -445,14 +446,15 @@
 		/**
 		 * @param resource|string $source
 		 * @return $this|false
+		 * @filesource
 		 */
 		public function readCsv($source)
 		{
 			switch (gettype($source)) {
 				case 'string':
 					if (!$this->util->strTest($source, "\n", [$this->line_delimiter, $this->str_delimiter]) and file_exists($source)) {
-						$source = file_get_contents($source);
-						return $this->_readCsvString($source);
+						$source = @fopen($source, 'r');
+						return $this->_readCsvResource($source);
 					} else {
 						return $this->_readCsvString($source);
 					}
@@ -469,14 +471,17 @@
 		 */
 		final private function _readCsvResource($source)
 		{
-			$i = 0;
-			while (($row = fgetcsv($source, 10240, $this->str_delimiter)) !== FALSE) {
-				$i++;
-				if ($i === 1) {
-					$this->setHead($row);
-					continue;
+			if(is_resource($source)) {
+				$i = 0;
+				while (($row = fgetcsv($source, 10240, $this->str_delimiter))) {
+					$i++;
+					if ($i === 1) {
+						$this->setHead($row);
+						continue;
+					}
+					$this->addRow($row);
 				}
-				$this->addRow($row);
+				fclose($source);
 			}
 			return $this;
 		}
@@ -488,6 +493,7 @@
 		final private function _readCsvString($source)
 		{
 			$i = 0;
+			//$rows = str_getcsv($source,$this->str_delimiter);
 			$rows = explode($this->line_delimiter, $source);
 			foreach ($rows as $row) {
 				$i++;
@@ -504,7 +510,7 @@
 		/**
 		 * @return array
 		 */
-		public function toArray(): array
+		public function toArray()
 		{
 			return $this->matrix;
 		}
@@ -579,9 +585,10 @@
 			}
 		}
 
-		private function sort(){
+		private function sort()
+		{
 			ksort($this->head);
-			foreach ($this->matrix as $k=>$v){
+			foreach ($this->matrix as $k => $v) {
 				ksort($this->matrix[$k]);
 			}
 		}

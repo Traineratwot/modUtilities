@@ -1,24 +1,20 @@
 <?php
-function callback($buffer)
-{
-	return $buffer;
-}
 /** @var modResource $resource */
+
 $resource = $modx->getObject('modResource', $modx->resourceIdentifier);
 $res = $resource->toArray('', TRUE);
 unset($res['content']);
-ob_start("callback");
+ob_start();
 ?>
-
 class modX {
 
 	constructor() {
 		this.resource = <?=json_encode($res, 256)?>;
 
-		this.util = new modUtilities(this)
+		this.util = new modutilities(this)
 	}
 }
-class modUtilities {
+class modutilities {
 	constructor(modx) {
 		this.modx = modx
 		this.device = '';
@@ -31,7 +27,7 @@ class modUtilities {
 		this.constant.hour = this.constant.min * 60;
 		this.constant.day = this.constant.hour * 24;
 		this.constant.week = this.constant.day * 7;
-		this.translitRule = <?=json_encode(modUtilities::translitRule)?>;
+		this.translitRule = <?=json_encode(modutilities::translitRule)?>;
 		//class constant
 		this.FirstLetter = 1;
 		this.EveryWord = 2;
@@ -50,7 +46,7 @@ class modUtilities {
 	static get AfterDot() {return 3;}
 
 
-	mb_ucfirst(string = '', mode = modUtilities.FirstLetter, otherLower = true) {
+	mb_ucfirst(string = '', mode = modutilities.FirstLetter, otherLower = true) {
 		if(string && string.constructor.name == 'String') {
 			switch( mode ) {
 				case 3:
@@ -95,6 +91,4 @@ window.addEventListener('resize', function(event) {
 	modx.util.Device()
 }, true);
 <?php
-$output = ob_get_contents();
-ob_end_flush();
-return $output;
+return ob_get_clean();

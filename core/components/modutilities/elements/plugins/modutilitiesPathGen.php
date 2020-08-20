@@ -1,5 +1,5 @@
 <?php
-	switch ($modx->event->name) {
+switch ($modx->event->name) {
 		case 'OnSnipFormPrerender':
 			$folder = 'core/elements/snippets';
 			$class = 'snippet';

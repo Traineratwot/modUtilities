@@ -1,38 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<model package="modUtilities" baseClass="xPDOObject" platform="mysql" defaultEngine="MyISAM" version="1.1">
+<model package="modutilities" baseClass="xPDOObject" platform="mysql" defaultEngine="MyISAM" version="1.1">
 	<object class="Utilrest" table="utilrest" extends="xPDOSimpleObject">
-		<field key="permission" dbtype="json" phptype="string" null="true" />
+		<field key="permission" dbtype="longtext" phptype="string" null="true" />
 		<field key="url" dbtype="varchar" precision="50" phptype="string" null="true" index="unique" />
 		<field key="snippet" dbtype="longtext" phptype="string" null="true" />
-		<field key="param" dbtype="json" phptype="string" null="true" />
+		<field key="param" dbtype="longtext" phptype="string" null="true" />
 		<field key="allowMethod" dbtype="set" precision="'GET','POST','PUT','DELETE','PATH','CONNECT','HEAD','OPTIONS','TRACE'" phptype="string" null="true" />
 		<field key="BASIC_auth" dbtype="tinyint" precision="1" phptype="integer" null="true" default="0" />
-		<field key="category" dbtype="int" phptype="integer" null="true" default="1" index="index" />
+		<field key="category" dbtype="int" precision="10" phptype="integer" null="true" default="1" />
 
 		<index alias="url" name="url" primary="false" unique="true" type="BTREE" >
 			<column key="url" length="" collation="A" null="true" />
 		</index>
-		<index alias="FK_modutil_utilrest_modutil_utilrestcategory" name="FK_modutil_utilrest_modutil_utilrestcategory" primary="false" unique="false" type="BTREE" >
-			<column key="category" length="" collation="A" null="true" />
-		</index>
 	</object>
 	<object class="Utilrestcategory" table="utilrestcategory" extends="xPDOSimpleObject">
-		<field key="name" dbtype="varchar" precision="20" phptype="string" null="true" />
-		<field key="permission" dbtype="json" phptype="string" null="true" />
-		<field key="param" dbtype="json" phptype="string" null="true" />
+		<field key="name" dbtype="varchar" precision="20" phptype="string" null="true" index="unique" />
+		<field key="permission" dbtype="longtext" phptype="string" null="true" />
+		<field key="param" dbtype="longtext" phptype="string" null="true" />
 		<field key="allowMethod" dbtype="set" precision="'GET','POST','PUT','DELETE','PATH','CONNECT','HEAD','OPTIONS','TRACE'" phptype="string" null="true" />
 		<field key="BASIC_auth" dbtype="tinyint" precision="1" phptype="integer" null="true" />
+
+		<index alias="name" name="name" primary="false" unique="true" type="BTREE" >
+			<column key="name" length="" collation="A" null="true" />
+		</index>
 	</object>
 	<object class="Utilreststats" table="utilreststats" extends="xPDOSimpleObject">
-		<field key="rest_id" dbtype="int" phptype="integer" null="false" default="0" index="index" />
+		<field key="rest_id" dbtype="int" precision="10" phptype="integer" null="false" default="0" />
 		<field key="input" dbtype="longtext" phptype="string" null="true" />
 		<field key="output" dbtype="longtext" phptype="string" null="true" />
 		<field key="user" dbtype="longtext" phptype="string" null="true" />
 		<field key="time" dbtype="float" precision="12,6" attributes="unsigned" phptype="float" null="true" />
-		<field key="datetime" dbtype="datetime" phptype="datetime" null="true" default="CURRENT_TIMESTAMP"  extra="default_generated" />
-
-		<index alias="FK_modutil_utilreststats_modutil_utilrest" name="FK_modutil_utilreststats_modutil_utilrest" primary="false" unique="false" type="BTREE" >
-			<column key="rest_id" length="" collation="A" null="false" />
-		</index>
+		<field key="datetime" dbtype="datetime" phptype="datetime" null="true" />
 	</object>
 </model>

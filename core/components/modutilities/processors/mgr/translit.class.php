@@ -1,7 +1,7 @@
 <?php
 	/**
-	 * Created by Andrey Stepanenko.
-	 * User: webnitros
+	 * Created by Kirill Nefediev.
+
 	 * Date: 27.05.2020
 	 * Time: 20:31
 	 */

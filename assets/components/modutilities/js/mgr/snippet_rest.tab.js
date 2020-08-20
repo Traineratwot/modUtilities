@@ -21,6 +21,7 @@ Ext.onReady(function() {
 			}
 		}
 	})
+	hljs.initHighlightingOnLoad()
 })
 var modUtil = function(config) {
 	config = config || {}
@@ -45,10 +46,12 @@ var defaultRenderer = function(val) {
 }
 var JSONRenderer = function(val) {
 	if(val) {
-		return cope.Highlighter.highlight(JSON.parse(val), {indent: 2, useTabs: true})
+		return cope.Highlighter.highlight(JSON.parse(val), {indent: 2, useTabs: true});
+		return `<pre><code class="language-json">${val}</code></pre>`
 	}
 	return defaultRenderer(val)
 }
+
 //основной блок
 modUtil.panel.Home = function(config) {
 	config = config || {}
@@ -59,11 +62,13 @@ modUtil.panel.Home = function(config) {
 		},
 			{
 				xtype: 'modx-tabs',
+				id:"main-modx-tabs",
 				deferredRender: false,
 				border: true,
 				items: [
 					{
 						title: 'Rest',
+						id:'modx-tabs-Rest',
 						items: [{
 							html: 'Methods',
 							cls: 'panel-desc',
@@ -252,6 +257,7 @@ modUtil.panel.Home = function(config) {
 					},
 					{
 						title: 'Category',
+						id:'modx-tabs-Category',
 						items: [{
 							html: 'Categories',
 							cls: 'panel-desc',
@@ -376,6 +382,7 @@ modUtil.panel.Home = function(config) {
 					},
 					{
 						title: 'log',
+						id:'modx-tabs-log',
 						items: [{ // Внутри таба ещё один HTML-блок с классом panel-desc
 							html: 'connection log',
 							cls: 'panel-desc',

@@ -1,7 +1,9 @@
 <?php
-class Utilrest extends xPDOSimpleObject {
-	public function getProperty($k, $default = NULL)
+
+	class Utilrest extends xPDOSimpleObject
 	{
-		return (!empty($this->get($k)) AND $this->get($k) != NULL) ? $this->get($k) : $default;
+		public function getProperty($k, $default = NULL)
+		{
+			return (!empty($this->get($k)) and $this->get($k) != NULL) ? $this->get($k) : $default;
+		}
 	}
-}

@@ -10,7 +10,7 @@
 	 * @property int day
 	 * @property int week
 	 */
-	class modUtilitiesConstant
+	class modutilitiesConstant
 	{
 
 		private $kb = 1024;
@@ -35,7 +35,7 @@
 			$this->week = $this->day * 7;
 		}
 
-		public function __isset($name): bool
+		public function __isset($name)
 		{
 			return isset($this->$name);
 		}

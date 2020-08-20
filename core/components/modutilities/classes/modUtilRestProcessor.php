@@ -8,10 +8,10 @@
 	{
 		/* @var modX modx */
 		public $modx;
-		/* @var modUtilitiesRest REST */
+		/* @var modutilitiesRest REST */
 		public $REST;
 		/**
-		 * @var modUtilities
+		 * @var modutilities
 		 */
 		public $util;
 		/**
@@ -22,11 +22,40 @@
 		 * @var array
 		 */
 		public $LanguageTopics = [];
+		/**
+		 * @var array
+		 */
+		public $GET;
+		/**
+		 * @var array
+		 */
+		public $POST;
+		/**
+		 * @var array
+		 */
+		public $PUT;
+		/**
+		 * query
+		 * @var string
+		 */
+		public $url;
 
-		final public function __construct(modX &$modx, array $properties = [], modUtilitiesRest &$REST)
+		final public function __construct(modX &$modx, array $properties = [], modutilitiesRest &$REST)
 		{
 			$this->REST = $REST;
 			$this->util = $REST->util;
+			$this->GET  = &$properties['input']['GET'];
+			$_alias = $modx->context->getOption('request_param_alias', 'q');
+			$this->url  = $this->GET[$_alias];
+			unset($this->GET[$_alias]);
+			$this->POST = &$properties['input']['POST'];
+			$this->PUT  = &$properties['input']['PUT'];
+			if(!empty($_FILES)) {
+				$this->FILES = $this->util->files();
+				if(get_class($this->FILES) == 'modutilitiesPostFiles'){
+					$this->FILES = $this->FILES->FILES;
+				}
+			}
 			parent::__construct($modx, $properties);
 		}
 

@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.5.7] - 2020-08-20 BIG UPDATE
+### Fixed
+  - fix many warning error in modx log   
+  - fix csv escape special charset
+  - fix REST log
+  - fix transport package
+### Added
+  - class modutilitiesPostFiles
+  - modutilities.js - some usefull function for frontend
+  - settings
+### Renamed
+  - modUtilities::print => modUtilities::dump
 ## [2.2.2] - 2020-07-14
 
 ### Added
@@ -46,8 +58,8 @@
 - Add phpUnit Test
 ### Fixed
 
-- Rename class `utilities` on `modUtilities`
-- Rename class `utilitiesCsv` on `modUtilitiesCsv`
+- Rename class `utilities` on `modutilities`
+- Rename class `utilitiesCsv` on `modutilitiesCsv`
 - Fixed an error when duplicating a class
 
 ## [2.0.2] - 2020-06-08

@@ -75,7 +75,7 @@
 			switch ($name) {
 				case 'constant':
 					if (!isset($this->constant_)) {
-						$this->constant_ = $this->loadClass('modUtilitiesConstant');
+						$this->constant_ = $this->loadClass('modutilitiesConstant');
 					}
 					return $this->constant_;
 				default :
@@ -88,7 +88,14 @@
 		 * @param string|array $args
 		 * @return string
 		 */
-		public function print($args = NULL)
+		public function print()
+		{
+			$msg = ' is deprecated since version 2.3.0. Use the "dump" function instead.  $modx->util->dump()';
+			$this->modx->log(modX::LOG_LEVEL_ERROR, $msg);
+			$arr = @func_get_args();
+			return $this->dump(...$arr);
+		}
+		public function dump($args = NULL)
 		{
 			$arr = @func_get_args();
 			if (!empty($arr)) {
@@ -173,7 +180,7 @@
 		 * @param string $enc        = 'UTF-8'
 		 * @return string
 		 */
-		public function mb_ucfirst($string = '', $mode = modUtilities::FirstLetter, $otherLower = TRUE, $enc = 'UTF-8'): ?string
+		public function mb_ucfirst($string = '', $mode = modutilities::FirstLetter, $otherLower = TRUE, $enc = 'UTF-8'): ?string
 		{
 			switch ($mode) {
 				case 3:
@@ -256,7 +263,7 @@
 		public function console($do = 'log', $data = '')
 		{
 			$echo = '';
-			if (array_search($do, ['log', 'info', 'debug', 'warn', 'error', 'table', 'object']) === FALSE) {
+			if (@array_search($do, ['log', 'info', 'debug', 'warn', 'error', 'table', 'object']) === FALSE) {
 				$do = 'log';
 			}
 			if (is_array($data)) {
@@ -464,7 +471,7 @@
 		{
 			$n = explode(',', (string)$n);
 			$n[1] = str_replace('0', '', $n[1]);
-			$n = abs((float)implode('', $n));
+			$n = abs((float)@implode('', $n));
 			return $n % 10 == 1 && $n % 100 != 11 ? $forms[0] : ($n % 10 >= 2 && $n % 10 <= 4 && ($n % 100 < 10 || $n % 100 >= 20) ? $forms[1] : $forms[2]);
 		}
 
@@ -667,7 +674,7 @@
 		 */
 		public function headerJson()
 		{
-			header("Content-type: application/json; charset=utf-8");
+			@header("Content-type: application/json; charset=utf-8");
 		}
 
 		/**
@@ -803,12 +810,12 @@
 			if ($host) {
 				$sock = FALSE;
 				if ($useSocket) {
-					$sock = fsockopen($host, $port, $errno, $errstr, $timeout);
+					$sock = @fsockopen($host, $port, $errno, $errStr, $timeout);
 				}
 				if (!$sock) {
-					$this->output[__FUNCTION__]['error'] = [$errno, $errstr];
-					if (!$useSocket or $errstr == 'Unable to find the socket transport "https" - did you forget to enable it when you configured PHP?') {
-						$headers = get_headers($host, 1);
+					$this->output[__FUNCTION__]['error'] = [$errno, $errStr];
+					if (!$useSocket or $errStr == 'Unable to find the socket transport "https" - did you forget to enable it when you configured PHP?') {
+						$headers = @get_headers($host, 1);
 						preg_match('@HTTP\/\d+.\d+\s([2-3]\d+)?\s@', $headers[0], $math);
 						if (isset($math[1]) and $math[1]) {
 							return TRUE;
@@ -850,6 +857,13 @@
 		{
 			if (is_object($table)) {
 				$table = $table->_table;
+			}elseif(is_string($table)){
+				$table_ = $this->modx->newObject($table);
+				if($table_) {
+					$table = $table_->_table;
+				}else{
+					unset($table_);
+				}
 			}
 			if (empty($table) or empty($column)) {
 				return FALSE;
@@ -923,20 +937,28 @@
 
 		/**
 		 * get csv class
-		 * @return modUtilitiesCsv
+		 * @return modutilitiesCsv
 		 */
 		final public function csv($Params = [])
 		{
-			return $this->loadClass('modUtilitiesCsv', $Params);
+			return $this->loadClass('modutilitiesCsv', $Params);
+		}
+
+		/**
+		 * @return bool|modutilitiesPostFiles
+		 */
+		final public function files()
+		{
+			return $this->loadClass('modutilitiesPostFiles');
 		}
 
 		/**
 		 * @param array $Params
-		 * @return bool|modUtilitiesRest
+		 * @return bool|modutilitiesRest
 		 */
 		final public function REST($Params = [])
 		{
-			return $this->loadClass('modUtilitiesRest', $Params);
+			return $this->loadClass('modutilitiesRest', $Params);
 		}
 
 		/**
@@ -1008,6 +1030,6 @@
 		public function arrayToSqlIn(array $arr)
 		{
 			$dop = array_fill(0, count($arr), 256);
-			return implode(',', array_map('json_encode', $arr, $dop));
+			return @implode(',', array_map('json_encode', $arr, $dop));
 		}
 	}

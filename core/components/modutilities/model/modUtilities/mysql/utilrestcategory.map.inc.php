@@ -1,6 +1,6 @@
 <?php
 $xpdo_meta_map['Utilrestcategory']= array (
-  'package' => 'modUtilities',
+  'package' => 'modutilities',
   'version' => '1.1',
   'table' => 'utilrestcategory',
   'extends' => 'xPDOSimpleObject',
@@ -24,16 +24,17 @@ $xpdo_meta_map['Utilrestcategory']= array (
       'precision' => '20',
       'phptype' => 'string',
       'null' => true,
+      'index' => 'unique',
     ),
     'permission' => 
     array (
-      'dbtype' => 'json',
+      'dbtype' => 'longtext',
       'phptype' => 'string',
       'null' => true,
     ),
     'param' => 
     array (
-      'dbtype' => 'json',
+      'dbtype' => 'longtext',
       'phptype' => 'string',
       'null' => true,
     ),
@@ -50,6 +51,25 @@ $xpdo_meta_map['Utilrestcategory']= array (
       'precision' => '1',
       'phptype' => 'integer',
       'null' => true,
+    ),
+  ),
+  'indexes' => 
+  array (
+    'name' => 
+    array (
+      'alias' => 'name',
+      'primary' => false,
+      'unique' => true,
+      'type' => 'BTREE',
+      'columns' => 
+      array (
+        'name' => 
+        array (
+          'length' => '',
+          'collation' => 'A',
+          'null' => true,
+        ),
+      ),
     ),
   ),
 );

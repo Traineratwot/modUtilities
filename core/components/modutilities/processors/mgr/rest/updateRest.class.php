@@ -1,6 +1,6 @@
 <?php
 
-	class modUtilitiesUpdateRestProcessor extends modObjectUpdateProcessor
+	class modutilitiesUpdateRestProcessor extends modObjectUpdateProcessor
 	{
 		public $classKey = 'Utilrest';
 		public $primaryKeyField = 'id';
@@ -64,4 +64,4 @@
 
 	}
 
-	return 'modUtilitiesUpdateRestProcessor';
+	return 'modutilitiesUpdateRestProcessor';

@@ -1,10 +1,10 @@
 <?php
 
-	class modUtilitiesRest
+	class modutilitiesRest
 	{
 		/* @var modX $modX */
 		public $modx;
-		/* @var modUtilities $util */
+		/* @var modutilities $util */
 		public $util;
 		/* @var xPDOObject|Utilrest $rest */
 		public $rest;
@@ -20,14 +20,16 @@
 		/** @var int $logLimit */
 		public $logLimit = 1000;
 
-		public function __construct(modX &$modx, modUtilities &$util, $param)
+		public function __construct(modX &$modx, modutilities &$util, $param)
 		{
 			$timer = microtime(TRUE);
 			$this->modx = $modx;
 			$this->util = $util;
 			$this->properties = $param;
-			if (!$this->modx->addPackage('modUtilities', MODX_CORE_PATH . 'components/modutilities/model/', 'modutil_')) {
-				$this->modx->log(MODX_LOG_LEVEL_FATAL, 'can`t addPackage "modUtilities"');
+			$this->logLimit = isset($this->modx->config['modUtilRestlogLimit']) ? $this->modx->config['modUtilRestlogLimit'] : 1000;
+
+			if (!$this->modx->addPackage('modutilities', MODX_CORE_PATH . 'components/modutilities/model/')) {
+				$this->modx->log(MODX_LOG_LEVEL_FATAL, 'can`t addPackage "modutilities"');
 				http_response_code(503);
 				die;
 			}
@@ -37,11 +39,11 @@
 				$response = $this->run();
 				$this->log->set('output', $response);
 				$this->log->set('time', round(microtime(TRUE) - $timer, 6));
+				$this->log->set('datetime', date(DATE_ATOM));
 				$this->clearLog();
 				$this->log->save();
 				exit($response);
 			}
-
 		}
 
 		public function clearLog()
@@ -124,7 +126,7 @@
 						}
 					}
 				}
-				$this->$userId = $userId;
+				$this->userId = $userId;
 				$allow = TRUE;
 				foreach ($this->permission['allow'] as $key => $value) {
 					switch ($key) {
@@ -215,15 +217,17 @@
 			return FALSE;
 		}
 
-		public function setHeader(): bool
+		public function setHeader()
 		{
 			header_remove();
 			$allowMethod = $this->rest->get('allowMethod', $this->restCategory->get('allowMethod', []));
 			header("Access-Control-Allow-Methods: $allowMethod");
 			header("Access-Control-Allow-Origin: *");
 			header("Cross-Origin-Resource-Policy: cross-origin");
-			foreach ($this->param['headers'] as $key => $value) {
-				header("$key: $value");
+			if (is_array($this->param['headers'])) {
+				foreach ($this->param['headers'] as $key => $value) {
+					header("$key: $value");
+				}
 			}
 			if (!empty($allowMethod) and is_array($allowMethod)) {
 				if (!in_array($_SERVER['REQUEST_METHOD'], $allowMethod, TRUE)) {

@@ -25,11 +25,11 @@
 
 	use PHPUnit\Framework\TestCase;
 
-	class modUtilitiesTest extends TestCase
+	class modutilitiesTest extends TestCase
 	{
 
 		/**
-		 * @var modX
+		 * @var modX $modx
 		 */
 
 		public function test_ExistUtil()
@@ -37,7 +37,7 @@
 			global $modx;
 			
 			if (isset($modx->util)) {
-				$this->assertEquals('modUtilities', get_class($modx->util));
+				$this->assertEquals('modutilities', get_class($modx->util));
 			} else {
 				$this->fail();
 			}
@@ -45,9 +45,9 @@
 
 		public function test_Csv(){
 			global $modx;
-			/** @var modUtilitiesCsv $csv */
+			/** @var modutilitiesCsv $csv */
 			$csv = $modx->util->csv();
-			$this->assertEquals('modUtilitiesCsv', get_class($csv),'class not exist');
+			$this->assertEquals('modutilitiesCsv', get_class($csv),'class not exist');
 			$csv->setHead('Первый','второй','третий');
 			$csv->addRow(1,2,3);
 			$csv->addRow('a','b');
@@ -71,8 +71,8 @@
 		public function  test__mb_ucfirst(){
 			global $modx;
 			$this->assertEquals('Привет',$modx->util->mb_ucfirst('привет'));
-			$this->assertEquals('Я Есть, Грут',$modx->util->mb_ucfirst('я есть, грут',modUtilities::EveryWord));
-			$this->assertEquals('Привет. Я есть, грут? Да! Да!',$modx->util->mb_ucfirst('привет. я есть, грут? да! да!',modUtilities::AfterDot));
+			$this->assertEquals('Я Есть, Грут',$modx->util->mb_ucfirst('я есть, грут',modutilities::EveryWord));
+			$this->assertEquals('Привет. Я есть, грут? Да! Да!',$modx->util->mb_ucfirst('привет. я есть, грут? да! да!',modutilities::AfterDot));
 		}
 
 		public function test__member(){

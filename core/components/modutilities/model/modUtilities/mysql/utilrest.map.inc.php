@@ -1,6 +1,6 @@
 <?php
 $xpdo_meta_map['Utilrest']= array (
-  'package' => 'modUtilities',
+  'package' => 'modutilities',
   'version' => '1.1',
   'table' => 'utilrest',
   'extends' => 'xPDOSimpleObject',
@@ -22,7 +22,7 @@ $xpdo_meta_map['Utilrest']= array (
   array (
     'permission' => 
     array (
-      'dbtype' => 'json',
+      'dbtype' => 'longtext',
       'phptype' => 'string',
       'null' => true,
     ),
@@ -42,7 +42,7 @@ $xpdo_meta_map['Utilrest']= array (
     ),
     'param' => 
     array (
-      'dbtype' => 'json',
+      'dbtype' => 'longtext',
       'phptype' => 'string',
       'null' => true,
     ),
@@ -64,10 +64,10 @@ $xpdo_meta_map['Utilrest']= array (
     'category' => 
     array (
       'dbtype' => 'int',
+      'precision' => '10',
       'phptype' => 'integer',
       'null' => true,
       'default' => 1,
-      'index' => 'index',
     ),
   ),
   'indexes' => 
@@ -81,22 +81,6 @@ $xpdo_meta_map['Utilrest']= array (
       'columns' => 
       array (
         'url' => 
-        array (
-          'length' => '',
-          'collation' => 'A',
-          'null' => true,
-        ),
-      ),
-    ),
-    'FK_modutil_utilrest_modutil_utilrestcategory' => 
-    array (
-      'alias' => 'FK_modutil_utilrest_modutil_utilrestcategory',
-      'primary' => false,
-      'unique' => false,
-      'type' => 'BTREE',
-      'columns' => 
-      array (
-        'category' => 
         array (
           'length' => '',
           'collation' => 'A',

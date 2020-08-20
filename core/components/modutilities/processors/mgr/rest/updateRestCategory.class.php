@@ -1,6 +1,6 @@
 <?php
 
-	class modUtilitiesUpdateRestCategoryProcessor extends modObjectUpdateProcessor
+	class modutilitiesUpdateRestCategoryProcessor extends modObjectUpdateProcessor
 	{
 		public $classKey = 'Utilrestcategory';
 		public $primaryKeyField = 'id';
@@ -66,4 +66,4 @@
 
 	}
 
-	return 'modUtilitiesUpdateRestCategoryProcessor';
+	return 'modutilitiesUpdateRestCategoryProcessor';

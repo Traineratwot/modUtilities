@@ -4,7 +4,7 @@
 	 * Date: 10.06.2020
 	 * Time: 21:10
 	 */
-	class modUtilitiesUtilrestCategoryCreateProcessor extends modObjectCreateProcessor
+	class modutilitiesUtilrestCategoryCreateProcessor extends modObjectCreateProcessor
 	{
 		public $classKey = 'Utilrestcategory';
 
@@ -55,4 +55,4 @@
 
 	}
 
-	return "modUtilitiesUtilrestCategoryCreateProcessor";
+	return "modutilitiesUtilrestCategoryCreateProcessor";

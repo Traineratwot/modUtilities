@@ -1,12 +1,12 @@
 <?php
 	/**
-	 * Created by Andrey Stepanenko.
-	 * User: webnitros
+	 * Created by Kirill Nefediev.
+
 	 * Date: 11.06.2020
 	 * Time: 22:49
 	 */
 
-	class modUtilitiesDelRestProcessor extends modObjectRemoveProcessor
+	class modutilitiesDelRestProcessor extends modObjectRemoveProcessor
 	{
 		public $classKey = 'Utilrest';
 		public $primaryKeyField = 'id';
@@ -17,4 +17,4 @@
 
 
 	}
-	return 'modUtilitiesDelRestProcessor';
+	return 'modutilitiesDelRestProcessor';

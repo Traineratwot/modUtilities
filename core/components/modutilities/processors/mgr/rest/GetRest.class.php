@@ -4,7 +4,7 @@
 	 * Time: 21:10
 	 */
 
-	class modUtilitiesGetRestProcessor extends modProcessor
+	class modutilitiesGetRestProcessor extends modProcessor
 	{
 		public function process()
 		{
@@ -37,4 +37,4 @@
 
 
 	}
-	return "modUtilitiesGetRestProcessor";
+	return "modutilitiesGetRestProcessor";

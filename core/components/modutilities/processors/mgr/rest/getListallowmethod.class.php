@@ -4,13 +4,13 @@
 	 * Date: 10.06.2020
 	 * Time: 21:10
 	 */
-	class modUtilitiesGetListAllowmethodProcessor extends modProcessor
+	class modutilitiesGetListAllowMethodProcessor extends modProcessor
 	{
 		public function process()
 		{
 
 			$array = [];
-			$array_ = $this->modx->util->getSetOption('modutil_utilrest', 'allowMethod');
+			$array_ = $this->modx->util->getSetOption('Utilrest', 'allowMethod');
 			foreach ($array_ as $m){
 				$array[] = ['name'=>$m];
 			}
@@ -25,4 +25,4 @@
 
 	}
 
-	return "modUtilitiesGetListAllowmethodProcessor";
+	return "modutilitiesGetListAllowMethodProcessor";

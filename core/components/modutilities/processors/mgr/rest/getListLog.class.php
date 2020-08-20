@@ -4,10 +4,11 @@
 	 * Date: 10.06.2020
 	 * Time: 21:10
 	 */
-	class modUtilitiesGetListLogProcessor extends modObjectGetListProcessor
+	class modutilitiesGetListLogProcessor extends modObjectGetListProcessor
 	{
 		public $classKey = 'Utilreststats';
-		public $defaultSortField = 'datetime';
+		public $defaultSortField = 'id';
+		public $defaultSortDirection = 'DESC';
 
 		public function process()
 		{
@@ -19,13 +20,16 @@
 			$list = $this->iterate($data);
 
 			foreach ($list as $k=>$v){
-				$v['time'] = implode(' ',$this->modx->util->convert($v['time'],'time','s'));
+				$v['time'] = @implode(' ',$this->modx->util->convert($v['time'],'time','s'));
 				$list[$k] = $v;
+				if(!$this->modx->getCount('Utilrest',$v['rest_id'])){
+					unset($list[$k]);
+				}
 			}
 
-			return $this->outputArray($list, $data['total']);
+			return $this->outputArray($list,$data['total']);
 		}
 
 	}
 
-	return "modUtilitiesGetListLogProcessor";
+	return "modutilitiesGetListLogProcessor";
