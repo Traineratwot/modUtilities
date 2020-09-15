@@ -372,9 +372,23 @@
    - умеет конвертировать в Html таблицу
    - умеет конвертировать в Html список
    - fast mod позволяет писать csv на лету что на МНОГО быстрее, испорльзуйте его для записи больших файлов, файл будет записан даже при краше
+   
    **быстрая запись**
+   ```php
+    $csv = $modx->util->csv(['mode' => 'fast', 'output_file' => 'output/output.csv']);
+    $csv->addRow();
    ```
-   $csv = $modx->util->csv(['mode' => 'fast', 'output_file' => 'output/output.csv']);
+   **вывод**
+   ```php
+    $csv->getCell(2,1);
+    $csv->toCsv();
+    $csv->toHtmlTable($cls = 'table', $rainbow = FALSE); //возвращяет html талицу, 
+    $csv->toHtmlList($cls = '', $delimiter = '; ', $item = 'li', $rainbow = FALSE);
+    $csv->getRow(); //возвращаяет одну строку массивом и перемещает указатель на следующую, можно использовать для работы с csv в цикле
+    while ($row = $csv->getRow() ){
+        print_r($row);
+    }
+    $csv->getCol();// аналогично getRow только для колонок
    ```
    **запись**
    ```php
