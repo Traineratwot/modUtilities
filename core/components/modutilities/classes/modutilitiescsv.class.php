@@ -20,15 +20,40 @@
 		/* @var string output html string */
 		protected $html;
 		/* @var array */
-		protected $matrix;
+		protected $matrix = [];
 		/* @var array */
 		protected $head = [];
+		protected $_head = [];
 		protected $appendType = FALSE;
 		protected $str_delimiter;
 		protected $line_delimiter;
 		protected $escape;
 		public $currentRow = -1;
 		public $currentCol = -1;
+		/**
+		 * @var bool|mixed|string
+		 */
+		private $mode;
+
+		/**
+		 * @var bool|mixed|resource
+		 */
+		private $output_file;
+		/**
+		 * @var bool|mixed
+		 */
+		private $_output_file;
+		/**
+		 * @var array|bool
+		 */
+		private $sort;
+		/**
+		 * @var array|bool
+		 */
+		private $limits = [
+			'l' => ['min' => 30, 'max' => 60],
+			's' => ['min' => 80, 'max' => 100],
+		];
 
 		/**
 		 * UtilitiesCsv constructor
@@ -37,10 +62,12 @@
 		 *    woBom - without BOM | false
 		 *    delimiter |';'
 		 *    line_delimiter | PHP_EOL
+		 *    mode default | fast
 		 * ]
-		 * @param modX      $modx
-		 * @param utilities $util
-		 * @param array     $param
+		 * @param modX         $modx
+		 * @param modutilities $util
+		 * @param array        $param
+		 * @throws Exception
 		 */
 		public function __construct(modX &$modx, modutilities &$util, $param = [])
 		{
@@ -52,6 +79,44 @@
 			$this->str_delimiter = isset($param['delimiter']) ? $param['delimiter'] : ';';
 			$this->line_delimiter = isset($param['line_delimiter']) ? $param['line_delimiter'] : "\n";
 			$this->escape = isset($param['escape']) ? $param['escape'] : '"';
+
+
+			if (isset($param['mode']) and $param['mode'] == 'fast') {
+				if (!isset($param['output_file'])) {
+					throw new Exception('pleas add param "output_file"');
+				} else {
+					$this->mode = $param['mode'] ?: "default";
+					$file = $param['output_file'];
+					switch (gettype($file)) {
+						case 'string':
+							if (!is_dir(dirname($file))) {
+								if (!mkdir($concurrentDirectory = dirname($file), $this->modx->config['new_file_permissions'], TRUE) && !is_dir($concurrentDirectory)) {
+									throw new Exception(sprintf('Directory "%s" was not created', $concurrentDirectory));
+								}
+							}
+							if (file_exists($file)) {
+								unlink($file);
+							}
+							$this->_output_file = $file;
+							$this->output_file = fopen($file, 'w');
+							break;
+						case 'resource':
+							if (get_resource_type($file) == 'stream') {
+								$this->output_file = $file;
+							} else {
+								throw new Exception('invalid data type for "output_file"');
+							}
+							break;
+						default:
+							throw new Exception('invalid data type for "output_file"');
+							break;
+					}
+					if ($this->output_file and $this->utf8bom) {
+						fwrite($this->output_file, $this->utf8bom);
+					}
+				}
+			}
+
 		}
 
 		/**
@@ -78,37 +143,56 @@
 		 */
 		public function addRow()
 		{
-			if (!$this->appendType or !$this->util->empty(($this->matrix))) {
-				$this->appendType = 'row';
+
+			if (!$this->appendType) {
+				if (!$this->util->isEmpty(($this->matrix))) {
+					$this->appendType = 'row';
+				}
 			}
+
 			if ($this->appendType != 'row') {
 				return FALSE;
 			}
 			$args = func_get_args();
+
+			if (empty($this->_head)) {
+				return $this->setHead(...$args);
+			}
+
 			if (count($args) == 1 and is_array($args[0])) {
 				$args = $args[0];
 			}
-			$head = array_flip($this->head);
+
+			$head = array_flip($this->_head);
+
 			$isAssoc = $this->util->isAssoc($args);
 			$args_ = [];
+
 			foreach ($args as $k => $art) {
-				$art = $this->escape.$art.$this->escape;
 				if ($isAssoc) {
 					if (!is_string($art) and !is_numeric($art)) {
 						$args_[$head[$k]] = NULL;
 					} else {
-						$args_[$head[$k]] = (string)$art;
+						$args_[$head[$k]] = $art;
 					}
 				} else {
 					if (!is_string($art) and !is_numeric($art)) {
 						$args_[$k] = NULL;
 					} else {
-						$args_[$k] = (string)$art;
+						$args_[$k] = $art;
 					}
 				}
 			}
-			$this->matrix[] = $args_;
-			$this->matrixFix();
+			if ($this->mode == 'fast') {
+				ksort($args_);
+				foreach ($args_ as $i => $v) {
+					$args_[$i] = $this->escape . $v . $this->escape;
+				}
+				$text = implode($this->str_delimiter, $args_) . $this->line_delimiter;
+				$this->writeFile($text);
+			} else {
+				$this->matrix[] = $args_;
+			}
 
 			return $this;
 		}
@@ -119,20 +203,20 @@
 		 */
 		public function addCol()
 		{
-			if (!$this->appendType or !$this->util->empty(($this->matrix))) {
+			if (!$this->appendType or !$this->util->isEmpty(($this->matrix))) {
 				$this->appendType = 'column';
 			}
 			if ($this->appendType != 'column') {
 				return FALSE;
 			}
 			$args = func_get_args();
+
 			if (count($args) == 1 and is_array($args[0])) {
 				$args = $args[0];
 			}
-			$head = array_flip($this->head);
+			$head = array_flip($this->_head);
 			$isAssoc = $this->util->isAssoc($args);
 			foreach ($args as $k => $art) {
-				$art = $this->escape.$art.$this->escape;
 				if (!is_string($art) and !is_numeric($art)) {
 					$art = NULL;
 				} else {
@@ -144,7 +228,6 @@
 					$this->matrix[$k][] = $art;
 				}
 			}
-			$this->matrixFix();
 
 			return $this;
 		}
@@ -159,17 +242,28 @@
 			if (count($args) == 1 and is_array($args[0])) {
 				$args = $args[0];
 			}
+			$_args = [];
 			foreach ($args as $k => $art) {
-				$art = $this->escape.$art.$this->escape;
 				if (!is_string($art) and !is_numeric($art)) {
 					$args[$k] = NULL;
+					$_args[$k] = NULL;
 				} else {
-					$args[$k] = (string)$art;
+					$_args[$k] = $art;
+					$args[$k] = $art;
 				}
 			}
-			$this->head = $args;
-			$this->matrixFix();
-
+			if ($this->mode == 'fast') {
+				$this->_head = $_args;
+				foreach ($args as $i => $v) {
+					$args[$i] = $this->escape . $v . $this->escape;
+				}
+				$text = implode($this->str_delimiter, $args) . $this->line_delimiter;
+				$this->writeFile($text);
+			} else {
+				$this->head = $args;
+				$this->_head = $_args;
+				$this->matrixFix();
+			}
 			return $this;
 		}
 
@@ -272,6 +366,7 @@
 		 */
 		public function _buildCsv()
 		{
+			$this->matrixFix();
 			$this->sort();
 			$this->csv = $this->utf8bom;
 			$len = [];
@@ -279,6 +374,9 @@
 			$len[] = count($head);
 			foreach ($this->matrix as $row) {
 				$len[] = count($row);
+			}
+			foreach ($head as $i => $v) {
+				$head[$i] = $this->escape . $v . $this->escape;
 			}
 			$len = max($len);
 			if (!empty($head)) {
@@ -293,9 +391,9 @@
 			foreach ($this->matrix as $key => $row) {
 				$_row = [];
 				for ($i = 0; $i < $len; $i++) {
-					$_row[$i] = (isset($row[$i])) ? $row[$i] : '';
+					$_row[$i] = (isset($row[$i])) ? $this->escape . $row[$i] . $this->escape : '';
 				}
-				if (!$this->util->empty($_row)) {
+				if (!$this->util->isEmpty($_row)) {
 					$this->csv .= $this->line_delimiter;
 					$this->csv .= implode($this->str_delimiter, $_row);
 				}
@@ -305,8 +403,9 @@
 		/**
 		 *generate html table string
 		 */
-		public function _buildHtmlTable($cls = '')
+		public function _buildHtmlTable($cls = '', $rainbow = FALSE)
 		{
+			$this->matrixFix();
 			$this->sort();
 			$this->html = "<table class=\"$cls\">";
 			$len = [];
@@ -319,13 +418,19 @@
 			if (!empty($head)) {
 				if ($this->appendType == 'row') {
 					$this->html .= "<tr>";
-					foreach ($head as $h) {
-						$this->html .= "<th>$h</th>";
+					foreach ($head as $k => $h) {
+						$style = '';
+						if ($rainbow) {
+							$style = 'style="color:' . $this->util->randomColor(['salt' => $k, 'limits' => $this->limits]) . ';"';
+						}
+						$this->html .= "<th $style>$h</th>";
 					}
 					$this->html .= "</tr>";
 				} else {
 					foreach ($this->head as $k => $h) {
-						array_unshift($this->matrix[$k], $h);
+						if (isset($this->matrix[$k]) and is_array($this->matrix[$k])) {
+							array_unshift($this->matrix[$k], $h);
+						}
 					}
 				}
 			}
@@ -334,15 +439,19 @@
 				for ($i = 0; $i < $len; $i++) {
 					$_row[$i] = (isset($row[$i])) ? $row[$i] : '';
 				}
-				if (!$this->util->empty($_row)) {
+				if (!$this->util->isEmpty($_row)) {
 					$this->html .= "<tr>";
 					$i = 0;
-					foreach ($row as $r) {
+					foreach ($row as $k => $r) {
+						$style = '';
+						if ($rainbow) {
+							$style = 'style="color:' . $this->util->randomColor(['salt' => $k, 'limits' => $this->limits]) . ';"';
+						}
 						$i++;
 						if ($this->head and $this->appendType == 'column' and $i == 1) {
-							$this->html .= "<th>$r</th>";
+							$this->html .= "<th $style>$r</th>";
 						} else {
-							$this->html .= "<td>$r</td>";
+							$this->html .= "<td $style>$r</td>";
 						}
 					}
 					$this->html .= "</tr>";
@@ -356,8 +465,9 @@
 		 * @param string $delimiter
 		 * @param string $item li|ol
 		 */
-		public function _buildHtmlList($cls = '', $delimiter = ' ', $item = 'li')
+		public function _buildHtmlList($cls = '', $delimiter = ' ', $item = 'li', $rainbow = FALSE)
 		{
+			$this->matrixFix();
 			$this->sort();
 			$this->html = "<ul class=\"$cls\">";
 			$len = [];
@@ -370,8 +480,12 @@
 			if (!empty($head)) {
 				if ($this->appendType == 'row') {
 					$this->html .= "<$item>";
-					foreach ($head as $h) {
-						$this->html .= "<strong>$h</strong>" . $delimiter;
+					foreach ($head as $k => $h) {
+						$style = '';
+						if ($rainbow) {
+							$style = 'style="color:' . $this->util->randomColor(['salt' => $k, 'limits' => $this->limits]) . ';"';
+						}
+						$this->html .= "<strong $style>$h</strong>" . $delimiter;
 					}
 					$this->html .= "</$item>";
 				} else {
@@ -385,15 +499,19 @@
 				for ($i = 0; $i < $len; $i++) {
 					$_row[$i] = (isset($row[$i])) ? $row[$i] : '';
 				}
-				if (!$this->util->empty($_row)) {
+				if (!$this->util->isEmpty($_row)) {
 					$this->html .= "<$item>";
 					$i = 0;
-					foreach ($row as $r) {
+					foreach ($row as $k =>$r) {
+						$style = '';
+						if ($rainbow) {
+							$style = 'style="color:' . $this->util->randomColor(['salt' => $k, 'limits' => $this->limits]) . ';"';
+						}
 						$i++;
 						if ($this->head and $this->appendType == 'column' and $i == 1) {
-							$this->html .= "<strong>$r</strong>" . $delimiter;
+							$this->html .= "<strong $style>$r</strong>" . $delimiter;
 						} else {
-							$this->html .= "<span>$r</span>" . $delimiter;
+							$this->html .= "<span $style>$r</span>" . $delimiter;
 						}
 					}
 					$this->html .= "</$item>";
@@ -412,12 +530,27 @@
 		}
 
 		/**
+		 * @throws Exception
+		 */
+		public function save()
+		{
+			if ($this->mode != 'fast') {
+				throw new Exception('useless in default mod');
+				return FALSE;
+			}
+			if (fclose($this->output_file)) {
+				$this->output_file = NULL;
+			}
+			return $this;
+		}
+
+		/**
 		 * @param string $cls
 		 * @return String
 		 */
-		public function toHtml($cls = '')
+		public function toHtml($cls = '', $rainbow = FALSE)
 		{
-			$this->_buildHtmlTable($cls);
+			$this->_buildHtmlTable($cls, $rainbow);
 			return (string)$this->html;
 		}
 
@@ -425,9 +558,9 @@
 		 * @param string $cls
 		 * @return String
 		 */
-		public function toHtmlTable($cls = '')
+		public function toHtmlTable($cls = '', $rainbow = FALSE)
 		{
-			$this->_buildHtmlTable($cls);
+			$this->_buildHtmlTable($cls, $rainbow);
 			return (string)$this->html;
 		}
 
@@ -437,9 +570,9 @@
 		 * @param string $item UL, OL, LI и DL
 		 * @return String
 		 */
-		public function toHtmlList($cls = '', $delimiter = '', $item = 'li')
+		public function toHtmlList($cls = '', $delimiter = '; ', $item = 'li', $rainbow = FALSE)
 		{
-			$this->_buildHtmlList($cls, $delimiter, $item);
+			$this->_buildHtmlList($cls, $delimiter, $item, $rainbow);
 			return $this->html;
 		}
 
@@ -471,15 +604,20 @@
 		 */
 		final private function _readCsvResource($source)
 		{
-			if(is_resource($source)) {
+			if (is_resource($source)) {
 				$i = 0;
 				while (($row = fgetcsv($source, 10240, $this->str_delimiter))) {
 					$i++;
+					foreach ($row as $i => $v) {
+						$row[$i] = $this->escape . $v . $this->escape;
+					}
 					if ($i === 1) {
 						$this->setHead($row);
 						continue;
 					}
+
 					$this->addRow($row);
+
 				}
 				fclose($source);
 			}
@@ -497,6 +635,9 @@
 			$rows = explode($this->line_delimiter, $source);
 			foreach ($rows as $row) {
 				$i++;
+				foreach ($row as $i => $v) {
+					$row[$i] = $this->escape . $v . $this->escape;
+				}
 				$row = explode($this->str_delimiter, $row);
 				if ($i === 1) {
 					$this->setHead($row);
@@ -524,7 +665,11 @@
 			$row = (isset($this->matrix[$this->currentRow])) ? $this->matrix[$this->currentRow] : FALSE;
 			if ($row) {
 				$this->currentRow++;
-				return $row;
+				$_row = [];
+				foreach ($row as $k => $v) {
+					$_row[$k] = $v;
+				}
+				return $_row;
 			} else {
 				$this->currentRow = 0;
 				return FALSE;
@@ -590,6 +735,22 @@
 			ksort($this->head);
 			foreach ($this->matrix as $k => $v) {
 				ksort($this->matrix[$k]);
+			}
+		}
+
+		/**
+		 * @param $text string
+		 */
+		private function writeFile($text)
+		{
+			if (gettype($this->output_file) == 'resource') {
+				fwrite($this->output_file, $text);
+			} else {
+				if ($this->_output_file) {
+					file_put_contents($this->_output_file, $text, FILE_APPEND);
+				} else {
+					throw new Exception('you call "save" too early');
+				}
 			}
 		}
 

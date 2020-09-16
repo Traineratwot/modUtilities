@@ -1,5 +1,6 @@
 var ModUtilCategoryArr
 Ext.onReady(function() {
+	Ext.util.Cookies.set('search_log','')
 	MODx.add({
 		xtype: 'modUtil-panel-home'
 	})
@@ -40,14 +41,34 @@ Ext.extend(modUtil, MODx.Component, { // Перечисляем группы, в
 })
 Ext.reg('modUtil', modUtil)
 modUtil = new modUtil()
-
+var escapeHTML = function (string) {
+	var htmlEscapes = {
+		'&': '&amp;',
+		'<': '&lt;',
+		'>': '&gt;',
+		'"': '&quot;',
+		"'": '&#x27;',
+		'/': '&#x2F;'
+	};
+	var htmlEscaper = /[&<>"'\/]/g;
+	return ('' + string).replace(htmlEscaper, function(match) {
+		return htmlEscapes[match];
+	});
+}
 var defaultRenderer = function(val) {
 	return val || _('ext_emptygroup')
 }
 var JSONRenderer = function(val) {
 	if(val) {
-		return cope.Highlighter.highlight(JSON.parse(val), {indent: 2, useTabs: true});
+		return cope.Highlighter.highlight(JSON.parse(val), {indent: 2, useTabs: true})
 		return `<pre><code class="language-json">${val}</code></pre>`
+	}
+	return defaultRenderer(val)
+}
+var HTMLRenderer = function(val) {
+	if(val) {
+		val = escapeHTML(val);
+		return `<pre><code class="language-html">${val}</code></pre>`
 	}
 	return defaultRenderer(val)
 }
@@ -62,13 +83,13 @@ modUtil.panel.Home = function(config) {
 		},
 			{
 				xtype: 'modx-tabs',
-				id:"main-modx-tabs",
+				id: 'main-modx-tabs',
 				deferredRender: false,
 				border: true,
 				items: [
 					{
 						title: 'Rest',
-						id:'modx-tabs-Rest',
+						id: 'modx-tabs-Rest',
 						items: [{
 							html: 'Methods',
 							cls: 'panel-desc',
@@ -83,12 +104,18 @@ modUtil.panel.Home = function(config) {
 									header: 'url',
 									sortable: true,
 									editor: {xtype: 'textfield'},
-									renderer: defaultRenderer
+									renderer: function(val) {
+										if(val) {
+											return `<a href="/${val}" target="_blank">${val}</a>`
+										} else {
+											return defaultRenderer(val)
+										}
+									}
 								},
 								{
 									dataIndex: 'snippet',
 									width: 670,
-									header: 'snippet',
+									header: _('snippet'),
 									sortable: true,
 									editor: {
 										xtype: 'modUtil-combo-modCombo',
@@ -134,12 +161,15 @@ modUtil.panel.Home = function(config) {
 									dataIndex: 'allowMethod',
 									width: 670,
 									sortable: true,
-									header: 'allowMethod',
+									header: _('modutilities.allowMethod'),
 									renderer: defaultRenderer,
 									editor: {xtype: 'textfield'}
 								},
 								{
-									dataIndex: 'BASIC_auth', width: 670, header: 'BASIC_auth', sortable: true,
+									dataIndex: 'BASIC_auth',
+									width: 670,
+									header: _('modutilities.BASIC_auth'),
+									sortable: true,
 									editor: {xtype: 'combo-boolean'},
 									renderer: function(val) {
 										if(val == 1) {
@@ -257,7 +287,7 @@ modUtil.panel.Home = function(config) {
 					},
 					{
 						title: 'Category',
-						id:'modx-tabs-Category',
+						id: 'modx-tabs-Category',
 						items: [{
 							html: 'Categories',
 							cls: 'panel-desc',
@@ -296,12 +326,15 @@ modUtil.panel.Home = function(config) {
 									dataIndex: 'allowMethod',
 									sortable: true,
 									width: 670,
-									header: 'allowMethod',
+									header: _('modutilities.allowMethod'),
 									editor: {xtype: 'textfield'},
 									renderer: defaultRenderer
 								},
 								{
-									dataIndex: 'BASIC_auth', sortable: true, width: 670, header: 'BASIC_auth',
+									dataIndex: 'BASIC_auth',
+									sortable: true,
+									width: 670,
+									header: _('modutilities.BASIC_auth'),
 									renderer: function(val) {
 										if(val === 1) {
 											val = '<span class="true">' + _('yes') + '</span>'
@@ -382,7 +415,7 @@ modUtil.panel.Home = function(config) {
 					},
 					{
 						title: 'log',
-						id:'modx-tabs-log',
+						id: 'modx-tabs-log',
 						items: [{ // Внутри таба ещё один HTML-блок с классом panel-desc
 							html: 'connection log',
 							cls: 'panel-desc',
@@ -403,37 +436,40 @@ modUtil.panel.Home = function(config) {
 									dataIndex: 'rest_id',
 									width: 330,
 									sortable: true,
-									header: 'REST id',
+									header: _('modutilities.rest_id'),
 									renderer: defaultRenderer,
 									editor: {xtype: 'textfield'}
 								},
 								{
 									dataIndex: 'input',
 									width: 670,
-									header: 'input',
+									header: _('modutilities.input'),
 									renderer: JSONRenderer,
 									editor: {xtype: 'textarea'},
 								},
 								{
-									dataIndex: 'output', width: 670, header: 'output',
-									renderer: defaultRenderer,
+									dataIndex: 'output', width: 670, header: _('modutilities.output'),
+									renderer: HTMLRenderer,
 									editor: {xtype: 'textarea'},
 								},
 								{
 									dataIndex: 'user',
 									sortable: true,
 									width: 670,
-									header: 'user',
+									header: _('modutilities.user'),
 									renderer: JSONRenderer,
 									editor: {xtype: 'textarea'},
 								},
 								{
-									dataIndex: 'time', sortable: true, width: 670, header: 'time',
+									dataIndex: 'time', sortable: true, width: 670, header: _('modutilities.time'),
 									renderer: defaultRenderer,
 									editor: {xtype: 'textarea'},
 								},
 								{
-									dataIndex: 'datetime', sortable: true, width: 670, header: 'datetime',
+									dataIndex: 'datetime',
+									sortable: true,
+									width: 670,
+									header: _('modutilities.datetime'),
 									renderer: defaultRenderer,
 									editor: {xtype: 'textarea'},
 								},
@@ -447,6 +483,28 @@ modUtil.panel.Home = function(config) {
 								'time',
 								'datetime',
 							],
+							tbar: [
+								{
+									emptyText:_('search'),
+									id: 'search-field-log',
+									xtype: 'textfield', // Перемещаем сюда нашу кнопку
+								},
+								{
+									id: 'search-button-log',
+									xtype: 'button', // Перемещаем сюда нашу кнопку
+									text: '🔎',
+									cls: 'primary-button',
+									handler: function() {
+										var v =Ext.getCmp('search-field-log').getValue()
+										if(v && v != _('search')) {
+											Ext.util.Cookies.set('search_log',v)
+										}else{
+											Ext.util.Cookies.set('search_log','')
+											Ext.util.Cookies.clear('search_log')
+										}
+										Ext.getCmp('log-main-table').refresh();
+									},
+								}],
 							action: 'mgr/rest/getlistlog',
 						}]
 					}
@@ -503,6 +561,7 @@ modUtil.window.modWindow = function(config) {
 Ext.extend(modUtil.window.modWindow, MODx.Window) // Расширяем MODX.Window
 Ext.reg('modUtil-window-modWindow', modUtil.window.modWindow) // Регистрируем новый xtype
 //добавление rest
+
 modUtil.window.addRest = function(config) {
 	config = config || {}
 	this.ident = config.ident || 'mecnewsletter' + Ext.id()
@@ -614,7 +673,7 @@ modUtil.window.addRest = function(config) {
 		action: 'mgr/rest/create_utilrest',
 		listeners: {
 			beforeSubmit: function(a) {
-				if(typeof a.allowMethod !== 'string' && a.allowMethod)  {
+				if(typeof a.allowMethod !== 'string' && a.allowMethod) {
 					var allowMethod = a.allowMethod.join()
 					if(typeof allowMethod == 'string') {
 						$(`input[name="allowMethod"]`).each(function() {
@@ -645,6 +704,7 @@ modUtil.window.addRest = function(config) {
 Ext.extend(modUtil.window.addRest, modUtil.window.modWindow) // Расширяем MODX.Window
 Ext.reg('modUtil-window-addRest', modUtil.window.addRest) // Регистрируем новый xtype
 //добавление категории
+
 modUtil.window.addCat = function(config) {
 	config = config || {}
 	this.ident = config.ident || 'mecnewsletter' + Ext.id()
@@ -701,7 +761,7 @@ modUtil.window.addCat = function(config) {
 		action: 'mgr/rest/create_utilrestcategory',
 		listeners: {
 			beforeSubmit: function(a) {
-				if(typeof a.allowMethod !== 'string' && a.allowMethod)  {
+				if(typeof a.allowMethod !== 'string' && a.allowMethod) {
 					var allowMethod = a.allowMethod.join()
 					if(typeof allowMethod == 'string') {
 						$(`input[name="allowMethod"]`).each(function() {

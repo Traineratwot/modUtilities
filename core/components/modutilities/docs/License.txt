@@ -1,7 +1,7 @@
 @@ -1,21 +0,0 @@
 MIT License
 
-Copyright (c) 2020 Kirill
+Copyright (c) 2020 Kirill Nefediev
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

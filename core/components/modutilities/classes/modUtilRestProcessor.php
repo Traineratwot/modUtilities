@@ -65,12 +65,11 @@
 			foreach ($this->headers as $key => $value) {
 				header("$key: $value");
 			}
-			$topics = $this->LanguageTopics;
 			foreach ($this->LanguageTopics as $topic) {
 				$this->modx->lexicon->load($topic);
 			}
 
-			if ((bool)$initialized !== TRUE) {
+			if ($initialized !== TRUE) {
 				$o = $this->failure($initialized);
 			} else {
 				$o = $this->process();

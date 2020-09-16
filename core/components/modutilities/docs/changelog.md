@@ -1,6 +1,29 @@
 # Changelog
-
-## [2.5.7] - 2020-08-20 BIG UPDATE
+## [2.6.20] - 2020-08-31
+   ### Added
+   * function 
+     - randomColor()
+     - download()
+     - baseExt()
+     - baseName()
+     - expandBrackets()
+     - updateTv()
+   * csv class
+     - bugfix
+     - rainbow for html table
+   * rest class
+     - bugfix
+     - files class
+   ### bugFix
+## [2.6.9] - 2020-08-31
+   bugFix
+## [2.6.1] - 2020-08-20 update csv
+### Added
+   fast mod in csv class
+   ```
+   $csv = $modx->util->csv(['mode' => 'fast', 'output_file' => 'output/output.csv']);
+   ```
+## [2.6.0] - 2020-08-20 BIG UPDATE
 ### Fixed
   - fix many warning error in modx log   
   - fix csv escape special charset

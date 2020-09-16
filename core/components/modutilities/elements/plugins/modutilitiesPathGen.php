@@ -1,5 +1,6 @@
 <?php
-switch ($modx->event->name) {
+	/** @var modX $modx */
+	switch ($modx->event->name) {
 		case 'OnSnipFormPrerender':
 			$folder = 'core/elements/snippets';
 			$class = 'snippet';
@@ -54,7 +55,7 @@ switch ($modx->event->name) {
 	$jqueryScript .= "\n";
 
 	$modx->regClientStartupScript($jqueryScript, TRUE);
-	$connector = '/assets/components/modutilities/connector.php';
+	$connector = $modx->config['assets_url'].'components/modutilities/connector.php';
 	$modx->regClientStartupScript("<script>
 	var I_change_it = false
 	Ext.onReady(function(){
@@ -116,7 +117,7 @@ switch ($modx->event->name) {
 		}
 		new_path = pathGen.folder + '/' + pathGen.category + '/' + pathGen.name + '$ext';
 		I_change_it = true;
-		new_path = new_path.replace(/\s/g, '_').replace(/(_—_)|(\-\—\-)/g, '/').replace('not-specified/', '')
+		new_path = new_path.replace(/\s/g, '_').replace(/(_—_)|(\-\—\-)/g, '/').replace('not-specified/', '').replace('ne-ukazano/', '')
 		document.getElementById('$path').value = new_path;
 	}})
 	</script>",TRUE);

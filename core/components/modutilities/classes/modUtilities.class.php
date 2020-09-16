@@ -22,6 +22,7 @@
 		 * @var array
 		 */
 		public $output = [];
+		private $cache = [];
 		/**
 		 * array translit
 		 * @const array
@@ -49,6 +50,11 @@
 		const AfterDot = 3;
 
 		/**
+		 * @var array
+		 */
+		private $prepare = [];
+
+		/**
 		 * utilities constructor.
 		 * @param modX $modx
 		 */
@@ -58,19 +64,31 @@
 			$this->prefix = $this->modx->getOption('table_prefix');
 		}
 
-		public function __isset($name)
+		/**
+		 * @param $name
+		 * @return bool
+		 */
+		final public function __isset($name)
 		{
 			return isset($this->$name);
 		}
 
-		public function __set($name, $value)
+		/**
+		 * @param $name
+		 * @param $value
+		 */
+		final public function __set($name, $value)
 		{
 			if (isset($this->$name) === FALSE) {
 				$this->$name = $value;
 			}
 		}
 
-		public function __get($name)
+		/**
+		 * @param $name
+		 * @return bool|Class
+		 */
+		final public function __get($name)
 		{
 			switch ($name) {
 				case 'constant':
@@ -84,17 +102,17 @@
 		}
 
 		/**
-		 * return $args<br>\n;
-		 * @param string|array $args
 		 * @return string
 		 */
-		public function print()
+		final public function __toString()
 		{
-			$msg = ' is deprecated since version 2.3.0. Use the "dump" function instead.  $modx->util->dump()';
-			$this->modx->log(modX::LOG_LEVEL_ERROR, $msg);
-			$arr = @func_get_args();
-			return $this->dump(...$arr);
+			return (string)$this->dump($this);
 		}
+
+		/**
+		 * @param null $args
+		 * @return false|string
+		 */
 		public function dump($args = NULL)
 		{
 			$arr = @func_get_args();
@@ -127,7 +145,6 @@
 					} else {
 						$echo .= ', (' . gettype($v) . '): ' . $v_;
 					}
-					continue;
 				}
 				return $echo . '<br>' . PHP_EOL;
 			}
@@ -162,14 +179,11 @@
 		 * @param string $path
 		 * @return bool|false|string
 		 */
-		public function screenShot($url, $razr = '1024x768', $razm = '600', $form = 'jpeg', $path = FALSE)
+		public function screenShot($url, $path = FALSE, $razr = '1024x768', $razm = '600', $form = 'jpeg')
 		{
 			$toapi = "http://mini.s-shot.ru/" . $razr . "/" . $razm . "/" . $form . "/?" . $url;
-			$scim = file_get_contents($toapi);
-			if ($path != FALSE) {
-				file_put_contents($path . '.' . $form, $scim);
-			}
-			return $scim;
+			$this->output[__FUNCTION__]['api'] = $toapi;
+			return $this->_download($toapi, $path);
 		}
 
 		/**
@@ -180,7 +194,20 @@
 		 * @param string $enc        = 'UTF-8'
 		 * @return string
 		 */
-		public function mb_ucfirst($string = '', $mode = modutilities::FirstLetter, $otherLower = TRUE, $enc = 'UTF-8'): ?string
+		public function mbUcfirst($string = '', $mode = modutilities::FirstLetter, $otherLower = TRUE, $enc = 'UTF-8')
+		{
+			return $this->mb_ucfirst($string, $mode, $otherLower, $enc);
+		}
+
+		/**
+		 * makes the first letter capital (in Russian)
+		 * @param string $string     input
+		 * @param int    $mode       = 1
+		 * @param bool   $otherLower = 1
+		 * @param string $enc        = 'UTF-8'
+		 * @return string
+		 */
+		public function mb_ucfirst($string = '', $mode = modutilities::FirstLetter, $otherLower = TRUE, $enc = 'UTF-8')
 		{
 			switch ($mode) {
 				case 3:
@@ -234,8 +261,8 @@
 			if ($str) {
 				$str = mb_strtolower($str);
 				$str = $this->basicTranslit($str);
-				$str = mb_ereg_replace('[^-0-9a-z]', '-', $str);
-				$str = mb_ereg_replace('[-]+', '-', $str);
+				$str = preg_replace('/[^-0-9a-z]/', '-', $str);
+				$str = preg_replace('/[\-]+/', '-', $str);
 				$str = trim($str, '-');
 				return $str;
 			} else {
@@ -269,7 +296,7 @@
 			if (is_array($data)) {
 				$echo = "<script type='text/javascript'>console.{$do}(" . json_encode($data, 256) . ");</script>";
 			} else {
-				$data_ = str_replace('<br>', '', $this->print($data));
+				$data_ = str_replace('<br>', '', $this->dump($data));
 				$echo = "<script type='text/javascript'>console.{$do}(`$data_`);</script>";
 			}
 			return $echo;
@@ -378,12 +405,24 @@
 		/**
 		 * @return mixed
 		 */
-		public function or()
+		public function or($arr)
 		{
-			$arr = func_get_args();
-			foreach ($arr as $a) {
-				if (!empty($a) and $a) {
-					return $a;
+			$a = func_get_args();
+			return $this->ifElse(...$a);
+		}
+
+		/**
+		 * @param $arr
+		 * @return false|mixed
+		 */
+		public function ifElse($arr)
+		{
+			$arr = is_array($arr) ? $arr : func_get_args();
+			if (is_array($arr)) {
+				foreach ($arr as $a) {
+					if (!empty($a) and $a) {
+						return $a;
+					}
 				}
 			}
 			return FALSE;
@@ -406,7 +445,7 @@
 					return FALSE;
 				}
 			} else {
-				if (is_object($id) and get_class($id) == 'modUser') {
+				if (is_object($id) and $id instanceof modUser) {
 					$user = $id;
 				} else {
 					/** @var modUser $user */
@@ -662,14 +701,6 @@
 		}
 
 		/**
-		 * @return string
-		 */
-		final public function __toString()
-		{
-			return (string)json_encode($this, 256);
-		}
-
-		/**
 		 * header("Content-type: application/json; charset=utf-8");
 		 */
 		public function headerJson()
@@ -682,7 +713,7 @@
 		 * @param $var
 		 * @return bool
 		 */
-		public function empty($var)
+		public function isEmpty($var)
 		{
 			switch (gettype($var)) {
 				case "array":
@@ -704,7 +735,7 @@
 			}
 			$score = 0;
 			foreach ($var as $k => $v) {
-				$score += $this->empty($v);
+				$score += $this->isEmpty($v);
 			}
 			return !(bool)$score;
 		}
@@ -770,7 +801,7 @@
 		{
 			$alt = $alt ?: 'https://placehold.it/' . $width . 'x' . $height . '?text=avatar';
 			if ($id) {
-				if (is_object($id) and get_class($id) == 'modUser_mysql') {
+				if (is_object($id) and $id instanceof modUser) {
 					$user = $id;
 				} else {
 					/** @var modUser $user */
@@ -805,7 +836,7 @@
 		 * @param int    $port
 		 * @return bool
 		 */
-		public function ping($host = '', $useSocket = FALSE, $timeout = 10, $port = 80)
+		public function ping($host = '', $useSocket = FALSE, $timeout = 2, $port = 80)
 		{
 			if ($host) {
 				$sock = FALSE;
@@ -815,7 +846,15 @@
 				if (!$sock) {
 					$this->output[__FUNCTION__]['error'] = [$errno, $errStr];
 					if (!$useSocket or $errStr == 'Unable to find the socket transport "https" - did you forget to enable it when you configured PHP?') {
-						$headers = @get_headers($host, 1);
+						$opts['http']['timeout'] = $timeout;
+						$opts['https']['timeout'] = $timeout;
+						if (version_compare(PHP_VERSION, '7.1.0', '>=')) {
+							$context = stream_context_create($opts);
+							$headers = @get_headers($host, 1, $context); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+						} else {
+							stream_context_set_default($opts);
+							$headers = @get_headers($host, 1); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+						}
 						preg_match('@HTTP\/\d+.\d+\s([2-3]\d+)?\s@', $headers[0], $math);
 						if (isset($math[1]) and $math[1]) {
 							return TRUE;
@@ -857,11 +896,11 @@
 		{
 			if (is_object($table)) {
 				$table = $table->_table;
-			}elseif(is_string($table)){
+			} elseif (is_string($table)) {
 				$table_ = $this->modx->newObject($table);
-				if($table_) {
+				if ($table_) {
 					$table = $table_->_table;
-				}else{
+				} else {
 					unset($table_);
 				}
 			}
@@ -879,9 +918,10 @@
 		/**
 		 * return all values by tv id
 		 * @param int|string $id
+		 * @param string     $mode = res|id
 		 * @return array|bool
 		 */
-		public function getAllTvValue($tv = 0)
+		public function getAllTvValue($tv = 0, $mode = 'res')
 		{
 			$id = 0;
 			if (is_numeric($tv)) {
@@ -895,28 +935,47 @@
 			} else {
 				return FALSE;
 			}
-			$prefix = $this->modx->getOption('table_prefix');
-			$sql = "SELECT GROUP_CONCAT(`contentid`) as `contentid`,`value` FROM `{$prefix}site_tmplvar_contentvalues` WHERE `tmplvarid` = :id GROUP BY `value`";
-			$statement = $this->modx->prepare($sql);
-			if ($statement->execute(['id' => $id])) {
-				$result = $statement->fetchAll(PDO::FETCH_KEY_PAIR);
-				$responce = [];
-				foreach ($result as $k => $v) {
-					$responce[$v] = explode(',', $k);
-				}
-				return $responce;
+			switch ($mode) {
+				case 'res':
+					$sql = "SELECT GROUP_CONCAT(`contentid`) as `contentid`,`value` FROM `{$this->prefix}site_tmplvar_contentvalues` WHERE `tmplvarid` = :id GROUP BY `value`";
+					$statement = $this->modx->prepare($sql);
+
+					if ($statement->execute(['id' => $id])) {
+						$result = $statement->fetchAll(PDO::FETCH_KEY_PAIR);
+						$response = [];
+						foreach ($result as $k => $v) {
+
+							$response[$v] = explode(',', $k);
+						}
+						return $response;
+					}
+					return FALSE;
+				case 'id':
+					$sql = "SELECT `id`,`value`,`contentid` FROM `{$this->prefix}site_tmplvar_contentvalues` WHERE `tmplvarid` = :id";
+					$statement = $this->modx->prepare($sql);
+					if ($statement->execute(['id' => $id])) {
+						return $statement->fetchALL(PDO::FETCH_UNIQUE);
+					}
+					return FALSE;
+				default:
+					return FALSE;
 			}
-			return FALSE;
 		}
 
 		/**
-		 * @param int|modResource $id
-		 * @return array|bool
+		 * @param int    $id
+		 * @param string $type id|name|caption|full
+		 * @return array|false
 		 */
-		public function getAllTvResource($id = 0)
+		public function getAllTvResource($id = 0, $type = 'id')
 		{
 			if (is_int($id)) {
-				$id = $this->modx->getObject('modResource', $id);
+				if (!isset($this->cache[__FUNCTION__]['newQuery'])) {
+					$this->cache[__FUNCTION__]['newQuery'] = $this->modx->newQuery('modResource');
+					$this->cache[__FUNCTION__]['newQuery']->select('id', 'template');
+				}
+				$this->cache[__FUNCTION__]['newQuery']->where(['id' => $id]);
+				$id = $this->modx->getObject('modResource', $this->cache[__FUNCTION__]['newQuery']);
 			} elseif (is_object($id) and $id instanceof modResource) {
 
 			} else {
@@ -924,15 +983,47 @@
 			}
 			$response = [];
 			/** @var modResource $id */
-			$template = (int)$id->get('template');
-			$q = $this->modx->prepare("SELECT tmplvarid FROM {$this->prefix}site_tmplvar_templates WHERE templateid = :template");
-			$q->execute([
-				"template" => $template,
-			]);
-			while ($tvId = $q->fetch(PDO::FETCH_COLUMN)) {
-				$response[$tvId] = $id->getTVValue($tvId);
+			if ($id instanceof modResource) {
+				$template = (int)$id->get('template');
+				$resId = (int)$id->get('id');
+				if ($template) {
+					$q = $this->modx->prepare("SELECT `tp`.`tmplvarid` as `id`,`tv`.`name`,`tv`.`caption` FROM {$this->prefix}site_tmplvar_templates as tp LEFT JOIN {$this->prefix}site_tmplvars AS tv ON tv.id = tp.tmplvarid WHERE templateid = :template");
+					$q->execute([
+						"template" => $template,
+					]);
+					$getTv = $this->modx->prepare("SELECT `value` FROM {$this->prefix}site_tmplvar_contentvalues WHERE contentid = :contentid and tmplvarid = :tmplvarid");
+
+					while ($tvId = $q->fetch(PDO::FETCH_ASSOC)) {
+						$getTv->execute([
+							'tmplvarid' => $tvId['id'],
+							'contentid' => $resId,
+						]);
+						if ($getTv) {
+							$row = $getTv->fetch(PDO::FETCH_ASSOC);
+							switch ($type) {
+								default :
+									$response[$tvId['id']] = $row['value'];
+									break;
+								case 'name':
+									$response[$tvId['name']] = $row['value'];
+									break;
+								case 'caption':
+									$response[$tvId['caption']] = $row['value'];
+									break;
+								case 'full':
+									$tvId['value'] = $row['value'];
+									$response[] = $tvId;
+									break;
+							}
+						}
+					}
+					return $response;
+				}
+				$this->output[__FUNCTION__]['error'][] = 'modResource::template not found';
+				return FALSE;
 			}
-			return $response;
+			$this->output[__FUNCTION__]['error'][] = 'modResource not found';
+			return FALSE;
 		}
 
 		/**
@@ -1032,4 +1123,372 @@
 			$dop = array_fill(0, count($arr), 256);
 			return @implode(',', array_map('json_encode', $arr, $dop));
 		}
+
+		/**
+		 * @param string $file
+		 * @param string $outPath
+		 * @param bool   $update
+		 * @param int    $timeout
+		 * @param bool   $useCurl
+		 * @return bool
+		 * @throws Exception
+		 */
+		public function download($file = '', $outPath = '', $update = TRUE, $timeout = 2, $useCurl = FALSE)
+		{
+			$this->output[__FUNCTION__] = ['$file' => $file, '$outPath' => $outPath, '$timeout' => $timeout, '$update' => $update,];
+			if ($useCurl) {
+				if ($file) {
+					$ch = curl_init($file);
+					if ($outPath) {
+						if (!is_dir(dirname($outPath))) {
+							if (!mkdir($concurrentDirectory = dirname($outPath), $this->modx->config['new_file_permissions'], TRUE) && !is_dir($concurrentDirectory)) {
+								throw new Exception(sprintf('Directory "%s" was not created', $concurrentDirectory));
+								return FALSE;
+							}
+						}
+						if (!$update and file_exists($outPath)) {
+							return TRUE;
+						}
+						$fp = @fopen($outPath, 'w');
+						curl_setopt($ch, CURLOPT_FILE, $fp);
+					}
+					curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
+					curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+					curl_setopt($ch, CURLOPT_HEADER, FALSE);
+					curl_setopt($ch, CURLOPT_SSLVERSION, 3);
+
+					$tmp = curl_exec($ch);
+					curl_close($ch);
+					if ($outPath) {
+						@fclose($fp);
+					} elseif ($tmp) {
+						return $tmp;
+					} else {
+						return $this->_download($file, $outPath, $timeout, $update);
+					}
+					if (file_exists($outPath) and filesize($outPath) > 0) {
+						return TRUE;
+					} else {
+						$this->_download($file, $outPath, $timeout, $update);
+					}
+				}
+			} else {
+				return $this->_download($file, $outPath, $timeout, $update);
+			}
+			return FALSE;
+		}
+
+		/**
+		 * @param string $file
+		 * @param string $outPath
+		 * @param int    $timeout
+		 * @param bool   $update
+		 * @return bool|string
+		 */
+		public function _download($file = '', $outPath = '', $update = TRUE, $timeout = 2)
+		{
+			$this->output[__FUNCTION__] = ['$file' => $file, '$outPath' => $outPath, '$timeout' => $timeout, '$update' => $update,];
+			if (!$update and file_exists($outPath)) {
+				return TRUE;
+			}
+
+			$opts = [
+				'http' => [
+					'timeout' => $timeout,
+				],
+				'https' => [
+					'timeout' => $timeout,
+				],
+			];
+			if (version_compare(PHP_VERSION, '7.1.0', '>=')) {
+				$ctx = stream_context_create($opts);
+				if ($outPath) {
+					@file_put_contents($outPath, @file_get_contents($file, 0, $ctx));
+				} else {
+					return @file_get_contents($file, 0, $ctx);
+				}
+			} else {
+				stream_context_set_default($opts);
+				if ($outPath) {
+					@file_put_contents($outPath, @file_get_contents($file, 0));
+				} else {
+					return @file_get_contents($file, 0);
+				}
+			}
+
+			if (file_exists($outPath) and filesize($outPath) > 0) {
+				return TRUE;
+			} else {
+				return FALSE;
+			}
+		}
+
+		/**
+		 * @param string $file
+		 * @return mixed
+		 */
+		public function baseExt($file = '')
+		{
+			$_tmp = explode('.', basename($file));
+			return end($_tmp);
+		}
+
+		/**
+		 * @param string $file
+		 * @return string
+		 */
+		public function baseName($file = '')
+		{
+			$_tmp = explode('.', basename($file));
+			array_pop($_tmp);
+			return implode('', $_tmp);
+		}
+
+		/**
+		 * @param string $str
+		 * @param string $L
+		 * @param string $R
+		 * @return string
+		 */
+		public function expandBrackets($str = '', $L = '(', $R = ')')
+		{
+			if ($L != '(' and $R == ')') {
+				$R = $L;
+			}
+			if ($R == $L) {
+				return trim($str, $L);
+			}
+			return rtrim(ltrim($str, $L), $R);
+		}
+
+		/**
+		 * @param     $value
+		 * @param int $resource
+		 * @param int $tv
+		 * @return bool
+		 */
+		public function updateTv($value, $resource = 0, $tv = 0)
+		{
+			if (!$resource or !$tv) {
+				return FALSE;
+			}
+			if (!isset($this->prepare[__FUNCTION__]['upd'])) {
+				$this->prepare[__FUNCTION__]['upd'] = $this->modx->prepare("UPDATE  {$this->prefix}site_tmplvar_contentvalues set `value` = :value where contentid = :res and tmplvarid = :tv");
+			}
+			$upd = $this->prepare[__FUNCTION__]['upd'];
+			$upd->execute([
+				'value' => $value,
+				'res' => $resource,
+				'tv' => $tv,
+			]);
+			return TRUE;
+		}
+
+		/**
+		 * @param array $options
+		 * @return array|string
+		 */
+		public function randomColor($options = [])
+		{
+			$options = array_merge([
+				'limits' => [],
+				'salt' => FALSE,
+				'format' => 'hsl',
+				'type' => 'css',
+			], $options);
+			if ($options['salt']) {
+				if (!is_numeric($options['salt'])) {
+					$seed = (int)preg_replace("/[^0-9]/", '', md5($options['salt']));
+				} else {
+					$seed = (int)($options['salt'] * 100);
+				}
+				srand($seed);
+			}
+
+			if(isset($this->cache[__FUNCTION__][$options['format']][$options['type']][$options['salt']])){
+				return $this->cache[__FUNCTION__][$options['format']][$options['type']][$options['salt']];
+			}
+
+			$options['limits']['h']['max'] = $options['limits']['h']['max'] >= 360 ? 360 : $options['limits']['h']['max'];
+			$options['limits']['s']['max'] = $options['limits']['s']['max'] >= 100 ? 100 : $options['limits']['s']['max'];
+			$options['limits']['l']['max'] = $options['limits']['l']['max'] >= 100 ? 100 : $options['limits']['l']['max'];
+
+			$options['limits']['h']['max'] = $options['limits']['h']['max'] < 0 ? 0 : $options['limits']['h']['max'];
+			$options['limits']['s']['max'] = $options['limits']['s']['max'] < 0 ? 0 : $options['limits']['s']['max'];
+			$options['limits']['l']['max'] = $options['limits']['l']['max'] < 0 ? 0 : $options['limits']['l']['max'];
+
+			$options['limits']['h']['min'] = $options['limits']['h']['min'] >= 360 ? 360 : $options['limits']['h']['min'];
+			$options['limits']['s']['min'] = $options['limits']['s']['min'] >= 100 ? 100 : $options['limits']['s']['min'];
+			$options['limits']['l']['min'] = $options['limits']['l']['min'] >= 100 ? 100 : $options['limits']['l']['min'];
+
+			$options['limits']['h']['min'] = $options['limits']['h']['min'] < 0 ? 0 : $options['limits']['h']['min'];
+			$options['limits']['s']['min'] = $options['limits']['s']['min'] < 0 ? 0 : $options['limits']['s']['min'];
+			$options['limits']['l']['min'] = $options['limits']['l']['min'] < 0 ? 0 : $options['limits']['l']['min'];
+
+			$h = rand($options['limits']['h']['min'] ?? 0, $options['limits']['h']['max'] ?? 360);
+			$s = rand($options['limits']['s']['min'] ?? 0, $options['limits']['s']['max'] ?? 100);
+			$l = rand($options['limits']['l']['min'] ?? 0, $options['limits']['l']['max'] ?? 100);
+			switch (mb_strtolower($options['format'])) {
+				case 'hex';
+					$this->hsl2rgb($h, $s, $l);
+					return $this->rgb2hex($h, $s, $l);
+				case 'rgb';
+					$this->hsl2rgb($h, $s, $l);
+					if (mb_strtolower($options['type']) == 'css') {
+
+						return "rgb($h, $s, $l)";
+					}
+					return [
+						'r' => $h,
+						'g' => $s,
+						'b' => $l,
+					];
+				default:
+
+					if (mb_strtolower($options['type']) == 'css') {
+						$this->cache[__FUNCTION__][$options['format']][$options['type']][$options['salt']] = "hsl($h, $s%, $l%)";
+						return "hsl($h, $s%, $l%)";
+					}
+					$this->cache[__FUNCTION__][$options['format']][$options['type']][$options['salt']] = [
+						'h' => $h,
+						's' => $s,
+						'l' => $l,
+					];
+					return [
+						'h' => $h,
+						's' => $s,
+						'l' => $l,
+					];
+			}
+
+		}
+
+		public function hsv2rgb(&$rH, &$gS, &$bV)
+		{
+			if ($rH < 0) $rH = 0;   // Hue:
+			if ($rH > 360) $rH = 360; //   0-360
+			if ($gS < 0) $gS = 0;   // Saturation:
+			if ($gS > 100) $gS = 100; //   0-100
+			if ($bV < 0) $bV = 0;   // Lightness:
+			if ($bV > 100) $bV = 100; //   0-100
+
+			$dS = $gS / 100.0; // Saturation: 0.0-1.0
+			$dV = $bV / 100.0; // Lightness:  0.0-1.0
+			$dC = $dV * $dS;   // Chroma:     0.0-1.0
+			$dH = $rH / 60.0;  // H-Prime:    0.0-6.0
+			$dT = $dH;       // Temp variable
+
+			while ($dT >= 2.0) $dT -= 2.0; // php modulus does not work with float
+			$dX = $dC * (1 - abs($dT - 1));     // as used in the Wikipedia link
+
+			switch (floor($dH)) {
+				case 0:
+					$dR = $dC;
+					$dG = $dX;
+					$dB = 0.0;
+					break;
+				case 1:
+					$dR = $dX;
+					$dG = $dC;
+					$dB = 0.0;
+					break;
+				case 2:
+					$dR = 0.0;
+					$dG = $dC;
+					$dB = $dX;
+					break;
+				case 3:
+					$dR = 0.0;
+					$dG = $dX;
+					$dB = $dC;
+					break;
+				case 4:
+					$dR = $dX;
+					$dG = 0.0;
+					$dB = $dC;
+					break;
+				case 5:
+					$dR = $dC;
+					$dG = 0.0;
+					$dB = $dX;
+					break;
+				default:
+					$dR = 0.0;
+					$dG = 0.0;
+					$dB = 0.0;
+					break;
+			}
+
+			$dM = $dV - $dC;
+			$dR += $dM;
+			$dG += $dM;
+			$dB += $dM;
+			$dR *= 255;
+			$dG *= 255;
+			$dB *= 255;
+			$rH = round($dR);
+			$gS = round($dG);
+			$bV = round($dB);
+			return [round($dR), round($dG), round($dB)];
+		}
+
+		public function hsl2rgb(&$rH, &$gS, &$bL)
+		{
+
+			$c = (1 - abs(2 * $bL - 1)) * $gS;
+			$x = $c * (1 - abs(fmod(($rH / 60), 2) - 1));
+			$m = $bL - ($c / 2);
+
+			if ($rH < 60) {
+				$r = $c;
+				$g = $x;
+				$b = 0;
+			} elseif ($rH < 120) {
+				$r = $x;
+				$g = $c;
+				$b = 0;
+			} elseif ($rH < 180) {
+				$r = 0;
+				$g = $c;
+				$b = $x;
+			} elseif ($rH < 240) {
+				$r = 0;
+				$g = $x;
+				$b = $c;
+			} elseif ($rH < 300) {
+				$r = $x;
+				$g = 0;
+				$b = $c;
+			} else {
+				$r = $c;
+				$g = 0;
+				$b = $x;
+			}
+
+			$rH = floor(($r + $m) * 255);
+			$gS = floor(($g + $m) * 255);
+			$bL = floor(($b + $m) * 255);
+
+			return [$rH, $gS, $bL];
+		}
+
+		public function rgb2hex(&$R, &$G, &$B)
+		{
+
+			$R = dechex($R);
+			if (strlen($R) < 2)
+				$R = '0' . $R;
+
+			$G = dechex($G);
+			if (strlen($G) < 2)
+				$G = '0' . $G;
+
+			$B = dechex($B);
+			if (strlen($B) < 2)
+				$B = '0' . $B;
+
+			return '#' . $R . $G . $B;
+		}
+
+
 	}

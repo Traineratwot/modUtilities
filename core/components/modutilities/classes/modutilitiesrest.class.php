@@ -290,6 +290,7 @@
 					'OR:name:LIKE' => $snippet,
 				]);
 				if ($sp) {
+					$scriptProperties = array_merge($scriptProperties,$_REQUEST);
 					return $sp->process($scriptProperties);
 				}
 				if (!class_exists('modX')) {
