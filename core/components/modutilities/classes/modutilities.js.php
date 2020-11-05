@@ -108,8 +108,10 @@ class miniUser {
 
 
 	getSetting(key) {
-		this.getSettings()
-		return this.settings[key]
+		if(this.getSettings()) {
+			return this.settings[key]
+		}
+		return false
 	}
 
 
@@ -214,7 +216,7 @@ class ConverterUnits {
 				e = __e__
 				console.log(e.getMessage())
 				__loop1:
-					switch(e.getCode()) {
+					switch( e.getCode() ) {
 						case 1:
 							return {
 								0: n.toFixed(i),
@@ -234,6 +236,7 @@ class ConverterUnits {
 		}
 		return out
 	}
+
 
 	static ToSi(n, type, from) {
 		if(typeof type == 'undefined') type = 'byte'
@@ -299,12 +302,14 @@ class modUtilities {
 		this.included = {}
 	}
 
+
 	in_array($k, $a) {
 		for(const $aKey in $a) {
 			if($k == $a[$aKey]) {return true}
 		}
 		return false
 	}
+
 
 	array_keys($a) {
 		var arr = []
@@ -314,16 +319,18 @@ class modUtilities {
 		return arr
 	}
 
+
 	Exception(message, code) {
-		this.message = message;
-		this.code = code;
-		this.getCode=()=>{
+		this.message = message
+		this.code = code
+		this.getCode = () => {
 			return this.code
 		}
-		this.getMessage=()=>{
+		this.getMessage = () => {
 			return this.message
 		}
 	}
+
 
 	static get FirstLetter() {return 1}
 
@@ -339,7 +346,7 @@ class modUtilities {
 	 * @param {number} mode
 	 * @param {boolean} otherLower
 	 */
-	mb_ucfirst(string = '', mode = modutilities.FirstLetter, otherLower = true) {
+	mb_ucfirst(string = '', mode = modUtilities.FirstLetter, otherLower = true) {
 		if(string && string.constructor.name == 'String') {
 			switch( mode ) {
 				case 3:
@@ -374,7 +381,7 @@ class modUtilities {
 	 * @param {number} mode
 	 * @param {boolean} otherLower
 	 */
-	mbUcfirst(string = '', mode = modutilities.FirstLetter, otherLower = true) {
+	mbUcfirst(string = '', mode = modUtilities.FirstLetter, otherLower = true) {
 		return this.mb_ucfirst(string, mode, otherLower)
 	}
 
@@ -403,12 +410,12 @@ class modUtilities {
 	 * @param {string} R
 	 * @param {string|((substring: string, ...args: any[]) => string)} replace
 	 */
-	trim(str = '', L = 's', R = false, replace = '') {
+	trim(str = '', L = '\s', R = false, replace = '') {
 		if(!R) {
 			R = L
 		}
-		var reg1 = new RegExp('(^\\\\' + L + '+)')
-		var reg2 = new RegExp('(\\\\' + R + '+$)')
+		var reg1 = new RegExp('(^' + L + '+)')
+		var reg2 = new RegExp('(' + R + '+$)')
 		return str.replace(reg1, replace).replace(reg2, replace)
 	}
 
@@ -477,7 +484,7 @@ class modUtilities {
 			}
 			var script = document.createElement('script')
 			if(!parent_selector) {
-				var prior = document.querySelector('head *:nth-child(1)')
+				var prior = document.querySelector('head')
 			} else {
 				var prior = document.querySelector(parent_selector)
 			}
@@ -500,7 +507,7 @@ class modUtilities {
 			}
 
 			script.src = source
-			prior.parentNode.insertBefore(script, prior)
+			prior.append(script)
 			return true
 		}
 		return false
@@ -517,21 +524,25 @@ class modUtilities {
 			var test = cookie_[0].match(/(\[(.+)?\])/)
 			if(!test) {
 				let cookie_name = decodeURIComponent(cookie_[0])
-				cookie[cookie_name] = this.trim(decodeURIComponent(cookie_[1]), 's', ';')
+				cookie[cookie_name] = this.trim(decodeURIComponent(cookie_[1]), '\s', ';')
 			} else {
 				let cookie_name = decodeURIComponent(cookie_[0]).replace(decodeURIComponent(test[0]), '')
 				let cookie_id = decodeURIComponent(test[2])
 				if(typeof cookie[cookie_name] == 'undefined') {
 					cookie[cookie_name] = {}
 				}
-				cookie[cookie_name][cookie_id] = this.trim(decodeURIComponent(cookie_[1]), 's', ';')
+				cookie[cookie_name][cookie_id] = this.trim(decodeURIComponent(cookie_[1]), '\s', ';')
 			}
 
 		}
 		this.cookie = cookie
-		var out = cookie
-		if(name && typeof cookie[name] != 'undefined') {
-			out = cookie[name]
+		var out = this.cookie
+		if(name) {
+			if(typeof cookie[name] != 'undefined') {
+				out = cookie[name]
+			} else {
+				out = ''
+			}
 		}
 		if(id && typeof out[id] != 'undefined') {
 			out = out[id]
@@ -540,10 +551,10 @@ class modUtilities {
 			try {
 				return JSON.parse(out)
 			} catch(e) {
-				return e
+				return false
 			}
 		}
-		return out
+		return out.substring(0, out.length - 1)
 	}
 
 

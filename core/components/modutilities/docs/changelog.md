@@ -1,5 +1,5 @@
 # Changelog
-## [2.7.8] - 2020-11-05
+## [2.8.0] - 2020-11-05
    * change
      - modutilities.js
        - move js from page to file* 

@@ -501,3 +501,44 @@
             }
      }
     ```
+# Frontend
+```js
+modx.util.mouse = {mouseX: 156, mouseY: 321, pageX: 156, pageY: 321}
+modx.util.constant = {kb: 1024, min: 60, mb: 1048576, gb: 1073741824, tb: 1099511627776, …}
+//аналогично $modx->util->mbUcfirst()
+modx.util.mbUcfirst()
+
+//name - имя cookie
+//value - значиние cookie
+modx.util.setCookie(name, value, options = {path: '/'})
+//name - имя cookie
+//id id cookie
+modx.util.getCookie(name, id, json = false)
+//name - имя cookie
+modx.util.deleteCookie(name)
+//str - строка
+// L - тело регулярного вырожения например: "\s", для левой части
+// R - тело регулярного вырожения например: "\s", для правой части, если не указанно то L
+// replace на что заменять
+modx.util.trim(str = '', L = 's', R = false, replace = '')
+//функция для вставки на страницу js кода, после загрузки скрипта срабатывает событие "modx.util.included"
+// source - ссылка на скрипт 
+// name - удобное для вас имя с которым придет событие 
+// parent_selector - после какого элемента вставить script по умолчанию head
+modx.util.include(source, name = false, parent_selector = false, async = true);
+//пременная для определения устройства принимает значения "mobile,"tabled","pc"
+// определяет по ширине экрана 
+modx.util.device
+//класс содержащий информацию о пользователе если он авторезирован
+//также этот клас позволяt хранить и использовать "настройки" пользователя
+//например сохранять открытые спойлеры или данные формы после перезагрузки страници
+modx.user
+//устанавливает значение "настройки"
+modx.user.setSetting(key,value)
+//получает значение "настройки"
+modx.user.getSetting(key)
+//получает все значения настроек
+modx.user.getSettings()
+//класс содержащий информацию о текущей странице
+modx.resource
+```

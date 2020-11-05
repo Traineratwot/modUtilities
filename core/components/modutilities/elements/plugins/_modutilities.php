@@ -60,7 +60,7 @@
 				if(isset($_GET['modutilitiesJs']) and $_GET['modutilitiesJs'] == 1){
 					$script = include MODX_CORE_PATH . 'components/modutilities/classes/modutilities.js.php';
 					header('Content-Type: application/javascript');
-					die($script);
+					exit($script);
 				}else{
 					$script = '<script type="text/javascript" class="modutilities" src="'.$modx->makeUrl($modx->resourceIdentifier,'','','abs').'?modutilitiesJs=1"></script>';
 					$modx->regClientStartupScript($script);
