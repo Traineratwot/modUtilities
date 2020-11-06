@@ -1,4 +1,12 @@
 # Changelog
+## [2.8.2] - 2020-11-06
+   * add
+     - settings
+       - use_modUtilFrontJs_resource
+       - use_modUtilFrontJs_user
+   * fix
+     - modutilities.js
+       - security fix
 ## [2.8.0] - 2020-11-05
    * change
      - modutilities.js

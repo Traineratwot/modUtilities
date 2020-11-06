@@ -3,37 +3,43 @@ $res = [];
 $user = [];
 /** @var modX $modx */
 /** @var modResource $resource */
-if (!class_exists('modutilities')) {
+if (!class_exists('modUtilities')) {
 	return FALSE;
 }
-$r = $modx->newQuery('modResource');
-$r->where($modx->resourceIdentifier);
-$r->limit(1);
-$r->select('alias,pagetitle,properties,type,template,show_in_tree,published,searchable,pub_date,parent,menuindex,longtitle,link_attributes,isfolder,introtext,id,hidemenu,hide_children_in_tree,description,createdon,cacheable,class_key,contentType');
-$resource = $modx->getObject('modResource', $r);
-if ($resource instanceof modResource) {
-	$res = $resource->toArray('', TRUE);
-	$res['properties'] = json_decode($res['properties']);
+if ($modx->config['use_modUtilFrontJs_resource'] == TRUE) {
+	$r = $modx->newQuery('modResource');
+	$r->where($modx->resourceIdentifier);
+	$r->limit(1);
+	$r->select('alias,pagetitle,properties,type,template,show_in_tree,published,searchable,pub_date,parent,menuindex,longtitle,link_attributes,isfolder,introtext,id,hidemenu,hide_children_in_tree,description,createdon,cacheable,class_key,contentType');
+	if ($r->prepare() and $r->stmt->execute() and $res = $r->stmt->fetch(PDO::FETCH_ASSOC)) {
+		$res['properties'] = json_decode($res['properties']);
+	}
+	$res['id'] = $modx->resourceIdentifier;
 }
-$res['id'] = $modx->resourceIdentifier;
-if ($modx->user instanceof modUser) {
-	/** @var modUser $user */
-	$user = $modx->user->toArray('', TRUE);
-	if ($user['id']) {
-		$user['member'] = $modx->util->member($user)[0];
-		$p = $modx->newQuery('modUserProfile');
-		$p->select('address,extended,email,country,city,photo,state,phone,gender,fullname,fax,mobilephone,website,zip');
-		$p->limit(1);
-		$p->where(['internalKey' => $user['id']]);
-		$profile = $modx->getObject('modUserProfile', $p);
-		if ($profile) {
-			$user['profile'] = $profile->_fields;
-			$user['profile']['extended'] = json_decode($user['profile']['extended']);
+if ($modx->config['use_modUtilFrontJs_user'] == TRUE) {
+	if ($modx->user instanceof modUser) {
+		/** @var modUser $user */
+		$user = $modx->user->_fields;
+		if ($user['id']) {
+			$user['member'] = $modx->util->member($user)[0];
+			$p = $modx->newQuery('modUserProfile');
+			$p->select('address,extended,email,country,city,photo,state,phone,gender,fullname,fax,mobilephone,website,zip');
+			$p->limit(1);
+			$p->where(['internalKey' => $user['id']]);
+			if ($p->prepare() and $p->stmt->execute() and $profile = $p->stmt->fetch(PDO::FETCH_ASSOC)) {
+				$user['profile'] = $profile;
+				$user['profile']['extended'] = json_decode($user['profile']['extended']);
+			}
+			unset($user['salt']);
+			unset($user['password']);
+			unset($user['remote_data']);
+			unset($user['remote_key']);
+			unset($user['session_stale']);
+			unset($user['sudo']);
+			unset($user['hash_class']);
+		} else {
+			$user = [];
 		}
-		unset($user['salt']);
-	} else {
-		unset($user);
-		$user = FALSE;
 	}
 }
 ob_start();
@@ -84,7 +90,6 @@ class miniModX {
 
 	}
 }
-
 class miniResource {
 	constructor(modx) {
 		this.modx = modx

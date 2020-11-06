@@ -93,29 +93,32 @@
 
 		public function getPipModules()
 		{
-			exec('pip freeze', $lines, $code);
-			if ($code == 0) {
-				foreach ($lines as $k => $line) {
-					$lines[$k] = explode('==', $line);
+			if (empty($this->modules)) {
+				exec('pip freeze', $lines, $code);
+				if ($code == 0) {
+					foreach ($lines as $k => $line) {
+						$lines[$k] = explode('==', $line);
+					}
+					$this->modules = $lines;
+					return TRUE;
 				}
-				$this->modules = $lines;
-				return TRUE;
+				$this->modules === 'error';
+				return FALSE;
 			}
-			$this->modules === 'error';
-			return FALSE;
+			return TRUE;
 		}
 
-		public function python($source)
+		public function python($source, $json)
 		{
-			return $this->py($source);
+			return $this->py($source, $json);
 		}
 
-		public function run($source)
+		public function run($source, $json = TRUE)
 		{
-			return $this->py($source);
+			return $this->py($source, $json);
 		}
 
-		public function py($source, $param = [])
+		public function py($source, $json, $param = [])
 		{
 			try {
 				$timer = microtime(TRUE);
@@ -128,20 +131,12 @@
 				}
 				$out = exec($this->pyComand . ' ' . $source, $lines, $code);
 				if ($code !== 0) {
-					throw new Exception('py error: ' . $out, $code);
-				}
-
-				if ($this->util->jsonValidate($out)) {
-					return [
-						'out' => $this->util->output['jsonValidate']['result'],
-						'lines' => $lines,
-						'code' => $code,
-						'time' => microtime(TRUE) - $timer,
-					];
+					throw new Exception('py error: ' . $lines . " " . $out, $code);
 				}
 				return [
 					'success' => TRUE,
 					'out' => $out,
+					'json' => $json ? $this->util->jsonValidate($out) : FALSE,
 					'lines' => $lines,
 					'code' => $code,
 					'time' => microtime(TRUE) - $timer,

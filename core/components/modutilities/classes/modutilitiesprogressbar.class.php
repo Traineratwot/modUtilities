@@ -50,7 +50,7 @@
 				printf("[%10s]\n", 'invalid total');
 				return FALSE;
 			}
-			$s = $this->match->call($this->total, '=%', $current);
+			$s = $this->match->percent($this->total, '=%', $current);
 			if ($s > 100) {
 				$s = 100;
 			}
@@ -59,7 +59,7 @@
 			}
 			$this->getTerminalSize();
 			$width = $this->width - 22;
-			$space = floor($this->match->call($width, '-%', $s));
+			$space = floor($this->match->percent($width, '-%', $s));
 			$output = str_pad('', $space, '_', STR_PAD_LEFT);
 			$output = str_pad('', $width - $space, '#', STR_PAD_LEFT) . $output;
 			$output = '[' . $output . ']';

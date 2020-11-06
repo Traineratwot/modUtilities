@@ -15,7 +15,7 @@
 		 * @param int       $round
 		 * @return float|int|false
 		 */
-		public function call($value = 0, $math = '', $percent = 0, $round = 2)
+		public function percent($value = 0, $math = '', $percent = 0, $round = 2)
 		{
 			$return = 0;
 			if(!is_numeric($value)){
