@@ -45,6 +45,7 @@
 			$this->REST = $REST;
 			$this->util = $REST->util;
 			$this->GET  = &$properties['input']['GET'];
+			$this->user = &$properties['user'];
 			$_alias = $modx->context->getOption('request_param_alias', 'q');
 			$this->url  = $this->GET[$_alias];
 			unset($this->GET[$_alias]);

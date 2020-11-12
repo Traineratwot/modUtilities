@@ -81,15 +81,33 @@
 				]);
 				$this->rest = $tmp;
 				$this->restCategory = $category;
-				try {
-					$this->permission = json_decode($tmp->getProperty('permission', $category->getProperty('permission', '{"allow": {"usergroup": "all"}}')), 1, 512);
-					$this->param = json_decode($tmp->getProperty('param', $category->getProperty('param', '{"headers": [], "httpResponseCode": 200, "scriptProperties": []}')), 1, 512);
-				} catch (JsonException $e) {
-					$this->modx->log(MODX_LOG_LEVEL_FATAL, 'JSON in permission or param ' . $e->getMessage(), $e->getCode(), __FUNCTION__, $e->getFile(), $e->getLine());
+				$replaceConfig = [];
+				$this->permission = $tmp->getProperty('permission', $category->getProperty('permission', '{"allow": {"usergroup": "all"}}'));
+				if($this->util->strTest($this->permission,['[++'])){
+					if(empty($replaceConfig)) {
+						$replaceConfig = $this->replaceConfig();
+					}
+					$this->permission = strtr($this->permission, $replaceConfig);
+				}
+				$this->permission = $this->util->jsonValidate($this->permission);
+				if(!$this->permission) {
+					$this->modx->log(MODX_LOG_LEVEL_FATAL, 'invalid JSON in permission');
 					http_response_code(501);
 					die;
 				}
-
+				$this->param = $tmp->getProperty('param', $category->getProperty('param', '{"headers": [], "httpResponseCode": 200, "scriptProperties": []}'));
+				if($this->util->strTest($this->param,['[++'])){
+					if(empty($replaceConfig)) {
+						$replaceConfig = $this->replaceConfig();
+					}
+					$this->param = strtr($this->param, $replaceConfig);
+				}
+				$this->param = $this->util->jsonValidate($this->param);
+				if(!$this->param) {
+					$this->modx->log(MODX_LOG_LEVEL_FATAL, 'invalid JSON in param ');
+					http_response_code(501);
+					die;
+				}
 				if (!$this->setHeader() or !$this->security()) {
 					http_response_code(401);
 					$this->modx->sendForward($this->modx->config['error_page']);
@@ -322,6 +340,14 @@
 				$this->modx->log(MODX_LOG_LEVEL_ERROR, $e->getMessage(), $e->getCode(), __FUNCTION__, $e->getFile(), $e->getLine());
 				return FALSE;
 			}
+		}
+
+		public function replaceConfig(){
+			$repl = [];
+			foreach ($this->modx->config as $key=> $value){
+				$repl['[[++'.$key.']]'] = $value;
+			}
+			return $repl;
 		}
 
 	}

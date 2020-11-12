@@ -13,7 +13,9 @@
 		public $times = [];
 		public $speedModes =[
 			'its'=>'it/s',
+			'it/s'=>'it/s',
 			'sit'=>'s/it',
+			's/it'=>'s/it',
 		];
 
 		public function __construct(modX &$modx, modUtilities &$util, $param = [])
@@ -23,7 +25,7 @@
 			$this->util = $util;
 			$this->match = $util->math();
 			$this->total = $param['total'] ?? 0;
-			$this->speedMode = $param['speed'] ?? 'its';
+			$this->speedMode = $param['speed'] ?? 'it/s';
 
 			$sys = $this->util->rawText(php_uname('s'));
 			if (strpos($sys, 'windows') !== FALSE) {
@@ -68,7 +70,7 @@
 			if($this->speedMode) {
 				$this->times[$current] = microtime(TRUE);
 				$speed = $this->calcSpeed();
-				$output .= "[{$this->speedModes[$this->speedMode]} {$speed[$this->speedMode]}]";
+				$output .= "[{$this->speedModes[$this->speedMode]} {$speed[$this->speedModes[$this->speedMode]]}]";
 			}
 			$logs = array_slice($this->logs, -$this->height + 3);
 			print implode('', $logs);

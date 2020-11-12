@@ -1,4 +1,11 @@
 # Changelog
+## [2.8.3] - 2020-11-06
+   * add
+     - modutilitiesRest
+       - support config key in permission and param [[++key]]
+   * fix
+     - modutilities
+       - jsonValidate fix
 ## [2.8.2] - 2020-11-06
    * add
      - settings

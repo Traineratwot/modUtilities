@@ -1398,22 +1398,36 @@
 			if (isset($this->cache[__FUNCTION__][$options['format']][$options['type']][$options['salt']])) {
 				return $this->cache[__FUNCTION__][$options['format']][$options['type']][$options['salt']];
 			}
-
-			$options['limits']['h']['max'] = $options['limits']['h']['max'] >= 360 ? 360 : $options['limits']['h']['max'];
-			$options['limits']['s']['max'] = $options['limits']['s']['max'] >= 100 ? 100 : $options['limits']['s']['max'];
-			$options['limits']['l']['max'] = $options['limits']['l']['max'] >= 100 ? 100 : $options['limits']['l']['max'];
-
-			$options['limits']['h']['max'] = $options['limits']['h']['max'] < 0 ? 0 : $options['limits']['h']['max'];
-			$options['limits']['s']['max'] = $options['limits']['s']['max'] < 0 ? 0 : $options['limits']['s']['max'];
-			$options['limits']['l']['max'] = $options['limits']['l']['max'] < 0 ? 0 : $options['limits']['l']['max'];
-
-			$options['limits']['h']['min'] = $options['limits']['h']['min'] >= 360 ? 360 : $options['limits']['h']['min'];
-			$options['limits']['s']['min'] = $options['limits']['s']['min'] >= 100 ? 100 : $options['limits']['s']['min'];
-			$options['limits']['l']['min'] = $options['limits']['l']['min'] >= 100 ? 100 : $options['limits']['l']['min'];
-
-			$options['limits']['h']['min'] = $options['limits']['h']['min'] < 0 ? 0 : $options['limits']['h']['min'];
-			$options['limits']['s']['min'] = $options['limits']['s']['min'] < 0 ? 0 : $options['limits']['s']['min'];
-			$options['limits']['l']['min'] = $options['limits']['l']['min'] < 0 ? 0 : $options['limits']['l']['min'];
+			if (isset($options['limits']['l'])) {
+				if (isset($options['limits']['l']['max'])) {
+					$options['limits']['l']['max'] = $options['limits']['l']['max'] >= 100 ? 100 : $options['limits']['l']['max'];
+					$options['limits']['l']['max'] = $options['limits']['l']['max'] < 0 ? 0 : $options['limits']['l']['max'];
+				}
+				if (isset($options['limits']['l']['min'])) {
+					$options['limits']['l']['min'] = $options['limits']['l']['min'] >= 100 ? 100 : $options['limits']['l']['min'];
+					$options['limits']['l']['min'] = $options['limits']['l']['min'] < 0 ? 0 : $options['limits']['l']['min'];
+				}
+			}
+			if (isset($options['limits']['s'])) {
+				if (isset($options['limits']['l']['max'])) {
+					$options['limits']['s']['max'] = $options['limits']['s']['max'] >= 100 ? 100 : $options['limits']['s']['max'];
+					$options['limits']['s']['max'] = $options['limits']['s']['max'] < 0 ? 0 : $options['limits']['s']['max'];
+				}
+				if (isset($options['limits']['l']['min'])) {
+					$options['limits']['s']['min'] = $options['limits']['s']['min'] >= 100 ? 100 : $options['limits']['s']['min'];
+					$options['limits']['s']['min'] = $options['limits']['s']['min'] < 0 ? 0 : $options['limits']['s']['min'];
+				}
+			}
+			if (isset($options['limits']['h'])) {
+				if (isset($options['limits']['l']['max'])) {
+					$options['limits']['h']['max'] = $options['limits']['h']['max'] >= 360 ? 360 : $options['limits']['h']['max'];
+					$options['limits']['h']['max'] = $options['limits']['h']['max'] < 0 ? 0 : $options['limits']['h']['max'];
+				}
+				if (isset($options['limits']['l']['min'])) {
+					$options['limits']['h']['min'] = $options['limits']['h']['min'] >= 360 ? 360 : $options['limits']['h']['min'];
+					$options['limits']['h']['min'] = $options['limits']['h']['min'] < 0 ? 0 : $options['limits']['h']['min'];
+				}
+			}
 
 			$h = rand($options['limits']['h']['min'] ?? 0, $options['limits']['h']['max'] ?? 360);
 			$s = rand($options['limits']['s']['min'] ?? 0, $options['limits']['s']['max'] ?? 100);
@@ -1593,7 +1607,11 @@
 			try {
 				$error = 0;
 				// decode the JSON data
-				$result = json_decode($string, TRUE, $depth, JSON_THROW_ON_ERROR);
+				if (version_compare(PHP_VERSION, '7.3.0', '>=')) {
+					$result = json_decode($string, TRUE, $depth, JSON_THROW_ON_ERROR);
+				} else {
+					$result = json_decode($string, TRUE, $depth);
+				}
 
 				// switch and check possible JSON errors
 				switch (json_last_error()) {
