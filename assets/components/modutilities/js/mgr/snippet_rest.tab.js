@@ -1,27 +1,9 @@
-var ModUtilCategoryArr
 Ext.onReady(function() {
 	Ext.util.Cookies.set('search_log','')
 	MODx.add({
 		xtype: 'modUtil-panel-home'
 	})
-	ModUtilCategoryArr = new Ext.data.JsonStore({
-		root: 'results'
-		, autoLoad: true
-		, totalProperty: 'total'
-		, fields: ['id', 'name']
-		, url: modUtilConnector_url
-		, baseParams: {
-			action: 'mgr/rest/getlistcategory',
-			combo: 1,
-		},
-		listeners: {
-			load: function() {
-				Ext.getCmp('Rest-main-table').refresh()
-				Ext.getCmp('Category-main-table').refresh()
-				// Ext.getCmp('Log-main-table').refresh()
-			}
-		}
-	})
+
 	hljs.initHighlightingOnLoad()
 })
 var modUtil = function(config) {
@@ -121,7 +103,7 @@ modUtil.panel.Home = function(config) {
 										xtype: 'modUtil-combo-modCombo',
 										fieldLabel: _('snippet'),
 										forceSelection: false,
-										fields: ['id', 'name'],
+										fields: ['id', 'name','category_name'],
 										url: MODx.config.connector_url,
 										baseParams: {
 											action: 'element/snippet/getlist',
@@ -188,35 +170,28 @@ modUtil.panel.Home = function(config) {
 										xtype: 'modUtil-combo-modCombo',
 										name: 'category',
 										hiddenName: 'category',
-										fieldLabel: _('snippet'),
+										fieldLabel: _('category'),
 										forceSelection: false,
-										fields: ['id', 'name'],
+										fields: ['id','name','allowMethod'],
 										baseParams: {
 											action: 'mgr/rest/getlistcategory',
-											sort:'id',
+											sort:'name',
 											dir:'DESK',
 											combo: 1,
 										},
-										valueField: 'id',
+										valueField: 'name',
 										displayField: 'name',
 										tpl: new Ext.XTemplate(
 											'<tpl for=".">\
 												<div class="x-combo-list-item">\
 													<tpl if="id">({id})</tpl>\
-													<strong>{name}</strong><small>({category_name})</small>\
+													<strong>{name}</strong><small>({allowMethod})</small>\
 												</div>\
 											</tpl>'
 											, {compiled: true}
 										)
 									},
-									renderer: function(val) {
-										if(ModUtilCategoryArr) {
-											if(typeof ModUtilCategoryArr.getById(val) != 'undefined') {
-												return ModUtilCategoryArr.getById(val).data.name
-											}
-										}
-										return val
-									}
+									renderer: defaultRenderer
 								}
 							],
 							fields: [

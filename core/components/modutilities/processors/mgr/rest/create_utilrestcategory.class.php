@@ -32,6 +32,7 @@
 					switch ($key) {
 						case 'param':
 							$this->setProperty($key, '{"scriptProperties":[],"headers":[],"httpResponseCode":200}');
+							break;
 						case 'permission':
 							$this->setProperty($key, '{"allow": {"usergroup":"all"}}');
 							break;
@@ -41,8 +42,8 @@
 						case 'category':
 							$this->setProperty($key, 1);
 							break;
-						default	:
-							$this->setProperty($key, null);
+						default    :
+							$this->setProperty($key, NULL);
 							break;
 					}
 				}

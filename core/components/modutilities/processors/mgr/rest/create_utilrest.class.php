@@ -33,7 +33,7 @@
 							$this->setProperty($key, 0);
 							break;
 						case 'category':
-							$this->setProperty($key, 1);
+							$this->setProperty($key, 'default');
 							break;
 						default    :
 							$this->setProperty($key, NULL);

@@ -77,7 +77,7 @@
 			if ($tmp and $tmp instanceof \Utilrest_mysql) {
 				$dd = $tmp->get('category', '', '', '');
 				$category = $this->modx->getObject('Utilrestcategory', [
-					'id' => $tmp->getProperty('category'),
+					'name' => $tmp->getProperty('category'),
 				]);
 				$this->rest = $tmp;
 				$this->restCategory = $category;

@@ -23,7 +23,7 @@
 
 			$assets = $this->modx->getOption('assets_url');
 			$this->addCss($assets . 'components/modutilities/css/mgr/snippet_rest.tab.css?t=' . time());
-			$this->addCss($assets . 'components/modutilities/css/mgr/widgets/github.css');
+//			$this->addCss($assets . 'components/modutilities/css/mgr/widgets/github.css');
 
 			if ($this->modx->config['friendly_urls'] == FALSE) {
 				$this->addJavascript($assets . 'components/modutilities/js/mgr/error.tab.js?');

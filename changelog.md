@@ -3,6 +3,7 @@
    * add
      - modutilitiesRest
        - support config key in permission and param [[++key]]
+       - now rest category is stored by `name` instead of `id`
    * fix
      - modutilities
        - jsonValidate fix
