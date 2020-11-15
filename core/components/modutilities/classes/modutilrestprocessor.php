@@ -39,30 +39,38 @@
 		 * @var string
 		 */
 		public $url;
+		/**
+		 * query
+		 * @var integer
+		 */
+		public $httpResponseCode = 0;
 
 		final public function __construct(modX &$modx, array $properties = [], modutilitiesRest &$REST)
 		{
 			$this->REST = $REST;
 			$this->util = $REST->util;
-			$this->GET  = &$properties['input']['GET'];
+			$this->GET = &$properties['input']['GET'];
 			$this->user = &$properties['user'];
+			$this->httpResponseCode = $properties['httpResponseCode'];
 			$_alias = $modx->context->getOption('request_param_alias', 'q');
-			$this->url  = $this->GET[$_alias];
+			$this->url = $this->GET[$_alias];
 			unset($this->GET[$_alias]);
 			$this->POST = &$properties['input']['POST'];
-			$this->PUT  = &$properties['input']['PUT'];
-			if(!empty($_FILES)) {
+			$this->PUT = &$properties['input']['PUT'];
+			if (!empty($_FILES)) {
 				$this->FILES = $this->util->files();
-				if(get_class($this->FILES) == 'modutilitiesPostFiles'){
+				if (get_class($this->FILES) == 'modutilitiesPostFiles') {
 					$this->FILES = $this->FILES->FILES;
 				}
 			}
+
 			parent::__construct($modx, $properties);
 		}
 
 		final public function run()
 		{
 			$initialized = $this->initialize();
+
 			foreach ($this->headers as $key => $value) {
 				header("$key: $value");
 			}
@@ -74,10 +82,13 @@
 				$o = $this->failure($initialized);
 			} else {
 				$o = $this->process();
+				if ($this->httpResponseCode) {
+					http_response_code($this->httpResponseCode);
+				}
 			}
-			if(is_array($o)){
+			if (is_array($o) or is_object($o)) {
 				$this->util->headerJson();
-				$o = json_encode($o,256);
+				$o = json_encode($o, 256);
 			}
 			return (string)$o;
 		}
@@ -140,6 +151,27 @@
 
 		public function TRACE()
 		{
+		}
+
+		public function success($msg = '', $object = NULL)
+		{
+			return [
+				'success' => TRUE,
+				'message' => $msg,
+				'object' => $object,
+				'code' => $this->httpResponseCode,
+			];
+		}
+
+		public function failure($msg = '', $object = NULL, $error = [])
+		{
+			return [
+				'success' => FALSE,
+				'message' => $msg,
+				'object' => $object,
+				'errors' => $error,
+				'code' => $this->httpResponseCode,
+			];
 		}
 	}
 

@@ -1599,7 +1599,7 @@
 		 * @param int $depth
 		 * @return bool|mixed
 		 */
-		public function jsonValidate($string, $depth = 1024)
+		public function jsonValidate($string, $assoc = TRUE,$depth = 1024)
 		{
 			$this->output[__FUNCTION__]['input'] = $string;
 			$this->output[__FUNCTION__]['error'] = NULL;
@@ -1608,9 +1608,9 @@
 				$error = 0;
 				// decode the JSON data
 				if (version_compare(PHP_VERSION, '7.3.0', '>=')) {
-					$result = json_decode($string, TRUE, $depth, JSON_THROW_ON_ERROR);
+					$result = json_decode($string, (bool)$assoc, $depth, JSON_THROW_ON_ERROR);
 				} else {
-					$result = json_decode($string, TRUE, $depth);
+					$result = json_decode($string, (bool)$assoc, $depth);
 				}
 
 				// switch and check possible JSON errors

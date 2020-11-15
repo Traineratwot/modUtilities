@@ -159,8 +159,12 @@
 							}
 							break;
 						case 'userIds':
-							if (array_search($userId, $value) !== FALSE) {
+							if (in_array($userId, $value) !== FALSE) {
 								throw new Exception(TRUE, 1);
+							}else{
+								if(!empty($value)){
+									throw new Exception(FALSE, 0);
+								}
 							}
 							break;
 						case 'ip':
@@ -266,21 +270,16 @@
 			try {
 				//сбор входных данных
 				$scriptProperties = $this->param['scriptProperties'];
+				$scriptProperties['httpResponseCode'] = $this->param['httpResponseCode'];
 				$scriptProperties['REST'] = &$this;
 
 				$scriptProperties['input']['GET'] = $_GET;
 				$scriptProperties['input']['POST'] = $_POST;
 				$put = file_get_contents('php://input');
 
-				$put = $this->util->jsonValidate($put, TRUE, 512) ?: $put;
-
+				$put = $this->util->jsonValidate($put, 512) ?: $put;
 				$scriptProperties['input']['PUT'] = $put ?: NULL;
-				try {
-					$tt = json_encode($scriptProperties['input']);
-				} catch (JsonException $e) {
-					$this->modx->log(MODX_LOG_LEVEL_WARN, 'JSON in $scriptProperties ' . $e->getMessage(), $e->getCode(), __FUNCTION__, $e->getFile(), $e->getLine());
-				}
-
+				$tt = $this->util->jsonValidate($scriptProperties['input']);
 				$this->log->set('input', $tt ?: NULL);
 				//сбор данных о подключении
 				$ip = $this->util->getIP();

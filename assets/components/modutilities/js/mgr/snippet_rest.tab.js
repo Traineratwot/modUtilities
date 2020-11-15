@@ -639,7 +639,7 @@ modUtil.window.addRest = function(config) {
 					dir:'DESK',
 				},
 				hiddenName: 'category',
-				valueField: 'id',
+				valueField: 'name',
 				displayField: 'name',
 				autoSelect: true,
 				tpl: new Ext.XTemplate(

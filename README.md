@@ -361,24 +361,31 @@
       $tvId = 1;
       $modx->util->updateTv('value',$resId,$tvId);//true
     ```
-  - **jsonValidate** - проверяет яаляетсяя ли строка JSON или нет, если да возвращяет массив, если нет false 
-      ```php
-        $modx->util->jsonValidate('["a":1]');//false
-        echo $modx->util->output['jsonValidate']['input']; // '["a":1]'
-        echo $modx->util->output['jsonValidate']['error']; // Syntax error
-        echo $modx->util->output['jsonValidate']['result']; // false
-      ```
-  - **urlBuild** - создает url
-      ```php
-        echo $modx->util->urlBuild([
-                        "scheme" => "https",
-                        "host" => $_SERVER['SERVER_NAME'],
-                        "path" => 'русский text',
-                        "query" => ['v'=>'test'],
-                        ]
-            );
-           //https://{HOST}/%D1%80%D1%83%D1%81%D1%81%D0%BA%D0%B8%D0%B9%20text?v=test
-      ```
+- **jsonValidate** - проверяет яаляетсяя ли строка JSON или нет, если да возвращяет массив, если нет false 
+    ```php
+      $assoc = true;
+      $depth = 512;
+      $modx->util->jsonValidate('["a":1]',$assoc,$depth);//false
+      echo $modx->util->output['jsonValidate']['input']; // '["a":1]'
+      echo $modx->util->output['jsonValidate']['error']; // Syntax error
+      echo $modx->util->output['jsonValidate']['result']; // false
+  
+      $modx->util->jsonValidate('{"a":1}',$assoc,$depth);//false
+      echo $modx->util->output['jsonValidate']['input']; // '["a":1]'
+      echo $modx->util->output['jsonValidate']['error']; // 
+      echo $modx->util->output['jsonValidate']['result']; // ["a"=>1]
+    ```
+- **urlBuild** - создает url
+    ```php
+      echo $modx->util->urlBuild([
+                      "scheme" => "https",
+                      "host" => $_SERVER['SERVER_NAME'],
+                      "path" => 'русский text',
+                      "query" => ['v'=>'test'],
+                      ]
+          );
+         //https://{HOST}/%D1%80%D1%83%D1%81%D1%81%D0%BA%D0%B8%D0%B9%20text?v=test
+     ```
 #### Классы
  - **Csv** 
     удобный класс для создания csv 

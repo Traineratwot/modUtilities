@@ -4,6 +4,11 @@
      - modutilitiesRest
        - support config key in permission and param [[++key]]
        - now rest category is stored by `name` instead of `id`
+       - Security fix
+     - modUtilRestProcessor
+       - change function `success`  
+       - change function `failure`
+       - added var `$httpResponseCode` 
    * fix
      - modutilities
        - jsonValidate fix
