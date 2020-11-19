@@ -1,8 +1,8 @@
 <?php
 	ini_set('display_errors', 1);
 	ini_set('display_errors', 1);
-	if (file_exists(MODX_CORE_PATH . 'components/extraext/controllers/extraext.include.php')) {
-		include_once MODX_CORE_PATH . 'components/extraext/controllers/extraext.include.php';
+	if (file_exists(MODX_CORE_PATH . 'components/extraext/model/extraext.include.php')) {
+		include_once MODX_CORE_PATH . 'components/extraext/model/extraext.include.php';
 	}
 	if (class_exists('extraExtManagerController')) {
 		//Основной контроллер
@@ -28,7 +28,7 @@
 			{
 
 				$assets = $this->modx->getOption('assets_url');
-				$this->addCss('css/mgr/snippet_rest.tab.css',$this->componentUrl);
+				$this->addCss('css/mgr/snippet_rest.tab.css', $this->componentUrl);
 
 				if ($this->modx->config['friendly_urls'] == FALSE) {
 					$this->addJavascript($assets . 'components/modutilities/js/mgr/error.tab.js?');

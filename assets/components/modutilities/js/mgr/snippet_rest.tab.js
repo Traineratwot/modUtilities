@@ -96,7 +96,7 @@ modUtil.panel.Home = function(config) {
 	Ext.apply(config, {
 		cls: 'container', // Добавляем отступы
 		items: [{
-			html: ' <h2>modUtil REST<small style="font-size: 10px"><a href="https://forms.gle/FJbfBSutMJwQCgmS8" target="_blank">Bug report</a></small></h2>',
+			html: ' <h2>modUtil REST<small style="font-size: 10px"><a href="https://forms.gle/FJbfBSutMJwQCgmS8" target="_blank">Bug report</a></small></h2><br><small style="color: red">deprecated interface, please install <strong><a>ExtraExt</a></strong> </small>',
 		},
 			{
 				xtype: 'modx-tabs',
@@ -877,3 +877,7 @@ modUtil.combo.modComboSuper = function(config) {
 Ext.extend(modUtil.combo.modComboSuper, Ext.ux.form.SuperBoxSelect)
 Ext.reg('modUtil-combo-modComboSuper', modUtil.combo.modComboSuper)
 
+
+//# sourceMappingURL=snippet_rest.tab.js.map
+
+//# sourceMappingURL=snippet_rest.tab.js.map

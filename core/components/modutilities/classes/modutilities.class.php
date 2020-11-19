@@ -1728,7 +1728,7 @@
 			$this->devMode = $v;
 		}
 
-		public function addHead($script, $path = NULL, $key, $options = [])
+		public function _addHead($script, $path = NULL, $key, $options = [])
 		{
 			$options = array_merge([
 				'plaintext' => FALSE,
@@ -1760,25 +1760,24 @@
 						}
 						$hash = md5($finalPath);
 						$cachePaths = $this->cacheManager->get('includes', [xPDO::OPT_CACHE_KEY => 'modUtilities']);
-						if (is_array($cachePaths) and array_key_exists($hash, $cachePaths)) {
+						if (is_array($this->cachePaths) and array_key_exists($hash, $this->cachePaths)) {
+							if (file_exists($this->cachePaths[$hash])) {
+								throw new Exception($this->cachePaths[$hash], 1);
+							}
+						}
+						if (!is_array($cachePaths)) {
+							$cachePaths = [];
+						}
+
+						$ext = $this->baseExt($finalPath);
+						$tmp = "cache/" . $hash . '.' . $ext;
+						if ($this->download($finalPath, MODX_ASSETS_PATH . $tmp)) {
+							$assets = rtrim($this->modx->getOption('assets_url'), '/');
+							$cachePaths[$hash] = $assets . '/' . ltrim($tmp, '/');
+							$this->cacheManager->set('includes', $cachePaths, 0, [xPDO::OPT_CACHE_KEY => 'modUtilities']);
 							throw new Exception($cachePaths[$hash], 1);
 						} else {
-
-							
-							if (!is_array($cachePaths)) {
-								$cachePaths = [];
-							}
-
-							$ext = $this->baseExt($finalPath);
-							$tmp = "js/cache/" . $hash . '.' . $ext;
-							if ($this->download($finalPath, MODX_ASSETS_PATH . $tmp)) {
-								$assets = rtrim($this->modx->getOption('assets_url'), '/');
-								$cachePaths[$hash] = $assets . '/' . ltrim($tmp, '/');
-								$this->cacheManager->set('includes', $cachePaths, 0, [xPDO::OPT_CACHE_KEY => 'modUtilities']);
-								throw new Exception($cachePaths[$hash], 1);
-							} else {
-								throw new Exception('', 0);
-							}
+							throw new Exception('', 0);
 						}
 					} catch (Exception $e) {
 						if ($e->getCode() == 0) {
@@ -1808,54 +1807,54 @@
 
 		}
 
-		public function addJs($script, $path = NULL, $cache)
+		public function addJs($script, $path = NULL, $cache = FALSE)
 		{
-			$this->addHead($script, $path, 'js', [
+			$this->_addHead($script, $path, 'js', [
 				'cache' => $cache,
 			]);
 		}
 
-		public function addJsText($html)
+		public function addJsText($html = '')
 		{
-			$this->addHead($html, NULL, 'js', [
+			$this->_addHead($html, NULL, 'js', [
 				'plaintext' => TRUE,
 			]);
 		}
 
-		public function addHtml($html)
+		public function addHtml($html = '')
 		{
-			$this->addHead($html, NULL, 'js', [
+			$this->_addHead($html, NULL, 'js', [
 				'plaintext' => TRUE,
 			]);
 		}
 
-		public function addStartupJs($script, $path = NULL, $cache)
+		public function addStartupJs($script = '', $path = NULL, $cache = FALSE)
 		{
-			$this->addHead($script, $path, 'js', [
+			$this->_addHead($script, $path, 'js', [
 				'cache' => $cache,
 				'Startup' => TRUE,
 			]);
 		}
 
-		public function addStartupJsText($html)
+		public function addStartupJsText($html = '')
 		{
-			$this->addHead($html, NULL, 'js', [
+			$this->_addHead($html, NULL, 'js', [
 				'plaintext' => TRUE,
 				'Startup' => TRUE,
 			]);
 		}
 
-		public function addStartupHtml($html)
+		public function addStartupHtml($html = '')
 		{
-			$this->addHead($html, NULL, 'js', [
+			$this->_addHead($html, NULL, 'js', [
 				'plaintext' => TRUE,
 				'Startup' => TRUE,
 			]);
 		}
 
-		public function addCss($script, $path = NULL, $media = NULL, $cache)
+		public function addCss($script = '', $path = NULL, $media = NULL, $cache = FALSE)
 		{
-			$this->addHead($script, $path, 'css', [
+			$this->_addHead($script, $path, 'css', [
 				'cache' => $cache,
 				'media' => $media,
 			]);

@@ -16,7 +16,7 @@ $xpdo_meta_map['Utilrest']= array (
     'param' => NULL,
     'allowMethod' => NULL,
     'BASIC_auth' => 0,
-    'category' => 1,
+    'category' => NULL,
   ),
   'fieldMeta' => 
   array (
@@ -29,7 +29,7 @@ $xpdo_meta_map['Utilrest']= array (
     'url' => 
     array (
       'dbtype' => 'varchar',
-      'precision' => '50',
+      'precision' => '100',
       'phptype' => 'string',
       'null' => true,
       'index' => 'unique',
@@ -63,11 +63,10 @@ $xpdo_meta_map['Utilrest']= array (
     ),
     'category' => 
     array (
-      'dbtype' => 'int',
-      'precision' => '10',
-      'phptype' => 'integer',
+      'dbtype' => 'varchar',
+      'precision' => '50',
+      'phptype' => 'string',
       'null' => true,
-      'default' => 1,
     ),
   ),
   'indexes' => 

@@ -83,3 +83,7 @@ modUtil.panel.Home = function(config) {
 }
 Ext.extend(modUtil.panel.Home, MODx.Panel)
 Ext.reg('modUtil-panel-home', modUtil.panel.Home)
+
+//# sourceMappingURL=error.tab.js.map
+
+//# sourceMappingURL=error.tab.js.map

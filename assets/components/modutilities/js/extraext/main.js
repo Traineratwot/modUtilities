@@ -35,7 +35,7 @@ modUtil.panel.Home = function(config) {
 							cls: 'panel-desc',
 						}, {
 							id: 'Rest-main-table',
-							name:'REST',
+							name: 'REST',
 							xtype: extraExt.grid.xtype,
 							columns: [ // Добавляем ширину и заголовок столбца
 								{
@@ -70,6 +70,54 @@ modUtil.panel.Home = function(config) {
 									extraExtRenderer: {
 										popup: true,
 									},
+									extraExtEditor: {
+										xtype: extraExt.inputs.modCombo.xtype,
+										fieldLabel: _('snippet'),
+										forceSelection: false,
+										fields: ['id', 'name', 'category_name'],
+										url: MODx.config.connector_url,
+										action: 'element/snippet/getlist',
+										baseParams: {
+											sort: 'id',
+											dir: 'DESK',
+											combo: 1,
+										},
+										valueField: 'name',
+										displayField: 'name',
+										tpl: new Ext.XTemplate(
+											'<tpl for=".">\
+												<div class="x-combo-list-item">\
+													<tpl if="id">({id})</tpl>\
+													<strong>{name}</strong><small>({category_name})</small>\
+												</div>\
+											</tpl>'
+											, {compiled: true}
+										)
+									},
+									editor:{
+										xtype: extraExt.inputs.modCombo.xtype,
+										fieldLabel: _('snippet'),
+										forceSelection: false,
+										fields: ['id', 'name', 'category_name'],
+										url: MODx.config.connector_url,
+										action: 'element/snippet/getlist',
+										baseParams: {
+											sort: 'id',
+											dir: 'DESK',
+											combo: 1,
+										},
+										valueField: 'name',
+										displayField: 'name',
+										tpl: new Ext.XTemplate(
+											'<tpl for=".">\
+												<div class="x-combo-list-item">\
+													<tpl if="id">({id})</tpl>\
+													<strong>{name}</strong><small>({category_name})</small>\
+												</div>\
+											</tpl>'
+											, {compiled: true}
+										)
+									},
 									renderer: extraExt.grid.renderers.default
 								},
 								{
@@ -88,9 +136,7 @@ modUtil.panel.Home = function(config) {
 									extraExtRenderer: {
 										popup: true,
 									},
-									extraExtEditor: {
-
-									},
+									extraExtEditor: {},
 									renderer: extraExt.grid.renderers.JSON
 								},
 								{
@@ -151,7 +197,7 @@ modUtil.panel.Home = function(config) {
 									extraExtEditor: {
 										xtype: extraExt.inputs.modCombo.xtype,
 										fieldLabel: _('category'),
-										forceSelection: false,
+										forceSelection: true,
 										fields: ['id', 'name', 'allowMethod'],
 										action: 'mgr/rest/category/get',
 										url: modutilitiesConnectorUrl,
@@ -208,7 +254,7 @@ modUtil.panel.Home = function(config) {
 							cls: 'panel-desc',
 						}, {
 							id: 'Category-main-table',
-							name:'Category',
+							name: 'Category',
 							xtype: extraExt.grid.xtype,
 							columns: [ // Добавляем ширину и заголовок столбца
 								{
@@ -243,8 +289,7 @@ modUtil.panel.Home = function(config) {
 									extraExtRenderer: {
 										popup: true,
 									},
-									extraExtEditor: {
-									},
+									extraExtEditor: {},
 									renderer: extraExt.grid.renderers.JSON
 								},
 								{
@@ -301,7 +346,7 @@ modUtil.panel.Home = function(config) {
 							cls: 'panel-desc',
 						}, {
 							id: 'log-main-table',
-							name:'Log',
+							name: 'Log',
 							xtype: extraExt.grid.xtype,
 							columns: [ // Добавляем ширину и заголовок столбца
 								{
@@ -379,3 +424,6 @@ modUtil.panel.Home = function(config) {
 
 Ext.extend(modUtil.panel.Home, MODx.Panel)
 Ext.reg('modUtil-panel-home', modUtil.panel.Home)
+//# sourceMappingURL=main.js.map
+
+//# sourceMappingURL=main.js.map
