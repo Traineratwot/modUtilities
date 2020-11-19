@@ -1,12 +1,13 @@
 <?php
 
-	class modutilitiesUpdateRestCategoryProcessor extends modObjectUpdateProcessor
+	class modutilitiesUpdateRestProcessor extends modObjectUpdateProcessor
 	{
-		public $classKey = 'Utilrestcategory';
+		public $classKey = 'Utilrest';
 		public $primaryKeyField = 'id';
 
 		public function initialize()
 		{
+
 			$this->properties = array_merge($this->properties, json_decode($this->properties['data'], 1));
 			return parent::initialize();
 		}
@@ -14,18 +15,18 @@
 		public function beforeSet()
 		{
 
-			$unique = ['name'];
+			$unique = ['url'];
+
 
 			foreach ($unique as $tmp) {
 				$t = $this->modx->getObject($this->classKey, [$tmp => $this->getProperty($tmp)]);
-				if ((string)$t->get($this->primaryKeyField) !== (string)$this->getProperty($this->primaryKeyField)) {
+				if ($t and (string)$t->get($this->primaryKeyField) !== (string)$this->getProperty($this->primaryKeyField)) {
 					$this->addFieldError($tmp, 'field_unique');
 				}
 			}
 			if ($this->hasErrors()) {
 				return FALSE;
 			}
-
 			foreach ($this->properties as $key => $prop) {
 				if (empty($prop)) {
 					switch ($key) {
@@ -58,12 +59,11 @@
 					return TRUE;
 				}
 			}
-			$this->addFieldError($k, 'changes not found');
+//			$this->addFieldError($k, 'changes not found )');
 
-			return FALSE;
+			return true;
 		}
-
 
 	}
 
-	return 'modutilitiesUpdateRestCategoryProcessor';
+	return 'modutilitiesUpdateRestProcessor';

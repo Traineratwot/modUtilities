@@ -1,11 +1,30 @@
 Ext.onReady(function() {
-	Ext.util.Cookies.set('search_log','')
+	Ext.util.Cookies.set('search_log', '')
 	MODx.add({
 		xtype: 'modUtil-panel-home'
 	})
 
 	hljs.initHighlightingOnLoad()
+	setTimeout(function() {
+		document.querySelectorAll('pre code').forEach((block) => {
+			if(typeof hljs != 'undefined') {
+				hljs.highlightBlock(block)
+			}
+		})
+	}, 1000)
+
 })
+var entityMap = {
+	'&': '&amp;',
+	'<': '&lt;',
+	'>': '&gt;',
+	'"': '&quot;',
+	'\'': '&#39;',
+	'/': '&#x2F;',
+	'`': '&#x60;',
+	'=': '&#x3D;'
+}
+
 var modUtil = function(config) {
 	config = config || {}
 	modUtil.superclass.constructor.call(this, config)
@@ -23,34 +42,50 @@ Ext.extend(modUtil, MODx.Component, { // Перечисляем группы, в
 })
 Ext.reg('modUtil', modUtil)
 modUtil = new modUtil()
-var escapeHTML = function (string) {
+var escapeHTML = function(string) {
 	var htmlEscapes = {
 		'&': '&amp;',
 		'<': '&lt;',
 		'>': '&gt;',
 		'"': '&quot;',
-		"'": '&#x27;',
+		'\'': '&#x27;',
 		'/': '&#x2F;'
-	};
-	var htmlEscaper = /[&<>"'\/]/g;
+	}
+	var htmlEscaper = /[&<>"'\/]/g
 	return ('' + string).replace(htmlEscaper, function(match) {
-		return htmlEscapes[match];
-	});
+		return htmlEscapes[match]
+	})
 }
 var defaultRenderer = function(val) {
+	console.debug(arguments)
 	return val || _('ext_emptygroup')
 }
 var JSONRenderer = function(val) {
 	if(val) {
-		return cope.Highlighter.highlight(JSON.parse(val), {indent: 2, useTabs: true})
-		return `<pre><code class="language-json">${val}</code></pre>`
+		try {
+			return cope.Highlighter.highlight(JSON.parse(val), {indent: 2, useTabs: true})
+		} finally {
+			return `<pre><code class="language-json">${val}</code></pre>`
+		}
 	}
 	return defaultRenderer(val)
 }
+
+function escapeHtml(string) {
+	return String(string).replace(/[&<>"'`=\/]/g, function(s) {
+		return entityMap[s]
+	})
+}
+
 var HTMLRenderer = function(val) {
 	if(val) {
-		val = escapeHTML(val);
-		return `<pre><code class="language-html">${val}</code></pre>`
+		var out = null
+		try {
+			out = hljs.highlight('xml', val).value
+		} catch(e) {
+			out = '<code> ' + escapeHtml(defaultRenderer(val)) + ' </code>'
+		}
+		return out
 	}
 	return defaultRenderer(val)
 }
@@ -103,12 +138,12 @@ modUtil.panel.Home = function(config) {
 										xtype: 'modUtil-combo-modCombo',
 										fieldLabel: _('snippet'),
 										forceSelection: false,
-										fields: ['id', 'name','category_name'],
+										fields: ['id', 'name', 'category_name'],
 										url: MODx.config.connector_url,
 										baseParams: {
 											action: 'element/snippet/getlist',
-											sort:'id',
-											dir:'DESK',
+											sort: 'id',
+											dir: 'DESK',
 											combo: 1,
 										},
 										valueField: 'name',
@@ -172,11 +207,11 @@ modUtil.panel.Home = function(config) {
 										hiddenName: 'category',
 										fieldLabel: _('category'),
 										forceSelection: false,
-										fields: ['id','name','allowMethod'],
+										fields: ['id', 'name', 'allowMethod'],
 										baseParams: {
-											action: 'mgr/rest/getlistcategory',
-											sort:'name',
-											dir:'DESK',
+											action: 'mgr/rest/category/get',
+											sort: 'name',
+											dir: 'DESK',
 											combo: 1,
 										},
 										valueField: 'name',
@@ -215,8 +250,8 @@ modUtil.panel.Home = function(config) {
 									}).show()
 								},
 							}],
-							action: 'mgr/rest/getrest',
-							save_action: 'mgr/rest/updaterest',
+							action: 'mgr/rest/rest/get',
+							save_action: 'mgr/rest/rest/update',
 							autosave: true,
 							getMenu: function(grid, rowIndex) {
 								var m = []
@@ -236,7 +271,7 @@ modUtil.panel.Home = function(config) {
 									text: _('confirm_remove'),
 									url: modUtilConnector_url,
 									params: {
-										action: 'mgr/rest/delrest',
+										action: 'mgr/rest/rest/delete',
 										id: cs,
 									},
 									listeners: {
@@ -343,8 +378,8 @@ modUtil.panel.Home = function(config) {
 									}).show()
 								},
 							}],
-							action: 'mgr/rest/getlistcategory',
-							save_action: 'mgr/rest/updaterestcategory',
+							action:'mgr/rest/category/get',
+							save_action:'mgr/rest/category/update',
 							autosave: true,
 							getMenu: function(grid, rowIndex) {
 								var m = []
@@ -364,7 +399,7 @@ modUtil.panel.Home = function(config) {
 									text: _('confirm_remove'),
 									url: modUtilConnector_url,
 									params: {
-										action: 'mgr/rest/delrestcategory',
+										action: 'mgr/rest/category/delete',
 										id: cs,
 									},
 									listeners: {
@@ -464,7 +499,7 @@ modUtil.panel.Home = function(config) {
 							],
 							tbar: [
 								{
-									emptyText:_('search'),
+									emptyText: _('search'),
 									id: 'search-field-log',
 									xtype: 'textfield', // Перемещаем сюда нашу кнопку
 								},
@@ -474,17 +509,17 @@ modUtil.panel.Home = function(config) {
 									text: '🔎',
 									cls: 'primary-button',
 									handler: function() {
-										var v =Ext.getCmp('search-field-log').getValue()
+										var v = Ext.getCmp('search-field-log').getValue()
 										if(v && v != _('search')) {
-											Ext.util.Cookies.set('search_log',v)
-										}else{
-											Ext.util.Cookies.set('search_log','')
+											Ext.util.Cookies.set('search_log', v)
+										} else {
+											Ext.util.Cookies.set('search_log', '')
 											Ext.util.Cookies.clear('search_log')
 										}
-										Ext.getCmp('log-main-table').refresh();
+										Ext.getCmp('log-main-table').refresh()
 									},
 								}],
-							action: 'mgr/rest/getlistlog',
+							action: 'mgr/rest/log/get',
 						}]
 					}
 				]
@@ -568,8 +603,8 @@ modUtil.window.addRest = function(config) {
 				url: MODx.config.connector_url,
 				baseParams: {
 					action: 'element/snippet/getlist',
-					sort:'id',
-					dir:'DESK',
+					sort: 'id',
+					dir: 'DESK',
 					combo: 1,
 				},
 				allowBlank: false,
@@ -633,10 +668,10 @@ modUtil.window.addRest = function(config) {
 				defaultValue: '1',
 				allowBlank: false,
 				baseParams: {
-					action: 'mgr/rest/getlistcategory',
+					action: 'mgr/rest/category/get',
 					combo: 1,
-					sort:'id',
-					dir:'DESK',
+					sort: 'id',
+					dir: 'DESK',
 				},
 				hiddenName: 'category',
 				valueField: 'name',
@@ -653,7 +688,7 @@ modUtil.window.addRest = function(config) {
 				)
 			}
 		],
-		action: 'mgr/rest/create_utilrest',
+		action: 'mgr/rest/rest/create',
 		listeners: {
 			beforeSubmit: function(a) {
 				if(typeof a.allowMethod !== 'string' && a.allowMethod) {
@@ -741,7 +776,7 @@ modUtil.window.addCat = function(config) {
 				value: false
 			},
 		],
-		action: 'mgr/rest/create_utilrestcategory',
+		action: 'mgr/rest/category/create',
 		listeners: {
 			beforeSubmit: function(a) {
 				if(typeof a.allowMethod !== 'string' && a.allowMethod) {
@@ -841,3 +876,4 @@ modUtil.combo.modComboSuper = function(config) {
 }
 Ext.extend(modUtil.combo.modComboSuper, Ext.ux.form.SuperBoxSelect)
 Ext.reg('modUtil-combo-modComboSuper', modUtil.combo.modComboSuper)
+

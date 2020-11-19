@@ -74,11 +74,20 @@
 			$tmp = $this->modx->getObject('Utilrest', [
 				'url' => $this->getProperty('url'),
 			]);
-			if ($tmp and $tmp instanceof \Utilrest_mysql) {
-				$dd = $tmp->get('category', '', '', '');
+			if ($tmp and $tmp instanceof Utilrest) {
+				$cat = $tmp->getProperty('category', '', '', '');
 				$category = $this->modx->getObject('Utilrestcategory', [
-					'name' => $tmp->getProperty('category'),
+					'name' => $cat,
 				]);
+				if(!$category instanceof Utilrestcategory and is_numeric($cat)){
+					$this->modx->log(modX::LOG_LEVEL_ERROR, "DEPRECATED REST category: read this <a href='https://github.com/Traineratwot/modUtilities/wiki/Fix-category'>[ https://github.com/Traineratwot/modUtilities/wiki/Fix-category ]</a>", '', __METHOD__, __FILE__, __LINE__);
+					$category = $this->modx->getObject('Utilrestcategory', [
+						'id' => $cat,
+					]);
+				}
+				if(!$category instanceof Utilrestcategory){
+					return 'invalid REST category';
+				}
 				$this->rest = $tmp;
 				$this->restCategory = $category;
 				$replaceConfig = [];

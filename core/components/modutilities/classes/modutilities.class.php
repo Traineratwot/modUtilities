@@ -26,10 +26,12 @@
 		 */
 		public $output = [];
 		private $cache = [];
+		private $devMode = FALSE;
 		/**
 		 * @var modTransliterate $translitClass
 		 */
 		private $translitClass = NULL;
+		private $cacheManager = NULL;
 		/**
 		 * array translit
 		 * @const array
@@ -1221,45 +1223,56 @@
 		 */
 		public function download($file = '', $outPath = '', $update = TRUE, $timeout = 2, $useCurl = FALSE)
 		{
-			$this->output[__FUNCTION__] = ['$file' => $file, '$outPath' => $outPath, '$timeout' => $timeout, '$update' => $update,];
-			if ($useCurl) {
-				if ($file) {
-					$ch = curl_init($file);
-					if ($outPath) {
-						if (!is_dir(dirname($outPath))) {
-							if (!mkdir($concurrentDirectory = dirname($outPath), $this->modx->config['new_file_permissions'], TRUE) && !is_dir($concurrentDirectory)) {
-								throw new Exception(sprintf('Directory "%s" was not created', $concurrentDirectory));
-								return FALSE;
-							}
-						}
-						if (!$update and file_exists($outPath)) {
-							return TRUE;
-						}
-						$fp = @fopen($outPath, 'w');
-						curl_setopt($ch, CURLOPT_FILE, $fp);
-					}
-					curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
-					curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
-					curl_setopt($ch, CURLOPT_HEADER, FALSE);
-					curl_setopt($ch, CURLOPT_SSLVERSION, 3);
-
-					$tmp = curl_exec($ch);
-					curl_close($ch);
-					if ($outPath) {
-						@fclose($fp);
-					} elseif ($tmp) {
-						return $tmp;
-					} else {
-						return $this->_download($file, $outPath, $timeout, $update);
-					}
-					if (file_exists($outPath) and filesize($outPath) > 0) {
-						return TRUE;
-					} else {
-						$this->_download($file, $outPath, $timeout, $update);
+			try {
+				$permissions = (int)($this->modx->config['new_file_permissions'] ?: 0777);
+				$this->output[__FUNCTION__] = ['$file' => $file, '$outPath' => $outPath, '$timeout' => $timeout, '$update' => $update,];
+				if (!file_exists(dirname($outPath)) or !is_dir(dirname($outPath))) {
+					if (!mkdir($concurrentDirectory = dirname($outPath), $permissions, TRUE) && !is_dir($concurrentDirectory)) {
+						throw new RuntimeException(sprintf('Directory "%s" was not created', $concurrentDirectory));
 					}
 				}
-			} else {
-				return $this->_download($file, $outPath, $timeout, $update);
+				if ($useCurl) {
+					if ($file) {
+						$ch = curl_init($file);
+						if ($outPath) {
+							if (!is_dir(dirname($outPath))) {
+								if (!mkdir($concurrentDirectory = dirname($outPath), $this->modx->config['new_file_permissions'], TRUE) && !is_dir($concurrentDirectory)) {
+									throw new Exception(sprintf('Directory "%s" was not created', $concurrentDirectory));
+									return FALSE;
+								}
+							}
+							if (!$update and file_exists($outPath)) {
+								return TRUE;
+							}
+							$fp = @fopen($outPath, 'w');
+							curl_setopt($ch, CURLOPT_FILE, $fp);
+						}
+						curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
+						curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+						curl_setopt($ch, CURLOPT_HEADER, FALSE);
+						curl_setopt($ch, CURLOPT_SSLVERSION, 3);
+
+						$tmp = curl_exec($ch);
+						curl_close($ch);
+						if ($outPath) {
+							@fclose($fp);
+						} elseif ($tmp) {
+							return $tmp;
+						} else {
+							return $this->_download($file, $outPath, $timeout, $update);
+						}
+						if (file_exists($outPath) and filesize($outPath) > 0) {
+							return TRUE;
+						} else {
+							$this->_download($file, $outPath, $timeout, $update);
+						}
+					}
+				} else {
+					return $this->_download($file, $outPath, $timeout, $update);
+				}
+			} catch (Exception $e) {
+				$this->modx->log(modX::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__ ?: __FUNCTION__, __FILE__, __LINE__);
+				return FALSE;
 			}
 			return FALSE;
 		}
@@ -1277,7 +1290,6 @@
 			if (!$update and file_exists($outPath)) {
 				return TRUE;
 			}
-
 			$opts = [
 				'http' => [
 					'timeout' => $timeout,
@@ -1599,11 +1611,14 @@
 		 * @param int $depth
 		 * @return bool|mixed
 		 */
-		public function jsonValidate($string, $assoc = TRUE,$depth = 1024)
+		public function jsonValidate($string, $assoc = TRUE, $depth = 1024)
 		{
 			$this->output[__FUNCTION__]['input'] = $string;
 			$this->output[__FUNCTION__]['error'] = NULL;
 			$this->output[__FUNCTION__]['result'] = FALSE;
+			if (!is_string($string)) {
+				return $string;
+			}
 			try {
 				$error = 0;
 				// decode the JSON data
@@ -1646,7 +1661,7 @@
 						$error = 'A value of a type that cannot be encoded was given.';
 						break;
 					default:
-						$error = 'Unknown JSON error occured.';
+						$error = 'Unknown JSON error occurred.';
 						break;
 				}
 				if (!$error) {
@@ -1672,6 +1687,13 @@
 			$this->modx->query("DELETE FROM {$this->prefix}site_tmplvar_contentvalues WHERE id in (SELECT tv.id FROM {$this->prefix}site_tmplvar_contentvalues AS tv WHERE (SELECT COUNT(id) FROM {$this->prefix}site_content AS res WHERE res.id = tv.contentid) = 0)");
 		}
 
+		/**
+		 * @param array $prop ["scheme" => "https",
+		 *                    "host" => $_SERVER['SERVER_NAME'],
+		 *                    "path" => 'русский text',
+		 *                    "query" => ['v'=>'test'],]
+		 * @return string
+		 */
 		public function urlBuild($prop = [])
 		{
 			$query = isset($prop['query']) ? $prop['query'] : [];
@@ -1701,4 +1723,141 @@
 			return $url;
 		}
 
+		public function setDevMode($v = TRUE)
+		{
+			$this->devMode = $v;
+		}
+
+		public function addHead($script, $path = NULL, $key, $options = [])
+		{
+			$options = array_merge([
+				'plaintext' => FALSE,
+				'Startup' => FALSE,
+				'cache' => FALSE,
+				'media' => NULL,
+			], $options);
+
+			if ($options['plaintext']) {
+				$finalPath = $script;
+			} else {
+				$finalPath = '';
+				if (!is_null($path)) {
+
+					$finalPath = rtrim($path, '/') . '/' . ltrim($script, '/');
+					if ($path === FALSE) {
+						$this->modx->log(modX::LOG_LEVEL_ERROR, "can`t load script \"{$finalPath}\"", '', __METHOD__, __FILE__, __LINE__);
+					}
+				} else {
+					$finalPath = $script;
+				}
+				$t = strpos($finalPath, '//');
+				$remote = ($t !== FALSE and $t <= 10) ? TRUE : FALSE;
+
+				if ($options['cache'] and $remote) {
+					try {
+						if (!$this->cacheManager) {
+							$this->cacheManager = $this->modx->getCacheManager();
+						}
+						$hash = md5($finalPath);
+						$cachePaths = $this->cacheManager->get('includes', [xPDO::OPT_CACHE_KEY => 'modUtilities']);
+						if (is_array($cachePaths) and array_key_exists($hash, $cachePaths)) {
+							throw new Exception($cachePaths[$hash], 1);
+						} else {
+
+							
+							if (!is_array($cachePaths)) {
+								$cachePaths = [];
+							}
+
+							$ext = $this->baseExt($finalPath);
+							$tmp = "js/cache/" . $hash . '.' . $ext;
+							if ($this->download($finalPath, MODX_ASSETS_PATH . $tmp)) {
+								$assets = rtrim($this->modx->getOption('assets_url'), '/');
+								$cachePaths[$hash] = $assets . '/' . ltrim($tmp, '/');
+								$this->cacheManager->set('includes', $cachePaths, 0, [xPDO::OPT_CACHE_KEY => 'modUtilities']);
+								throw new Exception($cachePaths[$hash], 1);
+							} else {
+								throw new Exception('', 0);
+							}
+						}
+					} catch (Exception $e) {
+						if ($e->getCode() == 0) {
+							$finalPath = $script;
+						} elseif ($e->getCode() == 1) {
+							$finalPath = $e->getMessage();
+						}
+					}
+				}
+				if ($this->devMode and !$remote and in_array($key, ['js', 'css'])) {
+					$absolutPath = ltrim($finalPath, $this->assets);
+					$v = md5_file(MODX_ASSETS_PATH . $absolutPath);
+					$v = $v ?: time();
+					$finalPath .= "?v=" . $v;
+				}
+			}
+
+			if ($key == 'css') {
+				$this->modx->regClientCSS($finalPath, $options['media']);
+			} elseif ($key == 'js') {
+				if ($options['Startup']) {
+					$this->modx->regClientStartupScript($finalPath, $options['plaintext']);
+				} else {
+					$this->modx->regClientScript($finalPath, $options['plaintext']);
+				}
+			}
+
+		}
+
+		public function addJs($script, $path = NULL, $cache)
+		{
+			$this->addHead($script, $path, 'js', [
+				'cache' => $cache,
+			]);
+		}
+
+		public function addJsText($html)
+		{
+			$this->addHead($html, NULL, 'js', [
+				'plaintext' => TRUE,
+			]);
+		}
+
+		public function addHtml($html)
+		{
+			$this->addHead($html, NULL, 'js', [
+				'plaintext' => TRUE,
+			]);
+		}
+
+		public function addStartupJs($script, $path = NULL, $cache)
+		{
+			$this->addHead($script, $path, 'js', [
+				'cache' => $cache,
+				'Startup' => TRUE,
+			]);
+		}
+
+		public function addStartupJsText($html)
+		{
+			$this->addHead($html, NULL, 'js', [
+				'plaintext' => TRUE,
+				'Startup' => TRUE,
+			]);
+		}
+
+		public function addStartupHtml($html)
+		{
+			$this->addHead($html, NULL, 'js', [
+				'plaintext' => TRUE,
+				'Startup' => TRUE,
+			]);
+		}
+
+		public function addCss($script, $path = NULL, $media = NULL, $cache)
+		{
+			$this->addHead($script, $path, 'css', [
+				'cache' => $cache,
+				'media' => $media,
+			]);
+		}
 	}

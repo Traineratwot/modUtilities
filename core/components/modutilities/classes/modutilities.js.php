@@ -598,6 +598,22 @@ class modUtilities {
 		return false
 	}
 
+
+	uniqueArray(a) {
+		try {
+			return [...new Set(a)]
+		} catch(e) {
+			var j = {}
+			a.forEach(function(v) {
+				j[v + '::' + typeof v] = v
+			})
+
+			return Object.keys(j).map(function(v) {
+				return j[v]
+			})
+		}
+	}
+
 }
 var modx = new miniModX()
 <?php

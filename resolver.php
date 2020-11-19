@@ -27,6 +27,20 @@
 						$p->remove();
 					}
 				}
+				$modx->query("ALTER TABLE `{$prefix}utilrest`	DROP INDEX `FK_modutil_utilrest_modutil_utilrestcategory`;");
+				$modx->query("ALTER TABLE `{$prefix}utilrest`
+				CHANGE COLUMN `url` `url` VARCHAR(100) NULL DEFAULT NULL AFTER `permission`,
+				CHANGE COLUMN `category` `category` VARCHAR(50) NULL DEFAULT NULL AFTER `BASIC_auth`;");
+				$Utilrests = $modx->getIterator('Utilrest');
+				/** @var Utilrest $rs */
+				foreach ($Utilrests as $rs) {
+					$cat = $rs->get('category');
+					if (is_numeric($cat)) {
+						$cat_ = $modx->getObject('Utilrestcategory', $cat);
+						$rs->set('category', $cat_->get('name'));
+						$rs->save();
+					}
+				}
 				break;
 			case xPDOTransport::ACTION_INSTALL:
 				$modx->addPackage('modutilities', MODX_CORE_PATH . 'components/modutilities/model/');
@@ -54,11 +68,11 @@
 						$r = $modx->newObject('Utilrest');
 						$r->set('url', 'test');
 						$r->set('snippet', '{core_path}/components/modutilities/docs/restprocessor.php');
-						$r->set('category', $cat->get('id'));
+						$r->set('category', $cat->get('name'));
 						$r->save();
 					}
 				}
-
+				$modx->query("ALTER TABLE `{$prefix}utilrest`	DROP INDEX `FK_modutil_utilrest_modutil_utilrestcategory`;");
 				$modx->query("ALTER TABLE `{$prefix}utilrest`
 				CHANGE COLUMN `url` `url` VARCHAR(100) NULL DEFAULT NULL AFTER `permission`,
 				CHANGE COLUMN `category` `category` VARCHAR(50) NULL DEFAULT NULL AFTER `BASIC_auth`;");

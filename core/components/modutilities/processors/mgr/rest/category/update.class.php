@@ -1,8 +1,8 @@
 <?php
 
-	class modutilitiesUpdateRestProcessor extends modObjectUpdateProcessor
+	class modutilitiesUpdateRestCategoryProcessor extends modObjectUpdateProcessor
 	{
-		public $classKey = 'Utilrest';
+		public $classKey = 'Utilrestcategory';
 		public $primaryKeyField = 'id';
 
 		public function initialize()
@@ -14,17 +14,18 @@
 		public function beforeSet()
 		{
 
-			$unique = ['url'];
+			$unique = ['name'];
 
 			foreach ($unique as $tmp) {
 				$t = $this->modx->getObject($this->classKey, [$tmp => $this->getProperty($tmp)]);
-				if ($t and (string)$t->get($this->primaryKeyField) !== (string)$this->getProperty($this->primaryKeyField)) {
+				if ((string)$t->get($this->primaryKeyField) !== (string)$this->getProperty($this->primaryKeyField)) {
 					$this->addFieldError($tmp, 'field_unique');
 				}
 			}
 			if ($this->hasErrors()) {
 				return FALSE;
 			}
+
 			foreach ($this->properties as $key => $prop) {
 				if (empty($prop)) {
 					switch ($key) {
@@ -34,7 +35,7 @@
 							$this->setProperty($key, NULL);
 							break;
 						case 'BASIC_auth':
-							$this->setProperty($key, NULL);
+							$this->setProperty((int)(bool)$key, NULL);
 							break;
 						case 'category':
 							$this->setProperty($key, NULL);
@@ -57,11 +58,12 @@
 					return TRUE;
 				}
 			}
-			$this->addFieldError($k, 'changes not found )');
+//			$this->addFieldError($k, 'changes not found');
 
-			return FALSE;
+			return TRUE;
 		}
+
 
 	}
 
-	return 'modutilitiesUpdateRestProcessor';
+	return 'modutilitiesUpdateRestCategoryProcessor';
