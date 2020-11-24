@@ -7,7 +7,9 @@
 
 		public function initialize()
 		{
-			$this->properties = array_merge($this->properties, json_decode($this->properties['data'], 1));
+			if (isset($this->properties['data'])) {
+				$this->properties = array_merge($this->properties, json_decode($this->properties['data'], 1));
+			}
 			return parent::initialize();
 		}
 

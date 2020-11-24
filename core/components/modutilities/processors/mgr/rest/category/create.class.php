@@ -8,6 +8,14 @@
 	{
 		public $classKey = 'Utilrestcategory';
 
+		public function initialize()
+		{
+			if (isset($this->properties['data'])) {
+				$this->properties = array_merge($this->properties, json_decode($this->properties['data'], 1));
+			}
+			return parent::initialize();
+		}
+
 		public function beforeSet()
 		{
 

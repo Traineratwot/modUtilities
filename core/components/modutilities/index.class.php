@@ -9,7 +9,7 @@
 		class modutilitiesIndexManagerController extends extraExtManagerController
 		{
 
-			public $componentName = 'modutilities'; // название компонента так как называется его папка в assets/components/
+			public $componentName = 'modutilities'; // название компонента так как называется его папка в assets/components/: по умолчанию равно namespace
 			public $devMode = TRUE;
 
 			public function getLanguageTopics()
@@ -31,10 +31,11 @@
 				$this->addCss('css/mgr/snippet_rest.tab.css', $this->componentUrl);
 
 				if ($this->modx->config['friendly_urls'] == FALSE) {
-					$this->addJavascript($assets . 'components/modutilities/js/mgr/error.tab.js?');
+					$this->addJavascript('js/mgr/error.tab.js',$this->componentUrl);
 				} else {
 					$this->addJavascript('ajax/libs/jquery/3.5.1/jquery.min.js', 'https://ajax.googleapis.com/', TRUE);
-					$this->addJavascript($assets . 'components/modutilities/js/extraext/main.js');
+					$this->addJavascript('js/extraext/main.js', $this->componentUrl);
+
 				}
 			}
 		}

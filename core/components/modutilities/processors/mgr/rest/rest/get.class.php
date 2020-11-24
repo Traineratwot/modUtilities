@@ -20,11 +20,11 @@
 						'id' => (int)$search,
 					];
 				} else {
-					$this->where = [
-						'OR:url:LIKE' => "%" . $search . "%",
-						'OR:snippet:LIKE' => "%" . $search . "%",
-						'OR:category:LIKE' => "%" . $search . "%",
-					];
+					$var = $this->modx->newObject($this->classKey);
+					$arr = $var->_fields;
+					foreach ($arr as $field => $n) {
+						$this->where["OR:{$field}:LIKE"] = "%" . $search . "%";
+					}
 				}
 			}
 			return parent::beforeQuery();

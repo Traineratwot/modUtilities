@@ -13,6 +13,8 @@
 
 		public function beforeQuery()
 		{
+
+
 			$search = $this->getProperty('query');
 			if (!empty($search)) {
 				if (is_numeric($search)) {
@@ -20,16 +22,15 @@
 						'id' => (int)$search,
 					];
 				} else {
-					$this->where = [
-						'OR:name:LIKE' => "%" . $search . "%",
-						'OR:permission:LIKE' => "%" . $search . "%",
-						'OR:param:LIKE' => "%" . $search . "%",
-					];
+					$var = $this->modx->newObject($this->classKey);
+					$arr = $var->_fields;
+					foreach ($arr as $field => $n) {
+						$this->where["OR:{$field}:LIKE"] = "%" . $search . "%";
+					}
 				}
 			}
 			return parent::beforeQuery();
 		}
-
 		public function getData()
 		{
 			$data = [];

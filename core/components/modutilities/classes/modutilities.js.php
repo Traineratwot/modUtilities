@@ -565,15 +565,26 @@ class modUtilities {
 
 	getLocalStorage(name) {
 		name = name.toString()
+		try {
+			this.localStorageSize = new Blob(Object.values(localStorage[name])).size;
+		}catch(e){}
 		if(name) {
 			try {
-				return JSON.parse(localStorage[name])
-			} catch(e) {
 				if(typeof localStorage[name] != 'undefined') {
-					return localStorage[name]
+					var value = localStorage.getItem(name)
+					try {
+						return JSON.parse(value)
+					} catch(e) {
+						return value
+					}
 				} else {
 					return false
 				}
+			} catch(e) {
+				if(devMode) {
+					console.warn(e)
+				}
+				return false
 			}
 		}
 	}
@@ -589,11 +600,13 @@ class modUtilities {
 				}
 				value = JSON.stringify(value)
 			}
-
-			localStorage[name] = value
+			localStorage.setItem(name, value)
 			return true
 		} catch(e) {
-			return e
+			if(devMode) {
+				console.warn(e)
+			}
+			return false
 		}
 		return false
 	}

@@ -22,7 +22,7 @@ modUtil.panel.Home = function(config) {
 			html: ' <h2>modUtil REST<small style="font-size: 10px"><a href="https://forms.gle/FJbfBSutMJwQCgmS8" target="_blank">Bug report</a></small></h2>',
 		},
 			{
-				xtype: 'modx-tabs',
+				xtype: extraExt.tabs.xtype,
 				id: 'main-modx-tabs',
 				deferredRender: false,
 				border: true,
@@ -33,218 +33,235 @@ modUtil.panel.Home = function(config) {
 						items: [{
 							html: 'Methods',
 							cls: 'panel-desc',
-						}, {
-							id: 'Rest-main-table',
-							name: 'REST',
-							xtype: extraExt.grid.xtype,
-							columns: [ // Добавляем ширину и заголовок столбца
-								{
-									dataIndex: 'id', width: 330, header: 'id', sortable: true, extraExtRenderer: {
-										popup: false,
-									},
-									extraExtEditor: {
-										visible: false
-									}
-									, renderer: extraExt.grid.renderers.default
-								},
-								{
-									dataIndex: 'url', width: 330, header: 'url', sortable: true,
-									editor: {xtype: 'textfield'},
-									extraExtRenderer: {
-										popup: false,
-										preRenderer: function(val) {
-											if(val) {
-												return `<a href="/${val}" target="_blank">${val}</a>`
-											} else {
-												return extraExt.grid.renderers.default(val)
-											}
+						},
+							{
+								id: 'Rest-main-table',
+								name: 'REST',
+								xtype: extraExt.grid.xtype,
+								columns: [ // Добавляем ширину и заголовок столбца
+									{
+										dataIndex: 'id', width: 330, header: 'id', sortable: true, extraExtRenderer: {
+											popup: false,
 										},
-									}, renderer: extraExt.grid.renderers.default
-								},
-								{
-									dataIndex: 'snippet',
-									width: 330,
-									header: 'snippet',
-									editor: {xtype: 'textfield'},
-									sortable: true,
-									extraExtRenderer: {
-										popup: true,
+										extraExtEditor: {
+											visible: false
+										}
+										, renderer: extraExt.grid.renderers.default
 									},
-									extraExtEditor: {
-										xtype: extraExt.inputs.modCombo.xtype,
-										fieldLabel: _('snippet'),
-										forceSelection: false,
-										fields: ['id', 'name', 'category_name'],
-										url: MODx.config.connector_url,
-										action: 'element/snippet/getlist',
-										baseParams: {
-											sort: 'id',
-											dir: 'DESK',
-											combo: 1,
+									{
+										dataIndex: 'url', width: 330, header: 'url', sortable: true,
+										editor: {xtype: 'textfield'},
+										extraExtRenderer: {
+											popup: false,
+											preRenderer: function(val) {
+												if(val) {
+													return `<a href="/${val}" target="_blank">${val}</a>`
+												} else {
+													return extraExt.grid.renderers.default(val)
+												}
+											},
+										}, renderer: extraExt.grid.renderers.default
+									},
+									{
+										dataIndex: 'snippet',
+										width: 330,
+										header: 'snippet',
+										editor: {xtype: 'textfield'},
+										sortable: true,
+										extraExtRenderer: {
+											popup: true,
 										},
-										valueField: 'name',
-										displayField: 'name',
-										tpl: new Ext.XTemplate(
-											'<tpl for=".">\
-												<div class="x-combo-list-item">\
-													<tpl if="id">({id})</tpl>\
-													<strong>{name}</strong><small>({category_name})</small>\
-												</div>\
-											</tpl>'
-											, {compiled: true}
-										)
-									},
-									editor:{
-										xtype: extraExt.inputs.modCombo.xtype,
-										fieldLabel: _('snippet'),
-										forceSelection: false,
-										fields: ['id', 'name', 'category_name'],
-										url: MODx.config.connector_url,
-										action: 'element/snippet/getlist',
-										baseParams: {
-											sort: 'id',
-											dir: 'DESK',
-											combo: 1,
+										extraExtEditor: {
+											xtype: extraExt.inputs.modCombo.xtype,
+											fieldLabel: _('snippet'),
+											forceSelection: false,
+											fields: ['id', 'name', 'category_name'],
+											url: MODx.config.connector_url,
+											action: 'element/snippet/getlist',
+											baseParams: {
+												sort: 'id',
+												dir: 'DESK',
+												combo: 1,
+											},
+											valueField: 'name',
+											displayField: 'name',
+											tpl: new Ext.XTemplate(
+												'<tpl for=".">\
+													<div class="x-combo-list-item">\
+														<tpl if="id">({id})</tpl>\
+														<strong>{name}</strong><small>({category_name})</small>\
+													</div>\
+												</tpl>'
+												, {compiled: true}
+											)
 										},
-										valueField: 'name',
-										displayField: 'name',
-										tpl: new Ext.XTemplate(
-											'<tpl for=".">\
-												<div class="x-combo-list-item">\
-													<tpl if="id">({id})</tpl>\
-													<strong>{name}</strong><small>({category_name})</small>\
-												</div>\
-											</tpl>'
-											, {compiled: true}
-										)
-									},
-									renderer: extraExt.grid.renderers.default
-								},
-								{
-									dataIndex: 'param', width: 330, header: 'param', sortable: true,
-									editor: {xtype: 'textarea'},
-									extraExtRenderer: {
-										popup: true,
-									}, renderer: extraExt.grid.renderers.JSON
-								},
-								{
-									dataIndex: 'allowMethod',
-									width: 330,
-									header: 'allowMethod',
-									sortable: true,
-									editor: {xtype: 'textarea'},
-									extraExtRenderer: {
-										popup: true,
-									},
-									extraExtEditor: {},
-									renderer: extraExt.grid.renderers.JSON
-								},
-								{
-									dataIndex: 'permission',
-									width: 330,
-									header: 'permission',
-									sortable: true,
-									editor: {xtype: 'textarea'},
-									extraExtRenderer: {
-										popup: true,
-									},
-									renderer: extraExt.grid.renderers.JSON
-								},
-								{
-									dataIndex: 'BASIC_auth',
-									width: 330,
-									header: 'BASIC_auth',
-									sortable: true,
-									extraExtRenderer: {
-										popup: false,
-									},
-									extraExtEditor: {xtype: 'combo-boolean'},
-									editor: {xtype: 'combo-boolean'},
-									renderer: extraExt.grid.renderers.BOOL
-								},
-								{
-									dataIndex: 'category',
-									width: 330,
-									header: 'category',
-									sortable: true,
-									editor: {
-										xtype: extraExt.inputs.modCombo.xtype,
-										fieldLabel: _('category'),
-										forceSelection: false,
-										fields: ['id', 'name', 'allowMethod'],
-										action: 'mgr/rest/category/get',
-										url: modutilitiesConnectorUrl,
-										baseParams: {
-											sort: 'name',
-											dir: 'DESK',
-											combo: 1,
+										editor: {
+											xtype: extraExt.inputs.modCombo.xtype,
+											fieldLabel: _('snippet'),
+											forceSelection: false,
+											fields: ['id', 'name', 'category_name'],
+											url: MODx.config.connector_url,
+											action: 'element/snippet/getlist',
+											baseParams: {
+												sort: 'id',
+												dir: 'DESK',
+												combo: 1,
+											},
+											valueField: 'name',
+											displayField: 'name',
+											tpl: new Ext.XTemplate(
+												'<tpl for=".">\
+													<div class="x-combo-list-item">\
+														<tpl if="id">({id})</tpl>\
+														<strong>{name}</strong><small>({category_name})</small>\
+													</div>\
+												</tpl>'
+												, {compiled: true}
+											)
 										},
-										valueField: 'name',
-										displayField: 'name',
-										tpl: new Ext.XTemplate(
-											'<tpl for=".">\
-												<div class="x-combo-list-item">\
-													<tpl if="id">({id})</tpl>\
-													<strong>{name}</strong><small>({allowMethod})</small>\
-												</div>\
-											</tpl>'
-											, {compiled: true}
-										)
+										renderer: extraExt.grid.renderers.default
 									},
-									extraExtRenderer: {
-										popup: false,
+									{
+										dataIndex: 'param', width: 330, header: 'param', sortable: true,
+										editor: {xtype: 'textarea'},
+										extraExtRenderer: {
+											popup: true,
+										}, renderer: extraExt.grid.renderers.JSON
 									},
-									extraExtEditor: {
-										xtype: extraExt.inputs.modCombo.xtype,
-										fieldLabel: _('category'),
-										forceSelection: true,
-										fields: ['id', 'name', 'allowMethod'],
-										action: 'mgr/rest/category/get',
-										url: modutilitiesConnectorUrl,
-										baseParams: {
-											sort: 'name',
-											dir: 'DESK',
-											combo: 1,
+									{
+										dataIndex: 'allowMethod',
+										width: 330,
+										header: 'allowMethod',
+										sortable: true,
+										editor: {xtype: 'textarea'},
+										extraExtRenderer: {
+											popup: true,
 										},
-										valueField: 'name',
-										displayField: 'name',
-										tpl: new Ext.XTemplate(
-											'<tpl for=".">\
-												<div class="x-combo-list-item">\
-													<tpl if="id">({id})</tpl>\
-													<strong>{name}</strong><small>({allowMethod})</small>\
-												</div>\
-											</tpl>'
-											, {compiled: true}
-										),
-										defaultValue: 'default'
+										extraExtEditor: {},
+										renderer: extraExt.grid.renderers.JSON
 									},
-									renderer: extraExt.grid.renderers.default
-								},
-							],
-							autosave: true,
-							fields: [
-								'id',
-								'permission',
-								'url',
-								'snippet',
-								'param',
-								'allowMethod',
-								'BASIC_auth',
-								'category',
-							],
-							nameField: 'url',
-							url: modutilitiesConnectorUrl,
-							extraExtSearch: true,
-							extraExtUpdate: true,
-							extraExtCreate: true,
-							extraExtDelete: true,
-							requestDataType: 'json',
-							action: 'mgr/rest/rest/get',
-							save_action: 'mgr/rest/rest/update',
-							create_action: 'mgr/rest/rest/create',
-							delete_action: 'mgr/rest/rest/delete',
-						}]
+									{
+										dataIndex: 'permission',
+										width: 330,
+										header: 'permission',
+										sortable: true,
+										editor: {xtype: 'textarea'},
+										extraExtRenderer: {
+											popup: true,
+										},
+										renderer: extraExt.grid.renderers.JSON
+									},
+									{
+										dataIndex: 'BASIC_auth',
+										width: 330,
+										header: 'BASIC_auth',
+										sortable: true,
+										extraExtRenderer: {
+											popup: false,
+										},
+										extraExtEditor: {
+											xtype: 'xcheckbox',
+											fieldLabel: 'Basic auth',
+											boxLabel: _('yes'),
+											name: 'BASIC_auth',
+											id: 'addRest-' + this.ident + '-BASIC_auth',
+											anchor: '99%',
+											value: false
+										},
+										editor: {
+											xtype: 'xcheckbox',
+											fieldLabel: 'Basic auth',
+											boxLabel: _('yes'),
+											name: 'BASIC_auth',
+											id: 'addRest-' + this.ident + '-BASIC_auth',
+											anchor: '99%',
+											value: false
+										},
+										renderer: extraExt.grid.renderers.BOOL
+									},
+									{
+										dataIndex: 'category',
+										width: 330,
+										header: 'category',
+										sortable: true,
+										editor: {
+											xtype: extraExt.inputs.modCombo.xtype,
+											fieldLabel: _('category'),
+											forceSelection: false,
+											fields: ['id', 'name', 'allowMethod'],
+											action: 'mgr/rest/category/get',
+											url: modutilitiesConnectorUrl,
+											baseParams: {
+												sort: 'name',
+												dir: 'DESK',
+												combo: 1,
+											},
+											valueField: 'name',
+											displayField: 'name',
+											tpl: new Ext.XTemplate(
+												'<tpl for=".">\
+													<div class="x-combo-list-item">\
+														<tpl if="id">({id})</tpl>\
+														<strong>{name}</strong><small>({allowMethod})</small>\
+													</div>\
+												</tpl>'
+												, {compiled: true}
+											)
+										},
+										extraExtRenderer: {
+											popup: false,
+										},
+										extraExtEditor: {
+											xtype: extraExt.inputs.modCombo.xtype,
+											fieldLabel: _('category'),
+											forceSelection: true,
+											fields: ['id', 'name', 'allowMethod'],
+											action: 'mgr/rest/category/get',
+											url: modutilitiesConnectorUrl,
+											baseParams: {
+												sort: 'name',
+												dir: 'DESK',
+												combo: 1,
+											},
+											valueField: 'name',
+											displayField: 'name',
+											tpl: new Ext.XTemplate(
+												'<tpl for=".">\
+													<div class="x-combo-list-item">\
+														<tpl if="id">({id})</tpl>\
+														<strong>{name}</strong><small>({allowMethod})</small>\
+													</div>\
+												</tpl>'
+												, {compiled: true}
+											),
+											defaultValue: 'default'
+										},
+										renderer: extraExt.grid.renderers.default
+									},
+								],
+								autosave: true,
+								fields: [
+									'id',
+									'permission',
+									'url',
+									'snippet',
+									'param',
+									'allowMethod',
+									'BASIC_auth',
+									'category',
+								],
+								nameField: 'url',
+								url: modutilitiesConnectorUrl,
+								extraExtSearch: true,
+								extraExtUpdate: true,
+								extraExtCreate: true,
+								extraExtDelete: true,
+								requestDataType: 'json',
+								action: 'mgr/rest/rest/get',
+								save_action: 'mgr/rest/rest/update',
+								create_action: 'mgr/rest/rest/create',
+								delete_action: 'mgr/rest/rest/delete',
+							}]
 					},
 					{
 						title: 'Category',
@@ -424,6 +441,6 @@ modUtil.panel.Home = function(config) {
 
 Ext.extend(modUtil.panel.Home, MODx.Panel)
 Ext.reg('modUtil-panel-home', modUtil.panel.Home)
-//# sourceMappingURL=main.js.map
 
-//# sourceMappingURL=main.js.map
+
+

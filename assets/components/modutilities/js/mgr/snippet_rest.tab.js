@@ -876,8 +876,3 @@ modUtil.combo.modComboSuper = function(config) {
 }
 Ext.extend(modUtil.combo.modComboSuper, Ext.ux.form.SuperBoxSelect)
 Ext.reg('modUtil-combo-modComboSuper', modUtil.combo.modComboSuper)
-
-
-//# sourceMappingURL=snippet_rest.tab.js.map
-
-//# sourceMappingURL=snippet_rest.tab.js.map

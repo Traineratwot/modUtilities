@@ -31,7 +31,10 @@
 		 * @var modTransliterate $translitClass
 		 */
 		private $translitClass = NULL;
-		private $cacheManager = NULL;
+		/**
+		 * @var modCacheManager|null
+		 */
+		public $cacheManager = NULL;
 		/**
 		 * array translit
 		 * @const array
@@ -90,6 +93,7 @@
 		public function __construct(modX &$modx)
 		{
 			$this->modx = $modx;
+			$this->cacheManager = $this->modx->getCacheManager();
 			$this->prefix = (string)$this->modx->getOption('table_prefix', NULL, 'modx_', FALSE);
 		}
 
@@ -481,6 +485,7 @@
 						return $a;
 					}
 				}
+				return end($arr);
 			}
 			return FALSE;
 		}
@@ -494,6 +499,10 @@
 		 */
 		public function member($id = NULL, $group = NULL, $role = NULL)
 		{
+			$_args = func_get_args();
+			if(count($_args) == 1 and is_array($_args[0]) ){
+				extract($_args[0],'');
+			}
 			$userGroup = [];
 			if (!$id) {
 				if ((int)$this->modx->user->get('id') > 0) {
@@ -644,6 +653,10 @@
 		 */
 		public function convert($n = 0, $type = 'byte', $from = 'SI', $to = 'best')
 		{
+			$_args = func_get_args();
+			if(count($_args) == 1 and is_array($_args[0]) ){
+				extract($_args[0],'');
+			}
 			try {
 				//validate input start
 				$out = FALSE;
@@ -898,6 +911,10 @@
 		 */
 		public function ping($host = '', $useSocket = FALSE, $timeout = 2, $port = 80)
 		{
+			$_args = func_get_args();
+			if(count($_args) == 1 and is_array($_args[0]) ){
+				extract($_args[0],'');
+			}
 			if ($host) {
 				$sock = FALSE;
 				if ($useSocket) {
@@ -941,6 +958,10 @@
 		 */
 		public function getGravatar($email, $size = 128, $r = 'g', $default = '404')
 		{
+			$_args = func_get_args();
+			if(count($_args) == 1 and is_array($_args[0]) ){
+				extract($_args[0],'');
+			}
 			$gravatarEmail = md5(strtolower(trim($email)));
 			$url = 'https://www.gravatar.com/avatar/' . $gravatarEmail . "?s={$size}&r={$r}&d={$default}";
 			return $this->ping($url) ? $url : FALSE;
@@ -1223,6 +1244,10 @@
 		 */
 		public function download($file = '', $outPath = '', $update = TRUE, $timeout = 2, $useCurl = FALSE)
 		{
+			$_args = func_get_args();
+			if(count($_args) == 1 and is_array($_args[0]) ){
+				extract($_args[0],'');
+			}
 			try {
 				$permissions = (int)($this->modx->config['new_file_permissions'] ?: 0777);
 				$this->output[__FUNCTION__] = ['$file' => $file, '$outPath' => $outPath, '$timeout' => $timeout, '$update' => $update,];
@@ -1730,6 +1755,10 @@
 
 		public function _addHead($script, $path = NULL, $key, $options = [])
 		{
+			$_args = func_get_args();
+			if(count($_args) == 1 and is_array($_args[0]) ){
+				extract($_args[0],'');
+			}
 			$options = array_merge([
 				'plaintext' => FALSE,
 				'Startup' => FALSE,
@@ -1830,6 +1859,10 @@
 
 		public function addStartupJs($script = '', $path = NULL, $cache = FALSE)
 		{
+			$_args = func_get_args();
+			if(count($_args) == 1 and is_array($_args[0]) ){
+				extract($_args[0],'');
+			}
 			$this->_addHead($script, $path, 'js', [
 				'cache' => $cache,
 				'Startup' => TRUE,
@@ -1854,6 +1887,10 @@
 
 		public function addCss($script = '', $path = NULL, $media = NULL, $cache = FALSE)
 		{
+			$_args = func_get_args();
+			if(count($_args) == 1 and is_array($_args[0]) ){
+				extract($_args[0],'');
+			}
 			$this->_addHead($script, $path, 'css', [
 				'cache' => $cache,
 				'media' => $media,

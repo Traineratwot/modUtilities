@@ -16,7 +16,7 @@
 		/**
 		 * @var mixed
 		 */
-		public $pyComand;
+		public $pyCommand;
 		/**
 		 * @var string
 		 */
@@ -29,16 +29,16 @@
 			$this->modx = $modx;
 			$this->util = $util;
 			$this->properties = $param;
-			$this->pyComand = $this->modx->config['modUtilities_py_command'];
+			$this->pyCommand = $this->modx->getOption('modUtilities_py_command', $this->modx->config, 'py');
 			if (!$this->getVersion()) {
-				$this->modx->log(MODX_LOG_LEVEL_ERROR, 'Python not found for: "' . $this->pyComand . '"');
-				throw new Exception('Python not found for: "' . $this->pyComand . '"');
+				$this->modx->log(MODX_LOG_LEVEL_ERROR, 'Python not found for: "' . $this->pyCommand . '"');
+				throw new Exception('Python not found for command: "' . $this->pyCommand . '"');
 			}
 		}
 
 		private function getVersion()
 		{
-			$out = exec($this->pyComand . ' --version', $out2, $code);
+			$out = exec($this->pyCommand . ' --version', $out2, $code);
 			if ($code == 0) {
 				$this->version = trim(str_ireplace('python', '', $out));
 				return TRUE;
@@ -93,32 +93,38 @@
 
 		public function getPipModules()
 		{
-			if (empty($this->modules)) {
-				exec('pip freeze', $lines, $code);
-				if ($code == 0) {
-					foreach ($lines as $k => $line) {
-						$lines[$k] = explode('==', $line);
-					}
-					$this->modules = $lines;
-					return TRUE;
-				}
-				$this->modules === 'error';
-				return FALSE;
+			if (!$this->util->cacheManager) {
+				$this->util->cacheManager = $this->modx->getCacheManager();
 			}
-			return TRUE;
+			$lines = $this->util->cacheManager->get('pythonPips', [xPDO::OPT_CACHE_KEY => 'modUtilities']);
+			if (!empty($lines)) {
+				$this->modules = $lines;
+				return $lines;
+			}
+			exec('pip freeze', $lines, $code);
+			if ($code == 0) {
+				foreach ($lines as $k => $line) {
+					$lines[$k] = explode('==', $line);
+				}
+				$this->modules = $lines;
+				$this->util->cacheManager->set('pythonPips', $lines, 3600, [xPDO::OPT_CACHE_KEY => 'modUtilities']);
+				return $lines;
+			}
+			$this->modules === 'error';
+			return FALSE;
 		}
 
-		public function python($source, $json)
+		public function python($source, $param)
 		{
-			return $this->py($source, $json);
+			return $this->py($source, $param);
 		}
 
-		public function run($source, $json = TRUE)
+		public function run($source, $param)
 		{
-			return $this->py($source, $json);
+			return $this->py($source, $param);
 		}
 
-		public function py($source, $json, $param = [])
+		public function py($source, $param = [])
 		{
 			try {
 				$timer = microtime(TRUE);
@@ -129,16 +135,27 @@
 				if ($this->requres === FALSE or (!empty($this->requres['noInstalled']) or !empty($this->requres['needUpdate']))) {
 					throw new Exception('py requres: ' . $this->util->varsInfo($this->requres), 404);
 				}
-				$out = exec($this->pyComand . ' ' . $source, $lines, $code);
+				$command = $this->pyCommand . ' ' . $source . ' ' . implode(' ', $param);
+				$out = exec($command, $lines, $code);
 				if ($code !== 0) {
-					throw new Exception('py error: ' . $lines . " " . $out, $code);
+					throw new Exception('py error: ' . $out, $code);
+				}
+
+				if ($this->util->jsonValidate($out)) {
+					return [
+						'out' => $this->util->output['jsonValidate']['result'],
+						'lines' => $lines,
+						'code' => $code,
+						'command' => $command,
+						'time' => microtime(TRUE) - $timer,
+					];
 				}
 				return [
 					'success' => TRUE,
 					'out' => $out,
-					'json' => $json ? $this->util->jsonValidate($out) : FALSE,
 					'lines' => $lines,
 					'code' => $code,
+					'command' => $command,
 					'time' => microtime(TRUE) - $timer,
 				];
 
@@ -147,6 +164,7 @@
 					'success' => FALSE,
 					'msg' => $e->getMessage(),
 					'code' => $e->getCode(),
+					'command' => $command,
 				];
 			}
 		}
