@@ -500,8 +500,8 @@
 		public function member($id = NULL, $group = NULL, $role = NULL)
 		{
 			$_args = func_get_args();
-			if(count($_args) == 1 and is_array($_args[0]) ){
-				extract($_args[0],'');
+			if (count($_args) == 1 and is_array($_args[0])) {
+				extract($_args[0], EXTR_OVERWRITE);
 			}
 			$userGroup = [];
 			if (!$id) {
@@ -654,8 +654,8 @@
 		public function convert($n = 0, $type = 'byte', $from = 'SI', $to = 'best')
 		{
 			$_args = func_get_args();
-			if(count($_args) == 1 and is_array($_args[0]) ){
-				extract($_args[0],'');
+			if (count($_args) == 1 and is_array($_args[0])) {
+				extract($_args[0], EXTR_OVERWRITE);
 			}
 			try {
 				//validate input start
@@ -912,8 +912,8 @@
 		public function ping($host = '', $useSocket = FALSE, $timeout = 2, $port = 80)
 		{
 			$_args = func_get_args();
-			if(count($_args) == 1 and is_array($_args[0]) ){
-				extract($_args[0],'');
+			if (count($_args) == 1 and is_array($_args[0])) {
+				extract($_args[0], EXTR_OVERWRITE);
 			}
 			if ($host) {
 				$sock = FALSE;
@@ -959,8 +959,8 @@
 		public function getGravatar($email, $size = 128, $r = 'g', $default = '404')
 		{
 			$_args = func_get_args();
-			if(count($_args) == 1 and is_array($_args[0]) ){
-				extract($_args[0],'');
+			if (count($_args) == 1 and is_array($_args[0])) {
+				extract($_args[0], EXTR_OVERWRITE);
 			}
 			$gravatarEmail = md5(strtolower(trim($email)));
 			$url = 'https://www.gravatar.com/avatar/' . $gravatarEmail . "?s={$size}&r={$r}&d={$default}";
@@ -1245,8 +1245,8 @@
 		public function download($file = '', $outPath = '', $update = TRUE, $timeout = 2, $useCurl = FALSE)
 		{
 			$_args = func_get_args();
-			if(count($_args) == 1 and is_array($_args[0]) ){
-				extract($_args[0],'');
+			if (count($_args) == 1 and is_array($_args[0])) {
+				extract($_args[0], EXTR_OVERWRITE);
 			}
 			try {
 				$permissions = (int)($this->modx->config['new_file_permissions'] ?: 0777);
@@ -1293,7 +1293,7 @@
 						}
 					}
 				} else {
-					return $this->_download($file, $outPath, $timeout, $update);
+					return $this->_download($file, $outPath, $update, $timeout);
 				}
 			} catch (Exception $e) {
 				$this->modx->log(modX::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__ ?: __FUNCTION__, __FILE__, __LINE__);
@@ -1312,7 +1312,7 @@
 		public function _download($file = '', $outPath = '', $update = TRUE, $timeout = 2)
 		{
 			$this->output[__FUNCTION__] = ['$file' => $file, '$outPath' => $outPath, '$timeout' => $timeout, '$update' => $update,];
-			if (!$update and file_exists($outPath)) {
+			if (!$update and file_exists($outPath) and filesize($outPath) > 0) {
 				return TRUE;
 			}
 			$opts = [
@@ -1756,8 +1756,8 @@
 		public function _addHead($script, $path = NULL, $key, $options = [])
 		{
 			$_args = func_get_args();
-			if(count($_args) == 1 and is_array($_args[0]) ){
-				extract($_args[0],'');
+			if (count($_args) == 1 and is_array($_args[0])) {
+				extract($_args[0], EXTR_OVERWRITE);
 			}
 			$options = array_merge([
 				'plaintext' => FALSE,
@@ -1860,8 +1860,8 @@
 		public function addStartupJs($script = '', $path = NULL, $cache = FALSE)
 		{
 			$_args = func_get_args();
-			if(count($_args) == 1 and is_array($_args[0]) ){
-				extract($_args[0],'');
+			if (count($_args) == 1 and is_array($_args[0])) {
+				extract($_args[0], EXTR_OVERWRITE);
 			}
 			$this->_addHead($script, $path, 'js', [
 				'cache' => $cache,
@@ -1888,12 +1888,51 @@
 		public function addCss($script = '', $path = NULL, $media = NULL, $cache = FALSE)
 		{
 			$_args = func_get_args();
-			if(count($_args) == 1 and is_array($_args[0]) ){
-				extract($_args[0],'');
+			if (count($_args) == 1 and is_array($_args[0])) {
+				extract($_args[0], EXTR_OVERWRITE);
 			}
 			$this->_addHead($script, $path, 'css', [
 				'cache' => $cache,
 				'media' => $media,
 			]);
 		}
+
+		public function getFilesFromFolder($folder, $recursive = FALSE, $skipDirs = TRUE, $replace = [])
+		{
+			$_args = func_get_args();
+			if (count($_args) == 1 and is_array($_args[0])) {
+				extract($_args[0], EXTR_OVERWRITE);
+			}
+			$folder = rtrim($folder, '/') . '/';
+			$response = [];
+			if (!$recursive) {
+				if (is_dir($folder)) {
+					$scan = scandir($folder);
+					foreach ($scan as $c) {
+						$c = ltrim($c, '/');
+						if (($skipDirs and is_dir($folder . $c)) or array_search($c, ['..', '.']) !== FALSE) {
+							continue;
+						}
+						$response[] = $folder . $c;
+					}
+				}
+			} else {
+				$iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($folder, RecursiveDirectoryIterator::SKIP_DOTS));
+				/** @var FilesystemIterator $info */
+				foreach ($iterator as $info) {
+					if ($skipDirs and $info->isDir()) {
+						continue;
+					}
+					$response[] = $info->getPathname();
+				}
+			}
+			asort($response);
+			if (!empty($replace)) {
+				foreach ($response as $k => $v) {
+					$response[$k] = strtr($v, $replace);
+				}
+			}
+			return $response;
+		}
+
 	}

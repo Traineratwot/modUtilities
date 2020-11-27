@@ -96,7 +96,7 @@ modUtil.panel.Home = function(config) {
 	Ext.apply(config, {
 		cls: 'container', // Добавляем отступы
 		items: [{
-			html: ' <h2>modUtil REST<small style="font-size: 10px"><a href="https://forms.gle/FJbfBSutMJwQCgmS8" target="_blank">Bug report</a></small></h2><br><small style="color: red">deprecated interface, please install <strong><a>ExtraExt</a></strong> </small>',
+			html: ' <h2>modUtil REST<small style="font-size: 10px"><a href="https://forms.gle/FJbfBSutMJwQCgmS8" target="_blank">Bug report</a></small></h2><br><small style="color: red">deprecated interface, please install <strong><a href="https://modstore.pro/packages/other/extraext">ExtraExt</a></strong> </small>',
 		},
 			{
 				xtype: 'modx-tabs',

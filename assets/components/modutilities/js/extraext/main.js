@@ -37,6 +37,7 @@ modUtil.panel.Home = function(config) {
 							{
 								id: 'Rest-main-table',
 								name: 'REST',
+								createBtnText: _('create') + ' rest',
 								xtype: extraExt.grid.xtype,
 								columns: [ // Добавляем ширину и заголовок столбца
 									{
@@ -137,7 +138,23 @@ modUtil.panel.Home = function(config) {
 										extraExtRenderer: {
 											popup: true,
 										},
-										extraExtEditor: {},
+										extraExtEditor: {
+											xtype: extraExt.inputs.modComboSuper.xtype,
+											id: 'add-' + this.ident + '-allowmethod',
+											anchor: '99%',
+											forceSelection: true,
+											multiple: true,
+											fields: ['name'],
+											url: modutilitiesConnectorUrl,
+											baseParams: {
+												action: 'mgr/rest/getlistallowmethod', combo: 1, sort: 'id',
+												dir: 'DESK',
+											},
+											allowBlank: true,
+											valueField: 'name',
+											displayField: 'name',
+										},
+										editor: {xtype: 'textfield'},
 										renderer: extraExt.grid.renderers.JSON
 									},
 									{
@@ -168,15 +185,7 @@ modUtil.panel.Home = function(config) {
 											anchor: '99%',
 											value: false
 										},
-										editor: {
-											xtype: 'xcheckbox',
-											fieldLabel: 'Basic auth',
-											boxLabel: _('yes'),
-											name: 'BASIC_auth',
-											id: 'addRest-' + this.ident + '-BASIC_auth',
-											anchor: '99%',
-											value: false
-										},
+										editor: {xtype: 'combo-boolean'},
 										renderer: extraExt.grid.renderers.BOOL
 									},
 									{
@@ -256,7 +265,7 @@ modUtil.panel.Home = function(config) {
 								extraExtUpdate: true,
 								extraExtCreate: true,
 								extraExtDelete: true,
-								requestDataType: 'json',
+								requestDataType: 'form',
 								action: 'mgr/rest/rest/get',
 								save_action: 'mgr/rest/rest/update',
 								create_action: 'mgr/rest/rest/create',
@@ -267,11 +276,12 @@ modUtil.panel.Home = function(config) {
 						title: 'Category',
 						id: 'modx-tabs-Category',
 						items: [{
-							html: 'Categories',
+							html: _('categories'),
 							cls: 'panel-desc',
 						}, {
 							id: 'Category-main-table',
-							name: 'Category',
+							name: _('category'),
+							createBtnText: _('category_create'),
 							xtype: extraExt.grid.xtype,
 							columns: [ // Добавляем ширину и заголовок столбца
 								{
@@ -306,7 +316,23 @@ modUtil.panel.Home = function(config) {
 									extraExtRenderer: {
 										popup: true,
 									},
-									extraExtEditor: {},
+									extraExtEditor: {
+										xtype: extraExt.inputs.modComboSuper.xtype,
+										id: 'add-' + this.ident + '-allowmethod',
+										anchor: '99%',
+										forceSelection: true,
+										multiple: true,
+										fields: ['name'],
+										url: modutilitiesConnectorUrl,
+										baseParams: {
+											action: 'mgr/rest/getlistallowmethod', combo: 1, sort: 'id',
+											dir: 'DESK',
+										},
+										allowBlank: true,
+										valueField: 'name',
+										displayField: 'name',
+									},
+									editor: {xtype: 'textfield'},
 									renderer: extraExt.grid.renderers.JSON
 								},
 								{
@@ -348,7 +374,7 @@ modUtil.panel.Home = function(config) {
 							extraExtUpdate: true,
 							extraExtCreate: true,
 							extraExtDelete: true,
-							requestDataType: 'json',
+							requestDataType: 'form',
 							action: 'mgr/rest/category/get',
 							save_action: 'mgr/rest/category/update',
 							create_action: 'mgr/rest/category/create',
@@ -429,7 +455,7 @@ modUtil.panel.Home = function(config) {
 							nameField: 'rest_id',
 							url: modutilitiesConnectorUrl,
 							extraExtSearch: true,
-							requestDataType: 'json',
+							requestDataType: 'form',
 							action: 'mgr/rest/log/get',
 						}]
 					}

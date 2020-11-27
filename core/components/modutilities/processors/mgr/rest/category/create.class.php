@@ -55,6 +55,9 @@
 							break;
 					}
 				}
+				if($key == 'allowMethod'){
+					$this->setProperty($key, implode(',', $prop));
+				}
 			}
 
 			return !$this->hasErrors();
