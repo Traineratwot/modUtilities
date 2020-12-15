@@ -19,11 +19,15 @@
 			if (!empty($search)) {
 				if (is_numeric($search)) {
 					$this->where = [
-						'id' => (int)$search,
+						'rest_id' => (int)$search,
 					];
 				} else {
 					$var = $this->modx->newObject($this->classKey);
 					$arr = $var->_fields;
+					unset($arr['rest_id']);
+					unset($arr['id']);
+					unset($arr['time']);
+					unset($arr['datetime']);
 					foreach ($arr as $field => $n) {
 						$this->where["OR:{$field}:LIKE"] = "%" . $search . "%";
 					}

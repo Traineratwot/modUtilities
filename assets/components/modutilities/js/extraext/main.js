@@ -19,7 +19,7 @@ modUtil.panel.Home = function(config) {
 	Ext.apply(config, {
 		cls: 'container', // Добавляем отступы
 		items: [{
-			html: ' <h2>modUtil REST<small style="font-size: 10px"><a href="https://forms.gle/FJbfBSutMJwQCgmS8" target="_blank">Bug report</a></small></h2>',
+			html: ' <h2>' + _('modutilitiesRest') + '<small style="font-size: 10px"><a href="https://forms.gle/FJbfBSutMJwQCgmS8" target="_blank">Bug report</a></small></h2>',
 		},
 			{
 				xtype: extraExt.tabs.xtype,
@@ -124,7 +124,56 @@ modUtil.panel.Home = function(config) {
 									},
 									{
 										dataIndex: 'param', width: 330, header: 'param', sortable: true,
-										editor: {xtype: 'textarea'},
+										editor: {
+											xtype: extraExt.inputs.popup.xtype,
+											defaultValue: JSON.stringify({
+												"scriptProperties": [],
+												"headers": [],
+												"httpResponseCode": 200
+											}),
+											fields: [
+												{
+													xtype: 'hidden' ,
+													name: 'scriptProperties',
+												},
+												{
+													xtype: 'hidden' ,
+													name: 'headers',
+												},
+												{
+													xtype: 'numberfield',
+													name: 'httpResponseCode',
+													id: 'add-' + this.ident + '-prefix',
+													anchor: '99%',
+													allowBlank: true,
+												},
+											]
+										},
+										extraExtEditor: {
+											xtype: extraExt.inputs.popup.xtype,
+											defaultValue: JSON.stringify({
+												"scriptProperties": [],
+												"headers": [],
+												"httpResponseCode": 200
+											}),
+											fields: [
+												{
+													xtype: 'hidden' ,
+													name: 'scriptProperties',
+												},
+												{
+													xtype: 'hidden' ,
+													name: 'headers',
+												},
+												{
+													xtype: 'numberfield',
+													name: 'httpResponseCode',
+													id: 'add-' + this.ident + '-prefix',
+													anchor: '99%',
+													allowBlank: true,
+												},
+											]
+										},
 										extraExtRenderer: {
 											popup: true,
 										}, renderer: extraExt.grid.renderers.JSON
@@ -302,7 +351,56 @@ modUtil.panel.Home = function(config) {
 								},
 								{
 									dataIndex: 'param', width: 330, header: 'param', sortable: true,
-									editor: {xtype: 'textarea'},
+									editor: {
+										xtype: extraExt.inputs.popup.xtype,
+										defaultValue: JSON.stringify({
+											"scriptProperties": [],
+											"headers": [],
+											"httpResponseCode": 200
+										}),
+										fields: [
+											{
+												xtype: 'hidden' ,
+												name: 'scriptProperties',
+											},
+											{
+												xtype: 'hidden' ,
+												name: 'headers',
+											},
+											{
+												xtype: 'numberfield',
+												name: 'httpResponseCode',
+												id: 'add-' + this.ident + '-prefix',
+												anchor: '99%',
+												allowBlank: true,
+											},
+										]
+									},
+									extraExtEditor: {
+										xtype: extraExt.inputs.popup.xtype,
+										defaultValue: JSON.stringify({
+											"scriptProperties": [],
+											"headers": [],
+											"httpResponseCode": 200
+										}),
+										fields: [
+											{
+												xtype: 'hidden' ,
+												name: 'scriptProperties',
+											},
+											{
+												xtype: 'hidden' ,
+												name: 'headers',
+											},
+											{
+												xtype: 'numberfield',
+												name: 'httpResponseCode',
+												id: 'add-' + this.ident + '-prefix',
+												anchor: '99%',
+												allowBlank: true,
+											},
+										]
+									},
 									extraExtRenderer: {
 										popup: true,
 									}, renderer: extraExt.grid.renderers.JSON

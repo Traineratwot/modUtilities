@@ -21,7 +21,7 @@
 
 			public function getPageTitle()
 			{
-				return $this->modx->lexicon('modutilitiesRest');
+				return 'modutilitiesRest';
 			}
 
 			public function loadCustomCssJs()

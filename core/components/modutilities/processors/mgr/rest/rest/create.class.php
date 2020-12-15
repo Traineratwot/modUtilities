@@ -35,6 +35,18 @@
 				return FALSE;
 			}
 			foreach ($this->properties as $key => $prop) {
+				if (is_array($prop) or is_object($prop)) {
+					$prop = array_unique($prop);
+					if (count($prop) == 0 or empty($prop)) {
+						$this->setProperty($key, NULL);
+					} elseif (count($prop) == 1 and empty(array_values($prop)[0])) {
+						$this->setProperty($key, NULL);
+					} else {
+						$prop = json_encode($prop, 256);
+						$this->setProperty($key, $prop);
+					}
+				}
+
 				if (empty($prop)) {
 					switch ($key) {
 						case 'BASIC_auth':

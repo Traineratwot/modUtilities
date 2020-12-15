@@ -9,7 +9,7 @@
 	{
 		/* @var modX $modX */
 		public $modx;
-		/* @var modUtilities  $util */
+		/* @var modUtilities $util */
 		public $util;
 		/* @var string chr(239) . chr(187) . chr(191) */
 		public $utf8bom;
@@ -29,6 +29,7 @@
 		protected $line_delimiter;
 		protected $escape;
 		public $currentRow = -1;
+		public $clearRegexp = '@[^[:ascii:]A-я]+@u';
 		public $currentCol = -1;
 		/**
 		 * @var bool|mixed|string
@@ -57,13 +58,19 @@
 
 		/**
 		 * UtilitiesCsv constructor
-		 * param [
-		 *  inputCharset | 'utf8'
-		 *    woBom - without BOM | false
-		 *    delimiter |';'
-		 *    line_delimiter | PHP_EOL
-		 *    mode default | fast
-		 * ]
+		 *
+		 * ###params:
+		 *  - inputCharset = 'utf8'
+		 *
+		 *  - woBom
+		 *
+		 *  - delimiter = ';'
+		 *
+		 *  - line_delimiter = \n
+		 *
+		 *  - mode = default | fast
+		 *
+		 *  - output_file
 		 * @param modX         $modx
 		 * @param modutilities $util
 		 * @param array        $param
@@ -75,45 +82,16 @@
 			$this->modx = $modx;
 			$this->util = $util;
 
-			$this->utf8bom = (isset($param['woBom']) and $param['woBom'] = TRUE) ? NULL : chr(239) . chr(187) . chr(191);
-			$this->str_delimiter = isset($param['delimiter']) ? $param['delimiter'] : ';';
-			$this->line_delimiter = isset($param['line_delimiter']) ? $param['line_delimiter'] : "\n";
-			$this->escape = isset($param['escape']) ? $param['escape'] : '"';
+			$this->utf8bom        = $this->modx->getOption('woBom'         , $param, chr(239) . chr(187) . chr(191));
+			$this->str_delimiter  = $this->modx->getOption('delimiter'     , $param, ';');
+			$this->line_delimiter = $this->modx->getOption('line_delimiter', $param, "\n");
+			$this->escape         = $this->modx->getOption('line_delimiter', $param, '"');
+			$this->output_file    = $this->modx->getOption('output_file'   , $param, NULL);
+			$this->mode           = $this->modx->getOption('mode'          , $param, 'default');
 
-
-			if (isset($param['mode']) and $param['mode'] == 'fast') {
-				if (!isset($param['output_file'])) {
-					throw new Exception('pleas add param "output_file"');
-				} else {
-					$this->mode = $param['mode'] ?: "default";
-					$file = $param['output_file'];
-					switch (gettype($file)) {
-						case 'string':
-							if (!is_dir(dirname($file))) {
-								if (!mkdir($concurrentDirectory = dirname($file), $this->modx->config['new_file_permissions'], TRUE) && !is_dir($concurrentDirectory)) {
-									throw new Exception(sprintf('Directory "%s" was not created', $concurrentDirectory));
-								}
-							}
-							if (file_exists($file)) {
-								unlink($file);
-							}
-							$this->_output_file = $file;
-							$this->output_file = fopen($file, 'w');
-							break;
-						case 'resource':
-							if (get_resource_type($file) == 'stream') {
-								$this->output_file = $file;
-							} else {
-								throw new Exception('invalid data type for "output_file"');
-							}
-							break;
-						default:
-							throw new Exception('invalid data type for "output_file"');
-							break;
-					}
-					if ($this->output_file and $this->utf8bom) {
-						fwrite($this->output_file, $this->utf8bom);
-					}
+			if ($this->mode == 'fast') {
+				if ($this->output_file and $this->utf8bom) {
+					fwrite($this->output_file, $this->utf8bom);
 				}
 			}
 
@@ -169,6 +147,8 @@
 			$args_ = [];
 
 			foreach ($args as $k => $art) {
+				$k = $this->clearString($k);
+				$art = $this->clearString($art);
 				if ($isAssoc) {
 					if (!is_string($art) and !is_numeric($art)) {
 						$args_[$head[$k]] = NULL;
@@ -244,6 +224,8 @@
 			}
 			$_args = [];
 			foreach ($args as $k => $art) {
+				$k = $this->clearString($k);
+				$art = $this->clearString($art);
 				if (!is_string($art) and !is_numeric($art)) {
 					$args[$k] = NULL;
 					$_args[$k] = NULL;
@@ -633,7 +615,7 @@
 			$i = 0;
 			//$rows = str_getcsv($source,$this->str_delimiter);
 			$rows = explode($this->line_delimiter, $source);
-			if(is_array($rows)) {
+			if (is_array($rows)) {
 				foreach ($rows as $row) {
 					$i++;
 					if (is_array($row)) {
@@ -660,7 +642,7 @@
 			return $this->matrix;
 		}
 
-		public function getRow($currentCol = FALSE)
+		public function getRow($currentCol = FALSE, $assoc = FALSE)
 		{
 			if ($currentCol !== FALSE) {
 				$this->currentCol = $currentCol;
@@ -673,8 +655,14 @@
 			if ($row) {
 				$this->currentRow++;
 				$_row = [];
-				foreach ($row as $k => $v) {
-					$_row[$k] = $v;
+				if ($assoc) {
+					foreach ($row as $k => $v) {
+						$_row[$this->head[$k]] = $v;
+					}
+				} else {
+					foreach ($row as $k => $v) {
+						$_row[$k] = $v;
+					}
 				}
 				return $_row;
 			} else {
@@ -721,13 +709,13 @@
 								continue;
 							}
 							if ($key) {
-								if(count($row )>2){
-									if(empty($response[$key])){
+								if (count($row) > 2) {
+									if (empty($response[$key])) {
 										$response[$key] = [$cell];
-									}else {
+									} else {
 										array_push($response[$key], $cell);
 									}
-								}else {
+								} else {
 									$response[$key] = $cell;
 								}
 							} else {
@@ -738,12 +726,12 @@
 					break;
 				case 'col':
 				case 'head':
-				$s = $this->currentCol;
-				foreach ($this->head as $key=>$head){
-					$col = $this->getCol($key);
-					$response[$head] = $col;
-				}
-				$this->currentCol = $s;
+					$s = $this->currentCol;
+					foreach ($this->head as $key => $head) {
+						$col = $this->getCol($key);
+						$response[$head] = $col;
+					}
+					$this->currentCol = $s;
 					break;
 			}
 			if (!empty($response)) {
@@ -823,5 +811,20 @@
 					return $this->readCsv($value);
 			}
 			return FALSE;
+		}
+
+		public function rowCount()
+		{
+			return count($this->matrix);
+		}
+
+		public function colCount()
+		{
+			return count($this->head);
+		}
+
+		public function clearString($a = '')
+		{
+			return preg_replace($this->clearRegexp, '', (string)$a);
 		}
 	}

@@ -22,6 +22,8 @@
 				} else {
 					$var = $this->modx->newObject($this->classKey);
 					$arr = $var->_fields;
+					unset($arr['id']);
+					unset($arr['BASIC_auth']);
 					foreach ($arr as $field => $n) {
 						$this->where["OR:{$field}:LIKE"] = "%" . $search . "%";
 					}

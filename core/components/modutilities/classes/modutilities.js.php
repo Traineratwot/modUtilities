@@ -47,11 +47,23 @@ ob_start();
 //https://regex101.com/r/vrH6XK/1/ cookie
 //https://regex101.com/r/vrH6XK/2 trim
 ?>
-class miniModX {
+//javascript
+modUtilities = {}
+modUtilities.miniModX = class {
 	constructor() {
-		this.resource = new miniResource(this)
-		this.util = new modUtilities(this)
-		this.user = new miniUser(this)
+		this.resource = new modUtilities.miniResource(this)
+		this.util = new modUtilities.util(this)
+		this.util.Exception = function Exception(message, code) {
+			this.message = message
+			this.code = code
+			this.getCode = () => {
+				return this.code
+			}
+			this.getMessage = () => {
+				return this.message
+			}
+		}
+		this.user = new modUtilities.miniUser(this)
 		window.addEventListener('resize', function() {
 			modx.util.Device()
 		}, true)
@@ -90,13 +102,13 @@ class miniModX {
 
 	}
 }
-class miniResource {
+modUtilities.miniResource = class {
 	constructor(modx) {
 		this.modx = modx
 		Object.assign(this, <?=json_encode($res, 256)?>)
 	}
 }
-class miniUser {
+modUtilities.miniUser = class {
 	constructor(modx) {
 		this.modx = modx
 		Object.assign(this, <?=json_encode($user, 256)?>)
@@ -105,13 +117,30 @@ class miniUser {
 	}
 
 
-	setSetting(key, value) {
+	/**
+	 * @param {string} key
+	 */
+	detSetting(key) {
 		this.getSettings()
-		this.settings[key] = value
-		return this.modx.util.setCookie('modUtil.settings', this.settings)
+		this.settings[key] = null
+		return this.modx.util.setLocalStorage('modUtil.settings', this.settings)
 	}
 
 
+	/**
+	 * @param {string} key
+	 * @param {*} value
+	 */
+	setSetting(key, value) {
+		this.getSettings()
+		this.settings[key] = value
+		return this.modx.util.setLocalStorage('modUtil.settings', this.settings)
+	}
+
+
+	/**
+	 * @param {string} key
+	 */
 	getSetting(key) {
 		if(this.getSettings()) {
 			return this.settings[key]
@@ -121,7 +150,7 @@ class miniUser {
 
 
 	getSettings() {
-		var settings = this.modx.util.getCookie('modUtil.settings', false, true)
+		var settings = this.modx.util.getLocalStorage('modUtil.settings', false, true)
 		if(settings instanceof Object || settings instanceof Array) {
 			this.settings = settings
 			return settings
@@ -129,7 +158,7 @@ class miniUser {
 		return false
 	}
 }
-class ConverterUnits {
+modUtilities.ConverterUnits = class {
 	static converterRule = <?=json_encode($modx->util->converterRule, 256)?>
 
 
@@ -141,14 +170,14 @@ class ConverterUnits {
 		try {
 			//validate input start
 			var out = false
-			var size = {}
+			var size = []
 			var i = 1
 			n = parseFloat(n)
-			if(!n) {
+			if(isNaN(n)) {
 				throw new modx.util.Exception('invalid number', 0)
 			}
-			if(typeof ConverterUnits.converterRule[type] != 'undefined') {
-				var converterRule = ConverterUnits.converterRule[type]
+			if(typeof modUtilities.ConverterUnits.converterRule[type] != 'undefined') {
+				var converterRule = modUtilities.ConverterUnits.converterRule[type]
 				var SI = converterRule['SI'][1]
 			} else {
 				throw new modx.util.Exception('invalid type', 0)
@@ -162,8 +191,8 @@ class ConverterUnits {
 			if(to == from && to != 'SI') {
 				throw new modx.util.Exception('easy )', 1)
 			}
-			n = ConverterUnits.ToSi(n, type, from)
-			if(!n) {
+			n = modUtilities.ConverterUnits.ToSi(n, type, from)
+			if(isNaN(n)) {
 				throw new modx.util.Exception('invalid "from" unit', 2)
 			}
 			if(to == 'SI' || to == SI) {
@@ -193,10 +222,10 @@ class ConverterUnits {
 					rule = converterRule[g][key]
 					if(n >= rule[0]) {
 						n /= rule[0]
-						size = {
-							0: n.toFixed(i),
-							1: key
-						}
+						size = [
+							n.toFixed(i),
+							key
+						]
 					} else {
 						if(to == 'best') {
 							break
@@ -207,19 +236,18 @@ class ConverterUnits {
 					}
 					i++
 				}
-			if(!out && size instanceof Object) {
+			if(!out && size instanceof Array && size.hasOwnProperty(0) && size.hasOwnProperty(1)) {
 				out = size
 			} else {
-				out = {
-					0: n,
-					1: SI
-				}
+				out = [
+					n,
+					SI
+				]
 			}
 		} catch(__e__) {
 			var e
 			if(__e__ instanceof modx.util.Exception) {
 				e = __e__
-				console.log(e.getMessage())
 				__loop1:
 					switch( e.getCode() ) {
 						case 1:
@@ -246,9 +274,9 @@ class ConverterUnits {
 	static ToSi(n, type, from) {
 		if(typeof type == 'undefined') type = 'byte'
 		if(typeof from == 'undefined') from = 'SI'
-		if(typeof ConverterUnits.converterRule[type] != 'undefined') {
+		if(typeof modUtilities.ConverterUnits.converterRule[type] != 'undefined') {
 			var converterRule
-			converterRule = ConverterUnits.converterRule[type]
+			converterRule = modUtilities.ConverterUnits.converterRule[type]
 			var SI
 			SI = converterRule['SI'][1]
 		} else {
@@ -277,7 +305,165 @@ class ConverterUnits {
 	}
 
 }
-class modUtilities {
+modUtilities.clipboard = class {
+	timeLimit = 100
+	mode = 'navigator'
+	response = undefined
+	permission = false
+
+
+	constructor() {
+		if(window.hasOwnProperty('navigator') && navigator.clipboard) {
+			this.mode = 'navigator'
+		} else if(document.queryCommandSupported) {
+			this.mode = 'fallback'
+		} else {
+			this.mode = 'notSupport'
+		}
+	}
+
+
+	__fallback_write(data = '') {
+		var textArea = document.createElement('textarea')
+		textArea.value = data
+
+		// Avoid scrolling to bottom
+		textArea.style.top = '0'
+		textArea.style.left = '0'
+		textArea.style.position = 'fixed'
+		textArea.style.opacity = '1'
+
+		document.body.appendChild(textArea)
+		textArea.focus()
+		textArea.select()
+
+		try {
+			var successful = document.execCommand('copy')
+			this.response = successful ? true : false
+		} catch(err) {
+			this.response = false
+		}
+
+		document.body.removeChild(textArea)
+	}
+
+
+	__fallback_read() {
+		var textArea = document.createElement('textarea')
+		// Avoid scrolling to bottom
+		textArea.style.top = '0'
+		textArea.style.left = '0'
+		textArea.style.position = 'fixed'
+		textArea.style.opacity = '1'
+
+		document.body.appendChild(textArea)
+		textArea.focus()
+		textArea.select()
+
+		try {
+			var successful = document.execCommand('paste')
+			if(successful) {
+				this.response = textArea.value
+			} else {
+				this.response = false
+			}
+		} catch(err) {
+			this.response = false
+		}
+
+		document.body.removeChild(textArea)
+	}
+
+
+	__navigator_write(data = '') {
+		this.response = undefined
+		document.body.focus()
+		navigator.clipboard.writeText(data).then((data) => {
+			this.response = data
+		}, (e) => {
+			console.warn(e)
+			this.response = false
+		})
+
+	}
+
+
+	__navigator_read() {
+		this.response = undefined
+		document.body.focus()
+		navigator.clipboard.readText().then((data) => {
+			this.response = data
+		}, (e) => {
+			console.warn(e)
+			this.response = false
+		})
+	}
+
+
+	__notSupport_write(data = '') {
+		return false
+	}
+
+
+	__notSupport_read() {
+		return false
+	}
+
+
+	write(data = '') {
+		if(!this.permission) {
+			this.permissions()
+		}
+		try {
+			if(this['__' + this.mode + '_write'] instanceof Function) {
+				this['__' + this.mode + '_write'](data)
+			}
+			return this.response
+		} catch(e) {
+			return false
+		}
+	}
+
+
+	read() {
+		if(!this.permission) {
+			this.permissions()
+		}
+		try {
+			if(this['__' + this.mode + '_read'] instanceof Function) {
+				this['__' + this.mode + '_read']()
+			}
+			return this.response
+		} catch(e) {
+			return false
+		}
+	}
+
+
+	permissions() {
+		try {
+			navigator.permissions.query({name: 'clipboard-write'}).then(result => {
+				if(result.state == 'granted' || result.state == 'prompt') {
+					this.permission = true
+				} else {
+					this.permission = false
+				}
+			})
+			navigator.permissions.query({name: 'clipboard-read'}).then(result => {
+				if(result.state == 'granted' || result.state == 'prompt') {
+					this.permission = true
+				} else {
+					this.permission = false
+				}
+			})
+			return true
+		} catch(e) {
+			return false
+		}
+	}
+
+}
+modUtilities.util = class {
 	constructor(modx) {
 		this.modx = modx
 		this.mouse = {}
@@ -295,7 +481,8 @@ class modUtilities {
 		this.constant.hour = this.constant.min * 60
 		this.constant.day = this.constant.hour * 24
 		this.constant.week = this.constant.day * 7
-		this.convert_ = new ConverterUnits
+		this.convert_ = new modUtilities.ConverterUnits
+		this.clipboard = new modUtilities.clipboard
 		this.convert = this.convert_.convert
 		this.translitRule = <?=json_encode(modutilities::translitRule)?>;
 		//class constant
@@ -308,6 +495,10 @@ class modUtilities {
 	}
 
 
+	/**
+	 * @param {string} $k
+	 * @param {[]} $a
+	 */
 	in_array($k, $a) {
 		for(const $aKey in $a) {
 			if($k == $a[$aKey]) {return true}
@@ -325,18 +516,10 @@ class modUtilities {
 	}
 
 
-	Exception(message, code) {
-		this.message = message
-		this.code = code
-		this.getCode = () => {
-			return this.code
-		}
-		this.getMessage = () => {
-			return this.message
-		}
-	}
-
-
+	/**
+	 * @param {string} message
+	 * @param {number} code
+	 */
 	static get FirstLetter() {return 1}
 
 
@@ -481,6 +664,11 @@ class modUtilities {
 	}
 
 
+	/**
+	 * @param {*} source
+	 * @param {*} name
+	 * @param {string} parent_selector
+	 * @param {boolean}     */
 	include(source, name = false, parent_selector = false, async = true) {
 		if(typeof this.included[source] == 'undefined') {
 			this.included[source] = {
@@ -494,7 +682,6 @@ class modUtilities {
 				var prior = document.querySelector(parent_selector)
 			}
 			script.async = async
-
 			script.onload = script.onreadystatechange = (e, isAbort) => {
 				if(isAbort || !script.readyState || /loaded|complete/.test(script.readyState)) {
 					isAbort = true
@@ -519,6 +706,10 @@ class modUtilities {
 	}
 
 
+	/**
+	 * @param {number} name
+	 * @param {number} id
+	 */
 	getCookie(name = false, id = false, json = false) {
 		var cookies = document.cookie + ';'
 		cookies = cookies.match(/([^\s]+?;)/g) ?? []
@@ -566,8 +757,8 @@ class modUtilities {
 	getLocalStorage(name) {
 		name = name.toString()
 		try {
-			this.localStorageSize = new Blob(Object.values(localStorage[name])).size;
-		}catch(e){}
+			this.localStorageSize = new Blob(Object.values(localStorage[name])).size
+		} catch(e) {}
 		if(name) {
 			try {
 				if(typeof localStorage[name] != 'undefined') {
@@ -590,6 +781,10 @@ class modUtilities {
 	}
 
 
+	/**
+	 * @param {*} name
+	 * @param {{}} value
+	 */
 	setLocalStorage(name, value = {}) {
 		name = name.toString()
 		var store = this.getLocalStorage(name)
@@ -612,6 +807,9 @@ class modUtilities {
 	}
 
 
+	/**
+	 * @param {Iterable<T>} a
+	 */
 	uniqueArray(a) {
 		try {
 			return [...new Set(a)]
@@ -627,7 +825,16 @@ class modUtilities {
 		}
 	}
 
+
+	id(len = 5) {
+		var id = ''
+		var symbols = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!№;%:?*()_+='
+		for(var i = 0; i < len; i++) {
+			id += symbols.charAt(Math.floor(Math.random() * symbols.length))
+		}
+		return id
+	}
 }
-var modx = new miniModX()
+var modx = new modUtilities.miniModX()
 <?php
 return ob_get_clean();

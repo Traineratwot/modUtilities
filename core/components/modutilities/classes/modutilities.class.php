@@ -199,7 +199,7 @@
 		 * @param object $v
 		 * @return array|false
 		 */
-		public function objectInfo(&$v)
+		public static function objectInfo(&$v)
 		{
 			if (is_object($v)) {
 				$obj = [];
@@ -381,7 +381,7 @@
 		 * @param string $a
 		 * @return false|string
 		 */
-		public function rawText($a = '')
+		public static function rawText($a = '')
 		{
 			return mb_strtolower(preg_replace('@[^A-zА-я0-9]|[\/_\\\.\,]@u', '', (string)$a));
 		}
@@ -476,7 +476,7 @@
 		 * @param $arr
 		 * @return false|mixed
 		 */
-		public function ifElse($arr)
+		public static function ifElse($arr)
 		{
 			$arr = is_array($arr) ? $arr : func_get_args();
 			if (is_array($arr)) {
@@ -575,7 +575,7 @@
 		 * @param array $forms 'арбуз', 'арбуза', 'арбузов'
 		 * @return mixed
 		 */
-		public function plural($n = 0, $forms = [])
+		public static function plural($n = 0, $forms = [])
 		{
 			$n = explode(',', (string)$n);
 			$n[1] = str_replace('0', '', $n[1]);
@@ -776,7 +776,7 @@
 		/**
 		 * header("Content-type: application/json; charset=utf-8");
 		 */
-		public function headerJson()
+		public static function headerJson()
 		{
 			@header("Content-type: application/json; charset=utf-8");
 		}
@@ -818,12 +818,12 @@
 		 * @param array $arr
 		 * @return bool
 		 */
-		public function isAssoc(&$arr = [])
+		public static function isAssoc(&$arr = [])
 		{
 			if (is_array($arr)) {
 				$c = count($arr);
 				if ($c > 10) {
-					return !(array_key_exists(0, $arr) and array_key_exists(random_int(0, $c - 1), $arr) and array_key_exists($c - 1, $arr));
+					return !(array_key_exists(0, $arr) and array_key_exists(rand(0, $c - 1), $arr) and array_key_exists($c - 1, $arr));
 				} elseif ($c > 0) {
 					return !(range(0, count($arr) - 1) === array_keys($arr));
 				}
@@ -1142,6 +1142,23 @@
 		}
 
 		/**
+		 * **$Params[fast]**
+		 *  - 0 very slow
+		 *  - 1 normal
+		 *  - 2 faster
+		 *
+		 * **$Params[speed]**
+		 *  - it/s iterate by second
+		 *  - s/it second for 1 iterate
+		 *  - left remaining time in second
+		 *
+		 * **$Params[colored]**
+		 *  - true
+		 *  - false
+		 *
+		 * **$Params[smooth]**
+		 *  - true
+		 *  - false
 		 * @return modutilitiesProgressBar|Class
 		 */
 		final public function progressBar($Params = [])
@@ -1186,7 +1203,7 @@
 		 * return client IP
 		 * @return false|string IP
 		 */
-		public function getIP()
+		public static function getIP()
 		{
 			if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
 				$ip = $_SERVER['HTTP_CLIENT_IP'];
@@ -1309,7 +1326,7 @@
 		 * @param bool   $update
 		 * @return bool|string
 		 */
-		public function _download($file = '', $outPath = '', $update = TRUE, $timeout = 2)
+		public  function _download($file = '', $outPath = '', $update = TRUE, $timeout = 2)
 		{
 			$this->output[__FUNCTION__] = ['$file' => $file, '$outPath' => $outPath, '$timeout' => $timeout, '$update' => $update,];
 			if (!$update and file_exists($outPath) and filesize($outPath) > 0) {
@@ -1350,7 +1367,7 @@
 		 * @param string $file
 		 * @return mixed
 		 */
-		public function baseExt($file = '')
+		public static function baseExt($file = '')
 		{
 			$_tmp = explode('.', basename($file));
 			return end($_tmp);
@@ -1360,7 +1377,7 @@
 		 * @param string $file
 		 * @return string
 		 */
-		public function baseName($file = '')
+		public static function baseName($file = '')
 		{
 			$_tmp = explode('.', basename($file));
 			array_pop($_tmp);
@@ -1373,7 +1390,7 @@
 		 * @param string $R
 		 * @return string
 		 */
-		public function expandBrackets($str = '', $L = '(', $R = ')')
+		public static function expandBrackets($str = '', $L = '(', $R = ')')
 		{
 			if ($L != '(' and $R == ')') {
 				$R = $L;
@@ -1504,6 +1521,12 @@
 
 		}
 
+		/**
+		 * @param $rH
+		 * @param $gS
+		 * @param $bV
+		 * @return array
+		 */
 		public function hsv2rgb(&$rH, &$gS, &$bV)
 		{
 			if ($rH < 0) $rH = 0;   // Hue:
@@ -1573,6 +1596,12 @@
 			return [round($dR), round($dG), round($dB)];
 		}
 
+		/**
+		 * @param $rH
+		 * @param $gS
+		 * @param $bL
+		 * @return array
+		 */
 		public function hsl2rgb(&$rH, &$gS, &$bL)
 		{
 
@@ -1613,6 +1642,12 @@
 			return [$rH, $gS, $bL];
 		}
 
+		/**
+		 * @param $R
+		 * @param $G
+		 * @param $B
+		 * @return string
+		 */
 		public function rgb2hex(&$R, &$G, &$B)
 		{
 
@@ -1719,7 +1754,7 @@
 		 *                    "query" => ['v'=>'test'],]
 		 * @return string
 		 */
-		public function urlBuild($prop = [])
+		public static function urlBuild($prop = [])
 		{
 			$query = isset($prop['query']) ? $prop['query'] : [];
 			$prop = array_merge([
@@ -1748,11 +1783,20 @@
 			return $url;
 		}
 
+		/**
+		 * @param bool $v
+		 */
 		public function setDevMode($v = TRUE)
 		{
 			$this->devMode = $v;
 		}
 
+		/**
+		 * @param       $script
+		 * @param null  $path
+		 * @param       $key
+		 * @param array $options
+		 */
 		public function _addHead($script, $path = NULL, $key, $options = [])
 		{
 			$_args = func_get_args();
@@ -1764,6 +1808,7 @@
 				'Startup' => FALSE,
 				'cache' => FALSE,
 				'media' => NULL,
+				'query' => [],
 			], $options);
 
 			if ($options['plaintext']) {
@@ -1781,7 +1826,10 @@
 				}
 				$t = strpos($finalPath, '//');
 				$remote = ($t !== FALSE and $t <= 10) ? TRUE : FALSE;
-
+				$finalPath_raw = $finalPath;
+				if (!empty($options['query'])) {
+					$finalPath .= '?' . http_build_query($options['query']);
+				}
 				if ($options['cache'] and $remote) {
 					try {
 						if (!$this->cacheManager) {
@@ -1789,16 +1837,16 @@
 						}
 						$hash = md5($finalPath);
 						$cachePaths = $this->cacheManager->get('includes', [xPDO::OPT_CACHE_KEY => 'modUtilities']);
-						if (is_array($this->cachePaths) and array_key_exists($hash, $this->cachePaths)) {
-							if (file_exists($this->cachePaths[$hash])) {
-								throw new Exception($this->cachePaths[$hash], 1);
+						if (is_array($cachePaths) and array_key_exists($hash, $cachePaths)) {
+							if (file_exists($cachePaths[$hash])) {
+								throw new Exception($cachePaths[$hash], 1);
 							}
 						}
 						if (!is_array($cachePaths)) {
 							$cachePaths = [];
 						}
 
-						$ext = $this->baseExt($finalPath);
+						$ext = $this->baseExt($finalPath_raw);
 						$tmp = "cache/" . $hash . '.' . $ext;
 						if ($this->download($finalPath, MODX_ASSETS_PATH . $tmp)) {
 							$assets = rtrim($this->modx->getOption('assets_url'), '/');
@@ -1823,26 +1871,46 @@
 					$finalPath .= "?v=" . $v;
 				}
 			}
-
+			//------------
 			if ($key == 'css') {
 				$this->modx->regClientCSS($finalPath, $options['media']);
 			} elseif ($key == 'js') {
 				if ($options['Startup']) {
-					$this->modx->regClientStartupScript($finalPath, $options['plaintext']);
+					if ($options['plaintext']) {
+						$this->modx->regClientStartupScript($finalPath, TRUE);
+					} else {
+						$out = '<script type="text/javascript" class="modUtilities" src="' . $finalPath . '"></script>';
+						$this->modx->regClientStartupScript($out, TRUE);
+					}
 				} else {
-					$this->modx->regClientScript($finalPath, $options['plaintext']);
+					if ($options['plaintext']) {
+						$this->modx->regClientScript($finalPath, TRUE);
+					} else {
+						$out = '<script type="text/javascript" class="modUtilities" src="' . $finalPath . '"></script>';
+						$this->modx->regClientScript($finalPath, TRUE);
+					}
 				}
 			}
 
 		}
 
-		public function addJs($script, $path = NULL, $cache = FALSE)
+		/**
+		 * @param       $script
+		 * @param null  $path
+		 * @param false $cache
+		 * @param array $query
+		 */
+		public function addJs($script, $path = NULL, $cache = FALSE, $query = [])
 		{
 			$this->_addHead($script, $path, 'js', [
 				'cache' => $cache,
+				'query' => $query,
 			]);
 		}
 
+		/**
+		 * @param string $html
+		 */
 		public function addJsText($html = '')
 		{
 			$this->_addHead($html, NULL, 'js', [
@@ -1857,7 +1925,13 @@
 			]);
 		}
 
-		public function addStartupJs($script = '', $path = NULL, $cache = FALSE)
+		/**
+		 * @param string $script
+		 * @param null   $path
+		 * @param false  $cache
+		 * @param array  $query
+		 */
+		public function addStartupJs($script = '', $path = NULL, $cache = FALSE, $query = [])
 		{
 			$_args = func_get_args();
 			if (count($_args) == 1 and is_array($_args[0])) {
@@ -1866,9 +1940,13 @@
 			$this->_addHead($script, $path, 'js', [
 				'cache' => $cache,
 				'Startup' => TRUE,
+				'query' => $query,
 			]);
 		}
 
+		/**
+		 * @param string $html
+		 */
 		public function addStartupJsText($html = '')
 		{
 			$this->_addHead($html, NULL, 'js', [
@@ -1877,6 +1955,9 @@
 			]);
 		}
 
+		/**
+		 * @param string $html
+		 */
 		public function addStartupHtml($html = '')
 		{
 			$this->_addHead($html, NULL, 'js', [
@@ -1885,7 +1966,14 @@
 			]);
 		}
 
-		public function addCss($script = '', $path = NULL, $media = NULL, $cache = FALSE)
+		/**
+		 * @param string $script
+		 * @param null   $path
+		 * @param null   $media
+		 * @param false  $cache
+		 * @param array  $query
+		 */
+		public function addCss($script = '', $path = NULL, $media = NULL, $cache = FALSE, $query = [])
 		{
 			$_args = func_get_args();
 			if (count($_args) == 1 and is_array($_args[0])) {
@@ -1894,9 +1982,17 @@
 			$this->_addHead($script, $path, 'css', [
 				'cache' => $cache,
 				'media' => $media,
+				'query' => $query,
 			]);
 		}
 
+		/**
+		 * @param       $folder
+		 * @param false $recursive
+		 * @param bool  $skipDirs
+		 * @param array $replace
+		 * @return array
+		 */
 		public function getFilesFromFolder($folder, $recursive = FALSE, $skipDirs = TRUE, $replace = [])
 		{
 			$_args = func_get_args();
@@ -1933,6 +2029,26 @@
 				}
 			}
 			return $response;
+		}
+
+		/**
+		 * @param int $length
+		 * @return string
+		 * @throws Exception
+		 */
+		public static function id($length = 5)
+		{
+			if (version_compare(PHP_VERSION, '7.0.0', '>=')) {
+				return bin2hex(random_bytes($length));
+			} else {
+				$chars = 'abdefhiknrstyzABDEFGHKNQRSTYZ23456789';
+				$numChars = strlen($chars);
+				$string = '';
+				for ($i = 0; $i < $length; $i++) {
+					$string .= substr($chars, rand(1, $numChars) - 1, 1);
+				}
+				return $string;
+			}
 		}
 
 	}

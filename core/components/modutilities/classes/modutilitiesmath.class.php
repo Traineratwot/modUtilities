@@ -90,6 +90,11 @@
 			return 100 - $this->divPercent($value, $percent);
 		}
 
+		/**
+		 * @param int $value
+		 * @param int $percent
+		 * @return float|int
+		 */
 		public function divPercent($value = 0, $percent = 0)
 		{
 			if(!$value){
