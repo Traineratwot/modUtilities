@@ -39,9 +39,10 @@ modUtil.panel.Home = function(config) {
 								name: 'REST',
 								createBtnText: _('create') + ' rest',
 								xtype: extraExt.grid.xtype,
-								columns: [ // Добавляем ширину и заголовок столбца
+								columns: [
+									// REST
 									{
-										dataIndex: 'id', width: 330, header: 'id', sortable: true, extraExtRenderer: {
+										dataIndex: 'id', width: 100, header: 'id', sortable: true, extraExtRenderer: {
 											popup: false,
 										},
 										extraExtEditor: {
@@ -127,17 +128,17 @@ modUtil.panel.Home = function(config) {
 										editor: {
 											xtype: extraExt.inputs.popup.xtype,
 											defaultValue: JSON.stringify({
-												"scriptProperties": [],
-												"headers": [],
-												"httpResponseCode": 200
+												'scriptProperties': [],
+												'headers': [],
+												'httpResponseCode': 200
 											}),
 											fields: [
 												{
-													xtype: 'hidden' ,
+													xtype: 'hidden',
 													name: 'scriptProperties',
 												},
 												{
-													xtype: 'hidden' ,
+													xtype: 'hidden',
 													name: 'headers',
 												},
 												{
@@ -152,17 +153,17 @@ modUtil.panel.Home = function(config) {
 										extraExtEditor: {
 											xtype: extraExt.inputs.popup.xtype,
 											defaultValue: JSON.stringify({
-												"scriptProperties": [],
-												"headers": [],
-												"httpResponseCode": 200
+												'scriptProperties': [],
+												'headers': [],
+												'httpResponseCode': 200
 											}),
 											fields: [
 												{
-													xtype: 'hidden' ,
+													xtype: 'hidden',
 													name: 'scriptProperties',
 												},
 												{
-													xtype: 'hidden' ,
+													xtype: 'hidden',
 													name: 'headers',
 												},
 												{
@@ -214,6 +215,83 @@ modUtil.panel.Home = function(config) {
 										editor: {xtype: 'textarea'},
 										extraExtRenderer: {
 											popup: true,
+										},
+										extraExtEditor: {
+											xtype: extraExt.inputs.popup.xtype,
+											defaultValue: JSON.stringify({
+												'allow': {
+													'usergroup': 'all'
+												}
+											}),
+											prepare: function(data) {
+												newData = {}
+												if(data.type == true) {
+													newData.allow = {
+														usergroup: JSON.parse(data.usergroup || null) || null,
+														userIds: JSON.parse(data.userIds || null) || null,
+														ip: JSON.parse(data.ip || null) || null,
+													}
+												} else {
+													newData.deny = {
+														usergroup: JSON.parse(data.usergroup || null) || null,
+														userIds: JSON.parse(data.userIds || null) || null,
+														ip: JSON.parse(data.ip || null) || null,
+													}
+												}
+												for(const newDataKey in newData) {
+													if(newData[newDataKey] == null || newData[newDataKey] == 'null') {
+														delete newData[newDataKey]
+													}
+												}
+												return newData
+											},
+											dePrepare: function(data) {
+												newData = {}
+												if(data.hasOwnProperty('allow')) {
+													newData.usergroup = JSON.stringify(data.allow.usergroup || null) || data.allow.usergroup
+													newData.userIds = JSON.stringify(data.allow.userIds || null) || data.allow.userIds
+													newData.ip = JSON.stringify(data.allow.ip || null) || data.allow.ip
+													newData.type = 1
+												} else {
+													newData.usergroup = JSON.stringify(data.deny.usergroup || null) || data.deny.usergroup
+													newData.userIds = JSON.stringify(data.deny.userIds || null) || data.deny.userIds
+													newData.ip = JSON.stringify(data.deny.ip || null) || data.deny.ip
+													newData.type = 0
+												}
+												for(const newDataKey in newData) {
+													if(newData[newDataKey] == 'null') {
+														newData[newDataKey] == null
+													}
+												}
+												return newData
+											},
+											fields: [
+												{
+													xtype: 'checkbox',
+													name: 'type',
+													boxLabel: _('extraExt.allow'),
+													allowBlank: true,
+												},
+												{
+													name: 'usergroup',
+													xtype: 'modx-texteditor',
+													mimeType: 'application/json',
+													allowBlank: true,
+												},
+												{
+													name: 'userIds',
+													xtype: 'modx-texteditor',
+													mimeType: 'application/json',
+													allowBlank: true,
+												},
+												{
+													xtype: 'textarea',
+													name: 'ip',
+													xtype: 'modx-texteditor',
+													mimeType: 'application/json',
+													allowBlank: true,
+												},
+											]
 										},
 										renderer: extraExt.grid.renderers.JSON
 									},
@@ -332,9 +410,10 @@ modUtil.panel.Home = function(config) {
 							name: _('category'),
 							createBtnText: _('category_create'),
 							xtype: extraExt.grid.xtype,
-							columns: [ // Добавляем ширину и заголовок столбца
+							columns: [
+								// CATEGORY
 								{
-									dataIndex: 'id', width: 330, header: 'id', sortable: true, extraExtRenderer: {
+									dataIndex: 'id', width: 100, header: 'id', sortable: true, extraExtRenderer: {
 										popup: false,
 									},
 									extraExtEditor: {
@@ -354,17 +433,17 @@ modUtil.panel.Home = function(config) {
 									editor: {
 										xtype: extraExt.inputs.popup.xtype,
 										defaultValue: JSON.stringify({
-											"scriptProperties": [],
-											"headers": [],
-											"httpResponseCode": 200
+											'scriptProperties': [],
+											'headers': [],
+											'httpResponseCode': 200
 										}),
 										fields: [
 											{
-												xtype: 'hidden' ,
+												xtype: 'hidden',
 												name: 'scriptProperties',
 											},
 											{
-												xtype: 'hidden' ,
+												xtype: 'hidden',
 												name: 'headers',
 											},
 											{
@@ -379,17 +458,17 @@ modUtil.panel.Home = function(config) {
 									extraExtEditor: {
 										xtype: extraExt.inputs.popup.xtype,
 										defaultValue: JSON.stringify({
-											"scriptProperties": [],
-											"headers": [],
-											"httpResponseCode": 200
+											'scriptProperties': [],
+											'headers': [],
+											'httpResponseCode': 200
 										}),
 										fields: [
 											{
-												xtype: 'hidden' ,
+												xtype: 'hidden',
 												name: 'scriptProperties',
 											},
 											{
-												xtype: 'hidden' ,
+												xtype: 'hidden',
 												name: 'headers',
 											},
 											{
@@ -442,6 +521,83 @@ modUtil.panel.Home = function(config) {
 									extraExtRenderer: {
 										popup: true,
 									},
+									extraExtEditor: {
+										xtype: extraExt.inputs.popup.xtype,
+										defaultValue: JSON.stringify({
+											'allow': {
+												'usergroup': 'all'
+											}
+										}),
+										prepare: function(data) {
+											newData = {}
+											if(data.type == true) {
+												newData.allow = {
+													usergroup: JSON.parse(data.usergroup || null) || null,
+													userIds: JSON.parse(data.userIds || null) || null,
+													ip: JSON.parse(data.ip || null) || null,
+												}
+											} else {
+												newData.deny = {
+													usergroup: JSON.parse(data.usergroup || null) || null,
+													userIds: JSON.parse(data.userIds || null) || null,
+													ip: JSON.parse(data.ip || null) || null,
+												}
+											}
+											for(const newDataKey in newData) {
+												if(newData[newDataKey] == null || newData[newDataKey] == 'null') {
+													delete newData[newDataKey]
+												}
+											}
+											return newData
+										},
+										dePrepare: function(data) {
+											newData = {}
+											if(data.hasOwnProperty('allow')) {
+												newData.usergroup = JSON.stringify(data.allow.usergroup || null) || data.allow.usergroup
+												newData.userIds = JSON.stringify(data.allow.userIds || null) || data.allow.userIds
+												newData.ip = JSON.stringify(data.allow.ip || null) || data.allow.ip
+												newData.type = 1
+											} else {
+												newData.usergroup = JSON.stringify(data.deny.usergroup || null) || data.deny.usergroup
+												newData.userIds = JSON.stringify(data.deny.userIds || null) || data.deny.userIds
+												newData.ip = JSON.stringify(data.deny.ip || null) || data.deny.ip
+												newData.type = 0
+											}
+											for(const newDataKey in newData) {
+												if(newData[newDataKey] == 'null') {
+													newData[newDataKey] == null
+												}
+											}
+											return newData
+										},
+										fields: [
+											{
+												xtype: 'checkbox',
+												name: 'type',
+												boxLabel: _('extraExt.allow'),
+												allowBlank: true,
+											},
+											{
+												name: 'usergroup',
+												xtype: 'modx-texteditor',
+												mimeType: 'application/json',
+												allowBlank: true,
+											},
+											{
+												name: 'userIds',
+												xtype: 'modx-texteditor',
+												mimeType: 'application/json',
+												allowBlank: true,
+											},
+											{
+												xtype: 'textarea',
+												name: 'ip',
+												xtype: 'modx-texteditor',
+												mimeType: 'application/json',
+												allowBlank: true,
+											},
+										]
+									},
 									renderer: extraExt.grid.renderers.JSON
 								},
 								{
@@ -491,7 +647,7 @@ modUtil.panel.Home = function(config) {
 							xtype: extraExt.grid.xtype,
 							columns: [ // Добавляем ширину и заголовок столбца
 								{
-									dataIndex: 'id', width: 330, header: 'id', sortable: true, extraExtRenderer: {
+									dataIndex: 'id', width: 150, header: 'id', sortable: true, extraExtRenderer: {
 										popup: false,
 									},
 									renderer: extraExt.grid.renderers.default
@@ -517,7 +673,7 @@ modUtil.panel.Home = function(config) {
 									extraExtRenderer: {
 										popup: true,
 									},
-									renderer: extraExt.grid.renderers.HTML,
+									renderer: extraExt.grid.renderers.JSON,
 								},
 								{
 									dataIndex: 'user',

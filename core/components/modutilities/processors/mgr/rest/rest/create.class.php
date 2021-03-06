@@ -35,6 +35,10 @@
 				return FALSE;
 			}
 			foreach ($this->properties as $key => $prop) {
+				if ($key == 'allowMethod') {
+					$prop = implode(',', $prop);
+					$this->setProperty($key,$prop );
+				}
 				if (is_array($prop) or is_object($prop)) {
 					$prop = array_unique($prop);
 					if (count($prop) == 0 or empty($prop)) {

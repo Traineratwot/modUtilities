@@ -29,6 +29,15 @@
 				return FALSE;
 			}
 			foreach ($this->properties as $key => $prop) {
+				if ($key == 'allowMethod') {
+					$prop = implode(',', $prop);
+					$this->setProperty($key,$prop );
+				}
+				if ($key == 'allowMethod') {
+					$prop = array_unique(array_values($prop));
+					$this->properties[$key] = implode(',', $prop);
+					$prop = $this->properties[$key];
+				}
 				if (is_array($prop) or is_object($prop)) {
 					$prop = array_unique($prop);
 					if (count($prop) == 0 or empty($prop)) {
@@ -58,9 +67,6 @@
 							$this->setProperty($key, NULL);
 							break;
 					}
-				}
-				if($key == 'allowMethod'){
-					$this->setProperty($key, implode(',', $prop));
 				}
 			}
 			return !$this->hasErrors();

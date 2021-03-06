@@ -35,6 +35,10 @@
 		 */
 		public $PUT;
 		/**
+		 * @var array
+		 */
+		public $REQUEST;
+		/**
 		 * query
 		 * @var string
 		 */
@@ -47,23 +51,30 @@
 
 		final public function __construct(modX &$modx, array $properties = [], modutilitiesRest &$REST)
 		{
-			$this->REST = $REST;
-			$this->util = $REST->util;
-			$this->GET = &$properties['input']['GET'];
-			$this->user = &$properties['user'];
+			$this->REST             = $REST;
+			$this->util             = $REST->util;
+			$this->user             = $properties['user'];
+			$this->GET              = $properties['input']['GET'];
 			$this->httpResponseCode = $properties['httpResponseCode'];
+			$this->POST             = $properties['input']['POST'];
+			$this->PUT              = $properties['input']['PUT'];
+			$this->HEADERS          = $properties['input']['HEADERS'];
+			$this->REQUEST          = array_merge($properties['input']['GET'], $properties['input']['POST']);
+			$this->REQUEST['PUT']   = $this->PUT;
+			$this->FILES = [];
+			if (!empty($_FILES)) {
+				try {
+					$this->FILES = $this->util->files();
+					if (get_class($this->FILES) == 'modutilitiesPostFiles') {
+						$this->FILES = $this->FILES->FILES;
+					}
+				} catch (Exception $e) {
+					$modx->log(modX::LOG_LEVEL_ERROR, $e->getMessage(), '', __METHOD__ ?: __FUNCTION__, __FILE__, __LINE__);
+				}
+			}
 			$_alias = $modx->context->getOption('request_param_alias', 'q');
 			$this->url = $this->GET[$_alias];
 			unset($this->GET[$_alias]);
-			$this->POST = &$properties['input']['POST'];
-			$this->PUT = &$properties['input']['PUT'];
-			if (!empty($_FILES)) {
-				$this->FILES = $this->util->files();
-				if (get_class($this->FILES) == 'modutilitiesPostFiles') {
-					$this->FILES = $this->FILES->FILES;
-				}
-			}
-
 			parent::__construct($modx, $properties);
 		}
 

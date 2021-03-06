@@ -4,7 +4,7 @@
 	{
 		/* @var modX $modX */
 		public $modx;
-		/* @var modUtilities  $util */
+		/* @var modUtilities $util */
 		public $util;
 		/* @var xPDOObject|Utilrest $rest */
 		public $rest;
@@ -49,20 +49,12 @@
 		public function clearLog()
 		{
 			$this->logLimit--;
-			$table = $this->modx->newObject('Utilreststats');
-			$c = "SELECT COUNT(*) FROM " . $table->_table;
-			if (($c = $this->modx->prepare($c))) {
-				$c->execute();
-				if ($c) {
-					$count = (int)$c->fetch(PDO::FETCH_COLUMN);
-					if ($count > $this->logLimit) {
-						$l = $count - $this->logLimit;
-
-						$q = "DELETE FROM " . $table->_table . " LIMIT $l";
-						if (($q = $this->modx->prepare($q))) {
-							$q->execute();
-						}
-					}
+			$count = $this->modx->getCount('Utilreststats');
+			if ($count > $this->logLimit) {
+				$l = $count - $this->logLimit;
+				$q = "DELETE FROM " . $this->log->_table . " order by id ASC LIMIT $l ";
+				if (($q = $this->modx->prepare($q))) {
+					$q->execute();
 				}
 			}
 
@@ -79,40 +71,40 @@
 				$category = $this->modx->getObject('Utilrestcategory', [
 					'name' => $cat,
 				]);
-				if(!$category instanceof Utilrestcategory and is_numeric($cat)){
+				if (!$category instanceof Utilrestcategory and is_numeric($cat)) {
 					$this->modx->log(modX::LOG_LEVEL_ERROR, "DEPRECATED REST category: read this <a href='https://github.com/Traineratwot/modUtilities/wiki/Fix-category'>[ https://github.com/Traineratwot/modUtilities/wiki/Fix-category ]</a>", '', __METHOD__, __FILE__, __LINE__);
 					$category = $this->modx->getObject('Utilrestcategory', [
 						'id' => $cat,
 					]);
 				}
-				if(!$category instanceof Utilrestcategory){
+				if (!$category instanceof Utilrestcategory) {
 					return 'invalid REST category';
 				}
 				$this->rest = $tmp;
 				$this->restCategory = $category;
 				$replaceConfig = [];
 				$this->permission = $tmp->getProperty('permission', $category->getProperty('permission', '{"allow": {"usergroup": "all"}}'));
-				if($this->util->strTest($this->permission,['[++'])){
-					if(empty($replaceConfig)) {
+				if ($this->util->strTest($this->permission, ['[++'])) {
+					if (empty($replaceConfig)) {
 						$replaceConfig = $this->replaceConfig();
 					}
 					$this->permission = strtr($this->permission, $replaceConfig);
 				}
 				$this->permission = $this->util->jsonValidate($this->permission);
-				if(!$this->permission) {
+				if (!$this->permission) {
 					$this->modx->log(MODX_LOG_LEVEL_FATAL, 'invalid JSON in permission');
 					http_response_code(501);
 					die;
 				}
 				$this->param = $tmp->getProperty('param', $category->getProperty('param', '{"headers": [], "httpResponseCode": 200, "scriptProperties": []}'));
-				if($this->util->strTest($this->param,['[++'])){
-					if(empty($replaceConfig)) {
+				if ($this->util->strTest($this->param, ['[++'])) {
+					if (empty($replaceConfig)) {
 						$replaceConfig = $this->replaceConfig();
 					}
 					$this->param = strtr($this->param, $replaceConfig);
 				}
 				$this->param = $this->util->jsonValidate($this->param);
-				if(!$this->param) {
+				if (!$this->param) {
 					$this->modx->log(MODX_LOG_LEVEL_FATAL, 'invalid JSON in param ');
 					http_response_code(501);
 					die;
@@ -132,7 +124,7 @@
 		{
 			try {
 				$userId = (int)$this->modx->user->get('id');
-				if ((bool)$this->restCategory->getProperty('BASIC_auth') or (bool)$this->rest->getProperty('BASIC_auth')) {
+				if (((bool)$this->restCategory->getProperty('BASIC_auth') or (bool)$this->rest->getProperty('BASIC_auth')) and !$userId) {
 					if (!isset($_SERVER['PHP_AUTH_USER'])) {
 						header('WWW-Authenticate: Basic realm="' . $this->modx->config['site_name'] . '_REST"');
 						header('HTTP/1.0 401 Unauthorized');
@@ -144,6 +136,7 @@
 						]);
 						if ($user) {
 							if ($user->passwordMatches($_SERVER['PHP_AUTH_PW'])) {
+								$user->addSessionContext('web');
 								$userId = $user->get('id');
 							} else {
 								throw new Exception('wrong password', 0);
@@ -156,6 +149,9 @@
 				$this->userId = $userId;
 				$allow = TRUE;
 				foreach ($this->permission['allow'] as $key => $value) {
+					if(is_null($value)){
+						break;
+					}
 					switch ($key) {
 						case 'usergroup':
 							if ($value === 'all') {
@@ -170,8 +166,8 @@
 						case 'userIds':
 							if (in_array($userId, $value) !== FALSE) {
 								throw new Exception(TRUE, 1);
-							}else{
-								if(!empty($value)){
+							} else {
+								if (!empty($value)) {
 									throw new Exception(FALSE, 0);
 								}
 							}
@@ -201,6 +197,9 @@
 					}
 				}
 				foreach ($this->permission['deny'] as $key => $value) {
+					if(is_null($value)){
+						break;
+					}
 					switch ($key) {
 						case 'usergroup':
 							if ($value === 'all') {
@@ -284,6 +283,7 @@
 
 				$scriptProperties['input']['GET'] = $_GET;
 				$scriptProperties['input']['POST'] = $_POST;
+				$scriptProperties['input']['HEADERS'] = $this->util->getThisHeaders();
 				$put = file_get_contents('php://input');
 
 				$put = $this->util->jsonValidate($put, 512) ?: $put;
@@ -310,7 +310,7 @@
 					'OR:name:LIKE' => $snippet,
 				]);
 				if ($sp) {
-					$scriptProperties = array_merge($scriptProperties,$_REQUEST);
+					$scriptProperties = array_merge($scriptProperties, $_REQUEST);
 					return $sp->process($scriptProperties);
 				}
 				if (!class_exists('modX')) {
@@ -350,10 +350,11 @@
 			}
 		}
 
-		public function replaceConfig(){
+		public function replaceConfig()
+		{
 			$repl = [];
-			foreach ($this->modx->config as $key=> $value){
-				$repl['[[++'.$key.']]'] = $value;
+			foreach ($this->modx->config as $key => $value) {
+				$repl['[[++' . $key . ']]'] = $value;
 			}
 			return $repl;
 		}

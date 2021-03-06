@@ -358,7 +358,7 @@
 				$len[] = count($row);
 			}
 			foreach ($head as $i => $v) {
-				$head[$i] = $this->escape . $v . $this->escape;
+				$head[$i] = $this->escape . strip_tags($v) . $this->escape;
 			}
 			$len = max($len);
 			if (!empty($head)) {
@@ -399,13 +399,15 @@
 			$len = max($len);
 			if (!empty($head)) {
 				if ($this->appendType == 'row') {
-					$this->html .= "<tr>";
+					$this->html .= "<tr data-key='-1'>";
 					foreach ($head as $k => $h) {
 						$style = '';
 						if ($rainbow) {
 							$style = 'style="color:' . $this->util->randomColor(['salt' => $k, 'limits' => $this->limits]) . ';"';
 						}
-						$this->html .= "<th $style>$h</th>";
+						$_h = strip_tags($h);
+						$_k = strip_tags($k);
+						$this->html .= "<th data-key='$_k' data-value='$_h' $style>$h</th>";
 					}
 					$this->html .= "</tr>";
 				} else {
@@ -422,7 +424,7 @@
 					$_row[$i] = (isset($row[$i])) ? $row[$i] : '';
 				}
 				if (!$this->util->isEmpty($_row)) {
-					$this->html .= "<tr>";
+					$this->html .= "<tr data-key='$key'>";
 					$i = 0;
 					foreach ($row as $k => $r) {
 						$style = '';
@@ -430,10 +432,12 @@
 							$style = 'style="color:' . $this->util->randomColor(['salt' => $k, 'limits' => $this->limits]) . ';"';
 						}
 						$i++;
+						$_r = strip_tags($r);
+						$_k = strip_tags($k);
 						if ($this->head and $this->appendType == 'column' and $i == 1) {
-							$this->html .= "<th $style>$r</th>";
+							$this->html .= "<th data-key='$_k' data-value='$_r' $style>$r</th>";
 						} else {
-							$this->html .= "<td $style>$r</td>";
+							$this->html .= "<td data-key='$_k' data-value='$_r' $style>$r</td>";
 						}
 					}
 					$this->html .= "</tr>";

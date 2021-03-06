@@ -6,10 +6,11 @@
 		 * @var modX $modx
 		 */
 		public $modx;
-		public $name;
-		public $path;
-		public $ext;
-		public $type;
+		public $name = NULL;
+		public $path = NULL;
+		public $ext = NULL;
+		public $fullName = NULL;
+		public $type = NULL;
 		/**
 		 * @var int
 		 */
@@ -52,6 +53,7 @@
 				throw new Exception('upload error: "' . $data['error'] . '"');
 			} else {
 				$this->name = $this->util->baseName($data['name']);
+				$this->fullName = $data['name'];
 				$this->ext = mb_strtolower($this->util->baseExt($data['name']));
 				$this->path = $data['tmp_name'];
 				$this->type = isset($data['type']) ? $data['type'] : NULL;
@@ -68,31 +70,44 @@
 			return $this->content;
 		}
 
-		public function save($path = '')
+		/**
+		 * @param string $path
+		 * @param false  $overwrite
+		 * @return TRUE|errorMsg
+		 * @throws Exception
+		 */
+		public function save($path = '', $overwrite = FALSE)
 		{
 			if ($path and !$this->saved) {
 				if (!is_dir(dirname($path))) {
-					if (!mkdir($concurrentDirectory = dirname($path), $this->modx->config['new_file_permissions'], TRUE) && !is_dir($concurrentDirectory)) {
+					if (!mkdir($concurrentDirectory = dirname($path), 0777, TRUE) && !is_dir($concurrentDirectory)) {
 						throw new Exception(sprintf('Directory "%s" was not created', $concurrentDirectory));
-						return FALSE;
+						return 'can`t create directory';
 					}
 				}
 				$converter = [
 					'{name}' => $this->name,
+					'{fullName}' => $this->fullName,
 					'{ext}' => $this->ext,
 					'{size}' => $this->size,
 					'{type}' => $this->type,
 				];
 				$path = strtr($path, $converter);
-				if (move_uploaded_file($this->path, $path) and file_exists($path)) {
+				if (!$overwrite and file_exists($path)) {
+					throw new Exception('file already exist');
+					return 'file already exist';
+				}
+				if (move_uploaded_file($this->path, $path) and file_exists($path) and filesize($path) > 0) {
 					$this->saved = TRUE;
 					$this->path = $path;
 					return TRUE;
 				} else {
-					return FALSE;
+					throw new Exception('can`t save file');
+					return 'can`t save file';
 				}
 			} else {
-				return FALSE;
+				throw new Exception('empty path or this already saved');
+				return 'empty path or this already saved';
 			}
 		}
 
@@ -100,11 +115,22 @@
 		{
 			return [
 				'name' => $this->name,
+				'fullName' => $this->fullName,
 				'path' => $this->path,
 				'ext' => $this->ext,
 				'type' => $this->type,
 				'size' => $this->size,
 			];
+		}
+
+		public function __toString()
+		{
+			return json_encode($this->toArray());
+		}
+
+		public function __invoke()
+		{
+			return $this->toArray();
 		}
 
 		public function fromJson($flag = JSON_UNESCAPED_UNICODE)

@@ -26,6 +26,7 @@
 		 */
 		public $output = [];
 		private $cache = [];
+		private $headAdded = [];
 		private $devMode = FALSE;
 		/**
 		 * @var modTransliterate $translitClass
@@ -80,6 +81,7 @@
 		const FirstLetter = 1;
 		const EveryWord = 2;
 		const AfterDot = 3;
+		public $isFenom = FALSE;
 
 		/**
 		 * @var array
@@ -888,6 +890,7 @@
 			} else {
 				return $alt;
 			}
+
 			if ($user) {
 				$img = $user->getProfilePhoto($width, $height);
 				if ($this->modx->getOption('enable_gravatar') and empty($img)) {
@@ -923,8 +926,17 @@
 				if (!$sock) {
 					$this->output[__FUNCTION__]['error'] = [$errno, $errStr];
 					if (!$useSocket or $errStr == 'Unable to find the socket transport "https" - did you forget to enable it when you configured PHP?') {
-						$opts['http']['timeout'] = $timeout;
-						$opts['https']['timeout'] = $timeout;
+						$opts = [
+							'http' => [
+								'timeout' => $timeout,
+								'header' => "User-Agent: Mozilla/5.0\r\n",
+
+							],
+							'https' => [
+								'timeout' => $timeout,
+								'header' => "User-Agent: Mozilla/5.0\r\n",
+							],
+						];
 						if (version_compare(PHP_VERSION, '7.1.0', '>=')) {
 							$context = stream_context_create($opts);
 							$headers = @get_headers($host, 1, $context); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
@@ -939,12 +951,75 @@
 							return FALSE;
 						}
 					}
-					return FALSE;
+					return (bool)$this->http_response($host, 200, $timeout);
 				} else {
 					return TRUE;
 				}
 			}
 			return FALSE;
+		}
+
+		/**
+		 * @param      $url
+		 * @param null $status
+		 * @param int  $timeout
+		 * @return bool
+		 */
+		public function http_response($url, $status = NULL, $timeout = 2)
+		{
+			$time = microtime(TRUE);
+			$expire = $time + $timeout;
+
+			// we fork the process so we don't have to wait for a timeout
+			$pid = pcntl_fork();
+			if ($pid == -1) {
+				die('could not fork');
+			} elseif ($pid) {
+				// we are the parent
+				$ch = curl_init();
+				curl_setopt($ch, CURLOPT_HEADER, TRUE);
+				curl_setopt($ch, CURLOPT_NOBODY, TRUE); // remove body
+				curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+				curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
+				curl_setopt_array($ch, [
+					CURLOPT_URL => $url,
+					CURLOPT_ENCODING => '',
+					CURLOPT_MAXREDIRS => 10,
+					CURLOPT_TIMEOUT => $timeout,
+					CURLOPT_FOLLOWLOCATION => TRUE,
+					CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+					CURLOPT_CUSTOMREQUEST => 'GET',
+					CURLOPT_HTTPHEADER => [
+						"User-Agent: Mozilla/5.0\r\n",
+					],
+				]);
+				$head = curl_exec($ch);
+				$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+				curl_close($ch);
+
+				if (!$head) {
+					return FALSE;
+				}
+
+				if ($status === NULL) {
+					if ($httpCode < 400) {
+						return TRUE;
+					} else {
+						return FALSE;
+					}
+				} elseif ($status == $httpCode) {
+					return TRUE;
+				}
+
+				return FALSE;
+				pcntl_wait($status); //Protect against Zombie children
+			} else {
+				// we are the child
+				while (microtime(TRUE) < $expire) {
+					sleep(0.5);
+				}
+				return FALSE;
+			}
 		}
 
 		/**
@@ -973,11 +1048,11 @@
 		 * @param string        $column
 		 * @return false|string[]
 		 */
-		public function getSetOption($table = '', $column = '')
+		public function getSetOption($table = '', $column = '', $class = TRUE)
 		{
 			if (is_object($table)) {
 				$table = $table->_table;
-			} elseif (is_string($table)) {
+			} elseif (is_string($table) and $class) {
 				$table_ = $this->modx->newObject($table);
 				if ($table_) {
 					$table = $table_->_table;
@@ -1051,12 +1126,12 @@
 		public function getAllTvResource($id = 0, $type = 'id')
 		{
 			if (is_int($id)) {
-				if (!isset($this->cache[__FUNCTION__]['newQuery'])) {
-					$this->cache[__FUNCTION__]['newQuery'] = $this->modx->newQuery('modResource');
-					$this->cache[__FUNCTION__]['newQuery']->select('id', 'template');
+				if (!isset($this->cache[__FUNCTION__]['newQuery'][$id])) {
+					$this->cache[__FUNCTION__]['newQuery'][$id] = $this->modx->newQuery('modResource');
+					$this->cache[__FUNCTION__]['newQuery'][$id]->select('id', 'template');
 				}
-				$this->cache[__FUNCTION__]['newQuery']->where(['id' => $id]);
-				$id = $this->modx->getObject('modResource', $this->cache[__FUNCTION__]['newQuery']);
+				$this->cache[__FUNCTION__]['newQuery'][$id]->where(['id' => $id]);
+				$id = $this->modx->getObject('modResource', $this->cache[__FUNCTION__]['newQuery'][$id]);
 			} elseif (is_object($id) and $id instanceof modResource) {
 
 			} else {
@@ -1266,10 +1341,9 @@
 				extract($_args[0], EXTR_OVERWRITE);
 			}
 			try {
-				$permissions = (int)($this->modx->config['new_file_permissions'] ?: 0777);
 				$this->output[__FUNCTION__] = ['$file' => $file, '$outPath' => $outPath, '$timeout' => $timeout, '$update' => $update,];
 				if (!file_exists(dirname($outPath)) or !is_dir(dirname($outPath))) {
-					if (!mkdir($concurrentDirectory = dirname($outPath), $permissions, TRUE) && !is_dir($concurrentDirectory)) {
+					if (!mkdir($concurrentDirectory = dirname($outPath), 0777, TRUE) && !is_dir($concurrentDirectory)) {
 						throw new RuntimeException(sprintf('Directory "%s" was not created', $concurrentDirectory));
 					}
 				}
@@ -1278,7 +1352,7 @@
 						$ch = curl_init($file);
 						if ($outPath) {
 							if (!is_dir(dirname($outPath))) {
-								if (!mkdir($concurrentDirectory = dirname($outPath), $this->modx->config['new_file_permissions'], TRUE) && !is_dir($concurrentDirectory)) {
+								if (!mkdir($concurrentDirectory = dirname($outPath), 0777, TRUE) && !is_dir($concurrentDirectory)) {
 									throw new Exception(sprintf('Directory "%s" was not created', $concurrentDirectory));
 									return FALSE;
 								}
@@ -1326,7 +1400,7 @@
 		 * @param bool   $update
 		 * @return bool|string
 		 */
-		public  function _download($file = '', $outPath = '', $update = TRUE, $timeout = 2)
+		public function _download($file = '', $outPath = '', $update = TRUE, $timeout = 2)
 		{
 			$this->output[__FUNCTION__] = ['$file' => $file, '$outPath' => $outPath, '$timeout' => $timeout, '$update' => $update,];
 			if (!$update and file_exists($outPath) and filesize($outPath) > 0) {
@@ -1335,9 +1409,11 @@
 			$opts = [
 				'http' => [
 					'timeout' => $timeout,
+					'header' => "User-Agent: Mozilla/5.0\r\n",
 				],
 				'https' => [
 					'timeout' => $timeout,
+					'header' => "User-Agent: Mozilla/5.0\r\n",
 				],
 			];
 			if (version_compare(PHP_VERSION, '7.1.0', '>=')) {
@@ -1799,6 +1875,7 @@
 		 */
 		public function _addHead($script, $path = NULL, $key, $options = [])
 		{
+
 			$_args = func_get_args();
 			if (count($_args) == 1 and is_array($_args[0])) {
 				extract($_args[0], EXTR_OVERWRITE);
@@ -1807,7 +1884,7 @@
 				'plaintext' => FALSE,
 				'Startup' => FALSE,
 				'cache' => FALSE,
-				'media' => NULL,
+				'media' => 'all',
 				'query' => [],
 			], $options);
 
@@ -1824,21 +1901,26 @@
 				} else {
 					$finalPath = $script;
 				}
+
 				$t = strpos($finalPath, '//');
 				$remote = ($t !== FALSE and $t <= 10) ? TRUE : FALSE;
 				$finalPath_raw = $finalPath;
-				if (!empty($options['query'])) {
+				if (is_array($options['query']) and !empty($options['query'])) {
 					$finalPath .= '?' . http_build_query($options['query']);
+				}
+				$hash = md5($finalPath);
+				if (array_key_exists($hash, $this->headAdded)) {
+					return TRUE;
 				}
 				if ($options['cache'] and $remote) {
 					try {
 						if (!$this->cacheManager) {
 							$this->cacheManager = $this->modx->getCacheManager();
 						}
-						$hash = md5($finalPath);
 						$cachePaths = $this->cacheManager->get('includes', [xPDO::OPT_CACHE_KEY => 'modUtilities']);
 						if (is_array($cachePaths) and array_key_exists($hash, $cachePaths)) {
 							if (file_exists($cachePaths[$hash])) {
+
 								throw new Exception($cachePaths[$hash], 1);
 							}
 						}
@@ -1872,25 +1954,55 @@
 				}
 			}
 			//------------
-			if ($key == 'css') {
-				$this->modx->regClientCSS($finalPath, $options['media']);
-			} elseif ($key == 'js') {
-				if ($options['Startup']) {
-					if ($options['plaintext']) {
-						$this->modx->regClientStartupScript($finalPath, TRUE);
+			if ($this->isFenom) {
+				if ($key == 'css') {
+					echo '<link rel="stylesheet" class="modUtilities" href="' . $finalPath . '" type="text/css" media="' . $options['media'] . '" />';
+				} elseif ($key == 'js') {
+					if ($options['Startup']) {
+						if ($options['plaintext']) {
+							echo <<<EOD
+							<script  type="text/javascript" class="modUtilities">
+							$finalPath_raw
+							</script>
+							EOD;
+						} else {
+							echo '<script  type="text/javascript" class="modUtilities" src="' . $finalPath . '" data-src="' . $finalPath_raw . '"></script>';
+
+						}
 					} else {
-						$out = '<script type="text/javascript" class="modUtilities" src="' . $finalPath . '"></script>';
-						$this->modx->regClientStartupScript($out, TRUE);
+						if ($options['plaintext']) {
+							echo <<<EOD
+							<script type="text/javascript" class="modUtilities">
+							$finalPath_raw
+							</script>
+							EOD;
+						} else {
+							echo '<script type="text/javascript" class="modUtilities" src="' . $finalPath . '" data-src="' . $finalPath_raw . '"></script>';
+						}
 					}
-				} else {
-					if ($options['plaintext']) {
-						$this->modx->regClientScript($finalPath, TRUE);
+				}
+			} else {
+				if ($key == 'css') {
+					$this->modx->regClientCSS($finalPath, $options['media']);
+				} elseif ($key == 'js') {
+					if ($options['Startup']) {
+						if ($options['plaintext']) {
+							$this->modx->regClientStartupScript($finalPath, TRUE);
+						} else {
+							$out = '<script type="text/javascript" class="modUtilities" src="' . $finalPath . '" data-src="' . $finalPath_raw . '"></script>';
+							$this->modx->regClientStartupScript($out, TRUE);
+						}
 					} else {
-						$out = '<script type="text/javascript" class="modUtilities" src="' . $finalPath . '"></script>';
-						$this->modx->regClientScript($finalPath, TRUE);
+						if ($options['plaintext']) {
+							$this->modx->regClientScript($finalPath, TRUE);
+						} else {
+							$out = '<script type="text/javascript" class="modUtilities" src="' . $finalPath . '" data-src="' . $finalPath_raw . '"></script>';
+							$this->modx->regClientScript($out, TRUE);
+						}
 					}
 				}
 			}
+			$this->headAdded[$hash] = $finalPath;
 
 		}
 
@@ -1973,7 +2085,7 @@
 		 * @param false  $cache
 		 * @param array  $query
 		 */
-		public function addCss($script = '', $path = NULL, $media = NULL, $cache = FALSE, $query = [])
+		public function addCss($script = '', $path = NULL, $cache = FALSE, $query = [], $media = NULL)
 		{
 			$_args = func_get_args();
 			if (count($_args) == 1 and is_array($_args[0])) {
@@ -2051,4 +2163,170 @@
 			}
 		}
 
+		/**
+		 * @param $id
+		 * @param $namespace
+		 * @param $key
+		 * @param $value
+		 * @return bool
+		 */
+		public function userSetExtended($id, $namespace, $key, $value)
+		{
+			if ($id) {
+				if (is_object($id) and $id instanceof modUser) {
+					$user = $id;
+				} else {
+					/** @var modUser $user */
+					$user = $this->modx->getObject('modUser', [
+						'id:LIKE' => $id,
+						'OR:username:LIKE' => $id,
+					]);
+				}
+			} elseif ((int)($this->modx->user->get('id')) > 0) {
+				$user = $this->modx->user;
+			} else {
+				return FALSE;
+			}
+
+			/** @var modUser $user */
+			if ($user) {
+				// Получаем связанный с ним профиль пользователя
+				if ($profile = $user->getOne('Profile')) {
+					// Получаем специальное поле extended
+					$extended = $profile->get('extended');
+					// Добавляем новое значение
+					if (!is_array($extended)) {
+						$extended = [];
+					}
+					if (!is_array($extended[$namespace]) or !array_key_exists($namespace, $extended)) {
+						$extended[$namespace] = [];
+					}
+					$extended[$namespace][$key] = $value;
+					// И сохраняем обратно в профиль
+					$profile->set('extended', $extended);
+					return $profile->save();
+				}
+				return FALSE;
+			}
+			return FALSE;
+		}
+
+		/**
+		 * @param false $id
+		 * @param false $namespace
+		 * @param false $key
+		 * @return array|bool|float|mixed|null
+		 */
+		public function userGetExtended($id = FALSE, $namespace = FALSE, $key = FALSE)
+		{
+			if ($id) {
+				if (is_object($id) and $id instanceof modUser) {
+					$user = $id;
+				} else {
+					/** @var modUser $user */
+					$user = $this->modx->getObject('modUser', [
+						'id:LIKE' => $id,
+						'OR:username:LIKE' => $id,
+					]);
+				}
+			} elseif ((int)($this->modx->user->get('id')) > 0) {
+				$user = $this->modx->user;
+			} else {
+				return FALSE;
+			}
+			if ($user) {
+				if ($profile = $user->getOne('Profile')) {
+					// Получаем специальное поле extended
+					$extended = $profile->get('extended');
+					// Добавляем новое значение
+					if (!is_array($extended)) {
+						return NULL;
+					}
+					if (!$namespace) {
+						return $extended;
+					}
+					if (!array_key_exists($namespace, $extended)) {
+						return NULL;
+					}
+					if (!$key) {
+						return $extended[$namespace];
+					}
+					if (!array_key_exists($key, $extended[$namespace])) {
+						return NULL;
+					}
+					return $extended[$namespace][$key];
+
+				}
+				return FALSE;
+			}
+			return FALSE;
+		}
+
+		/**
+		 * @param $search
+		 * @return array
+		 */
+		public function findUsers($search)
+		{
+			$sql = "SELECT 
+							`p`.id 
+						FROM 
+							`{$this->prefix}users` as `u` 
+							INNER JOIN `{$this->prefix}user_attributes` as `p` on `p`.`internalKey` = `u`.id 
+						where 
+							`u`.`id` = :id 
+							OR `u`.`username` LIKE :search 
+							OR `p`.`fullname` LIKE :search 
+							OR `p`.`email` LIKE :search
+			";
+			$q = $this->modx->prepare($sql);
+			if ($q) {
+				$q->execute([
+					'search' => "%$search%",
+					'id' => (int)$search,
+				]);
+				return $q->fetchAll(PDO::FETCH_COLUMN);
+			}
+		}
+
+		/**
+		 * @param string $path
+		 * @param string $namespace
+		 * @param array  $processorProps
+		 * @param array  $otherProps
+		 * @return false|mixed|string|null
+		 */
+		public function runProcessor($path = '', $namespace = 'core', $processorProps = [], $otherProps = [])
+		{
+			$_otherProps = [];
+			if ($namespace != 'core') {
+				$_otherProps = [
+					'processors_path' => MODX_CORE_PATH . "components/$namespace/processors/",
+				];
+			}
+			$otherProps = array_merge($_otherProps, $otherProps);
+			if ($path) {
+				return $this->modx->runProcessor($path, $processorProps, $otherProps);
+			}
+			return FALSE;
+		}
+
+		public function getThisHeaders(){
+			if (function_exists('getallheaders')) {
+				return getallheaders();
+			} else {
+				if (!is_array($_SERVER)) {
+					return array();
+				}
+				$headers = array();
+				foreach ($_SERVER as $name => $value) {
+					if (substr($name, 0, 5) == 'HTTP_') {
+						$key = str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))));
+						$headers[$key] = $value;
+					}
+				}
+				return $headers;
+			}
+			return array();
+		}
 	}
