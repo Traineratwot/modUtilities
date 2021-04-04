@@ -694,7 +694,10 @@ modUtil.panel.Home = function(config) {
 									sortable: true,
 									width: 670,
 									header: _('modutilities.datetime'),
-									renderer: extraExt.grid.renderers.default,
+									extraExtRenderer: {
+										format:'YYYY-MM-DD h:mm:ss',
+									},
+									renderer: extraExt.grid.renderers.AGO,
 								},
 							],
 							fields: [
@@ -721,6 +724,3 @@ modUtil.panel.Home = function(config) {
 
 Ext.extend(modUtil.panel.Home, MODx.Panel)
 Ext.reg('modUtil-panel-home', modUtil.panel.Home)
-
-
-

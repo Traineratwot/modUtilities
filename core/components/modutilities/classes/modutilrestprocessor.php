@@ -76,6 +76,7 @@
 			$this->url = $this->GET[$_alias];
 			unset($this->GET[$_alias]);
 			parent::__construct($modx, $properties);
+			$this->setProperties(array_merge($this->GET,$this->POST,$this->REQUEST,$this->HEADERS));
 		}
 
 		final public function run()

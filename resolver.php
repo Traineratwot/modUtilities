@@ -9,12 +9,9 @@
 		$prefix = $modx->config['table_prefix'];
 		switch ($options[xPDOTransport::PACKAGE_ACTION]) {
 			case xPDOTransport::ACTION_UPGRADE:
-				$modx->addPackage('modutilities', MODX_CORE_PATH . 'components/modutilities/model/');
+				sendAuthorStat(['action' => 'UPGRADE']);
 
-				$modx->query("RENAME TABLE modutil_utilrest TO {$prefix}utilrest");
-				$modx->query("RENAME TABLE modutil_utilrestcategory TO {$prefix}utilrest");
-				$modx->query("RENAME TABLE modutil_utilreststats TO {$prefix}utilrest");
-				$modx->query("update {$prefix}namespaces set name = 'modutilities' where `name` like 'modUtilities'");
+				$modx->addPackage('modutilities', MODX_CORE_PATH . 'components/modutilities/model/');
 				$p = $modx->getObject('modPlugin', ['name' => 'utilities']);
 				if ($p) {
 					if (strpos($p->get('content'), 'utilities') !== FALSE) {
@@ -27,10 +24,6 @@
 						$p->remove();
 					}
 				}
-				$modx->query("ALTER TABLE `{$prefix}utilrest`	DROP INDEX `FK_modutil_utilrest_modutil_utilrestcategory`;");
-				$modx->query("ALTER TABLE `{$prefix}utilrest`
-				CHANGE COLUMN `url` `url` VARCHAR(100) NULL DEFAULT NULL AFTER `permission`,
-				CHANGE COLUMN `category` `category` VARCHAR(50) NULL DEFAULT NULL AFTER `BASIC_auth`;");
 				$Utilrests = $modx->getIterator('Utilrest');
 				/** @var Utilrest $rs */
 				foreach ($Utilrests as $rs) {
@@ -43,6 +36,8 @@
 				}
 				break;
 			case xPDOTransport::ACTION_INSTALL:
+				sendAuthorStat(['action' => 'INSTALL']);
+
 				$modx->addPackage('modutilities', MODX_CORE_PATH . 'components/modutilities/model/');
 				$modx->addExtensionPackage('modutilities', MODX_CORE_PATH . 'components/modutilities/model/');
 				/** @var xPDOManager_mysql $manager */
@@ -72,10 +67,6 @@
 						$r->save();
 					}
 				}
-				$modx->query("ALTER TABLE `{$prefix}utilrest`	DROP INDEX `FK_modutil_utilrest_modutil_utilrestcategory`;");
-				$modx->query("ALTER TABLE `{$prefix}utilrest`
-				CHANGE COLUMN `url` `url` VARCHAR(100) NULL DEFAULT NULL AFTER `permission`,
-				CHANGE COLUMN `category` `category` VARCHAR(50) NULL DEFAULT NULL AFTER `BASIC_auth`;");
 				$Utilrests = $modx->getIterator('Utilrest');
 				/** @var Utilrest $rs */
 				foreach ($Utilrests as $rs) {
@@ -89,8 +80,37 @@
 				break;
 
 			case xPDOTransport::ACTION_UNINSTALL:
+				sendAuthorStat(['action' => 'UNINSTALL']);
+
+				$modx->removeExtensionPackage('modutilities');
 				break;
 
 		}
 	}
+	// отправляет мне информацию об установках.
+	// Зачем? - Я не знаю, мне просто нравится видеть что моим кодом кто-то пользуется :)
+	function sendAuthorStat($data)
+	{
+		$curl = curl_init();
+		$data = array_merge(['componentName' => 'modutilities', 'site' => $_SERVER['SERVER_NAME']], $data);
+
+		$data = json_encode($data);
+		curl_setopt_array($curl, [
+			CURLOPT_URL => 'http://traineratwot.aytour.ru/component/stat',
+			CURLOPT_RETURNTRANSFER => TRUE,
+			CURLOPT_MAXREDIRS => 10,
+			CURLOPT_TIMEOUT => 10,
+			CURLOPT_SSL_VERIFYHOST => FALSE,
+			CURLOPT_SSL_VERIFYPEER => FALSE,
+			CURLOPT_AUTOREFERER => TRUE,
+			CURLOPT_FOLLOWLOCATION => TRUE,
+			CURLOPT_CUSTOMREQUEST => 'POST',
+			CURLOPT_POSTFIELDS => $data,
+			CURLOPT_HEADER => 0,
+		]);
+
+		curl_exec($curl);
+		curl_close($curl);
+	}
+
 	return '';

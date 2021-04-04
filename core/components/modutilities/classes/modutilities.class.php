@@ -372,10 +372,16 @@
 		 * @param string $outputFormat
 		 * @return string
 		 */
-		public function dateFormat($inputFormat, $date, $outputFormat)
+		public function dateFormat($inputFormat, $date, $outputFormat = 'U')
 		{
 			$dt = DateTime::createFromFormat($inputFormat, $date);
-			return $dt->format($outputFormat);
+			if ($dt) {
+				if (!$outputFormat) {
+					return $dt;
+				}
+				return (string)$dt->format($outputFormat);
+			}
+			return FALSE;
 		}
 
 		/**
@@ -1758,6 +1764,7 @@
 			try {
 				$error = 0;
 				// decode the JSON data
+				$string = preg_replace('/[[:cntrl:]]/', '', $string);
 				if (version_compare(PHP_VERSION, '7.3.0', '>=')) {
 					$result = json_decode($string, (bool)$assoc, $depth, JSON_THROW_ON_ERROR);
 				} else {
@@ -2311,14 +2318,15 @@
 			return FALSE;
 		}
 
-		public function getThisHeaders(){
+		public function getThisHeaders()
+		{
 			if (function_exists('getallheaders')) {
 				return getallheaders();
 			} else {
 				if (!is_array($_SERVER)) {
-					return array();
+					return [];
 				}
-				$headers = array();
+				$headers = [];
 				foreach ($_SERVER as $name => $value) {
 					if (substr($name, 0, 5) == 'HTTP_') {
 						$key = str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))));
@@ -2327,6 +2335,6 @@
 				}
 				return $headers;
 			}
-			return array();
+			return [];
 		}
 	}
